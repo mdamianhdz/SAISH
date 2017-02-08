@@ -1,0 +1,874 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+                <title>Consultar Reporte de Resultados del Periodo</title>
+            <h:body>
+                <center>
+                    <h2>Reporte de Resultados del Periodo</h2>
+                </center>
+                <h:form id="frmRpt">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Fecha:" style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column colspan="3">del&nbsp;&nbsp;
+                                    <p:calendar value="#{oRptResMesJB.ini}" 
+                                                showOn="button" locale="es">
+                                        <p:ajax event="dateSelect" 
+                                                listener="#{oRptResMesJB.validaFecha}" 
+                                                update="msg" />
+                                    </p:calendar>&nbsp;&nbsp;al&nbsp;&nbsp;
+                                    <p:calendar value="#{oRptResMesJB.fin}" 
+                                                showOn="button" locale="es">
+                                        <p:ajax event="dateSelect" 
+                                                listener="#{oRptResMesJB.validaFecha}" 
+                                                update="msg" />
+                                    </p:calendar>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Buscar">
+                                        <p:ajax update="dtRpt msg" 
+                                                listener="#{oRptResMesJB.buscar()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/>
+                        <p:panelGrid id="dtRpt" style="width: 70%">
+                            <p:row>
+                                <p:column colspan="3" styleClass="ui-state-default"
+                                          style="text-align: center">
+                                    <p:outputLabel value="#{oRptResMesJB.rangoFechas}"/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" styleClass="ui-state-default"
+                                          style="text-align: center">
+                                    <p:outputLabel value="VENTAS $$"/>
+                                </p:column> 
+                                <p:column styleClass="ui-state-default"
+                                          style="text-align: center">
+                                    <p:outputLabel value="TOTAL"/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="VENTAS EXTERNOS"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.vtasContExt+
+                                                 oRptResMesJB.rpt.vtasCredExt}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Contado"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.vtasContExt}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Crédito"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.vtasCredExt}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="VENTAS HOSPITAL"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.vtasContHosp+
+                                                 oRptResMesJB.rpt.vtasCredHosp}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Contado"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.vtasContHosp}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Crédito"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.vtasCredHosp}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="TOTAL VENTAS CONTADO"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.vtasContExt+
+                                                 oRptResMesJB.rpt.vtasContHosp}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="TOTAL VENTAS CRÉDITO"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.vtasCredExt+
+                                                 oRptResMesJB.rpt.vtasCredHosp}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" styleClass="ui-state-default"
+                                          style="text-align: center">
+                                    <p:outputLabel value="FLUJO DE INGRESOS $$"/>
+                                </p:column> 
+                                <p:column styleClass="ui-state-default"
+                                          style="text-align: center">
+                                    <p:outputLabel value="TOTAL"/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="PAGOS SERVICIOS EXTERNOS"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.pagosServExt}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="PAGOS DE HOSPITAL"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.abonos+
+                                                 oRptResMesJB.rpt.anticipos +
+                                                 oRptResMesJB.rpt.finiquitos}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Anticipos"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.anticipos}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Abonos"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.abonos}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Finiquitos"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.finiquitos}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="VENTA DE PAQUETES"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoPaqMaternidad +
+                                                 oRptResMesJB.rpt.montoPaqPediatricos +
+                                                 oRptResMesJB.rpt.montoOtrosPaq}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Maternidad"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoPaqMaternidad}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Pediátricos"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoPaqPediatricos}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Otros"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoOtrosPaq}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="PAGOS DE RA"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoRA}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="INGRESOS VARIOS"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoRentas+
+                                                 oRptResMesJB.rpt.montoPrestamos+
+                                                 oRptResMesJB.rpt.montoOtrosIngr}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Rentas"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoRentas}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Préstamos"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoPrestamos}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Otros ingresos"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoOtrosIngr}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="TOTAL INGRESOS"/>
+                                </p:column> 
+                                <p:column style="text-align: right" styleClass="ui-state-default">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.sumaIngresos}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" styleClass="ui-state-default"
+                                          style="text-align: center">
+                                    <p:outputLabel value="EGRESOS $$"/>
+                                </p:column> 
+                                <p:column styleClass="ui-state-default"
+                                          style="text-align: center">
+                                    <p:outputLabel value="TOTAL"/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="TOTAL EGRESOS"/>
+                                </p:column> 
+                                <p:column style="text-align: right" styleClass="ui-state-default">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoEgreCaja+
+                                                 oRptResMesJB.rpt.montoEgreChq}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="De caja"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoEgreCaja}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="De cheque"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoEgreChq}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="3"  styleClass="ui-state-default"
+                                          style="text-align: center">
+                                    <p:outputLabel value="RESULTADO MENSUAL (VENTAS)"/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Ventas"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.sumaVentas}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Egresos"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoEgreCaja+
+                                                 oRptResMesJB.rpt.montoEgreChq}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="UTILIDAD"/>
+                                </p:column> 
+                                <p:column style="text-align: right" styleClass="ui-state-default">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.sumaVentas-
+                                                 oRptResMesJB.rpt.montoEgreCaja-
+                                                 oRptResMesJB.rpt.montoEgreChq}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="3"  styleClass="ui-state-default"
+                                          style="text-align: center">
+                                    <p:outputLabel value="RESULTADO MENSUAL (INGRESOS)"/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Ingresos"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.sumaIngresos}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Egresos"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoEgreCaja+
+                                                 oRptResMesJB.rpt.montoEgreChq}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="INGRESOS FINALES"/>
+                                </p:column> 
+                                <p:column style="text-align: right" styleClass="ui-state-default">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.sumaIngresos -
+                                                 oRptResMesJB.rpt.montoEgreCaja-
+                                                 oRptResMesJB.rpt.montoEgreChq}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" styleClass="ui-state-default"
+                                          style="text-align: center">
+                                    <p:outputLabel value="CUENTAS PENDIENTES $$"/>
+                                </p:column> 
+                                <p:column styleClass="ui-state-default"
+                                          style="text-align: center">
+                                    <p:outputLabel value="TOTAL"/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Pendientes de Cobro"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoPendFact +
+                                                 oRptResMesJB.rpt.montoPendNoFact}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Contado"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.vtasContExt}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" styleClass="ui-state-default"
+                                          style="text-align: center">
+                                    <p:outputLabel value="DIFERENCIAS FACTURAS $$"/>
+                                </p:column> 
+                                <p:column styleClass="ui-state-default"
+                                          style="text-align: center">
+                                    <p:outputLabel value="TOTAL"/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Facturación esperada"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoFactEsperada}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Facturación realizada"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoFactRealizada}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center"
+                                          styleClass="ui-state-default">
+                                    <p:outputLabel value="FACTURACIÓN DEL MES ($$)"/>
+                                </p:column> 
+                                <p:column style="text-align: right" styleClass="ui-state-default">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoFactParticulares+
+                                                 oRptResMesJB.rpt.montoFactEmpresas+
+                                                 oRptResMesJB.rpt.montoFactDia}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Particulares"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoFactParticulares}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Empresas"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoFactEmpresas}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Del día"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoFactDia}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center"
+                                          styleClass="ui-state-default">
+                                    <p:outputLabel value="COBRANZA DEL MES (R/A) ($$)"/>
+                                </p:column> 
+                                <p:column style="text-align: right" styleClass="ui-state-default">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoFactCobMes+
+                                                 oRptResMesJB.rpt.montoFactCobAnteriores}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="De facturas del mes"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoFactCobMes}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="De facturas de meses anteriores"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.montoFactCobAnteriores}">
+                                        <f:convertNumber type="currency" pattern="$#0.00"/>
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center"
+                                          styleClass="ui-state-default">
+                                    <p:outputLabel value="PAQUETES VENDIDOS EN EL MES (CANT.)"/>
+                                </p:column> 
+                                <p:column style="text-align: right" styleClass="ui-state-default">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.cantPaqMaternidad+
+                                                 oRptResMesJB.rpt.cantPaqPediatricos+
+                                                 oRptResMesJB.rpt.cantPaqOtros}">
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Maternidad"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.cantPaqMaternidad}"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Pediátricos"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.cantPaqPediatricos}"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Otros"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.cantPaqOtros}"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" 
+                                          style="text-align: center"
+                                          styleClass="ui-state-default">
+                                    <p:outputLabel value="HOSPITALIZACIÓN DEL MES (CANT.)"/>
+                                </p:column> 
+                                <p:column style="text-align: right" styleClass="ui-state-default">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.cantHabParticulares+
+                                                 oRptResMesJB.rpt.cantHabEmpresa+
+                                                 oRptResMesJB.rpt.cantAmbulatoriosParticulares+
+                                                 oRptResMesJB.rpt.cantAmbulatoriosEmpresa+
+                                                 oRptResMesJB.rpt.cantUrgenciasParticulares+
+                                                 oRptResMesJB.rpt.cantUrgenciasEmpresas}">
+                                    </p:outputLabel>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="HABITACIÓN"/>
+                                </p:column> 
+                                <p:column colspan="2">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Particulares"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.cantHabParticulares}"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Empresa"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.cantHabEmpresa}"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="AMBULATORIO"/>
+                                </p:column> 
+                                <p:column colspan="2">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Particulares"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.cantAmbulatoriosParticulares}"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Empresa"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.cantAmbulatoriosEmpresa}"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="URGENCIAS"/>
+                                </p:column> 
+                                <p:column colspan="2">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Particulares"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.cantUrgenciasParticulares}"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column style="text-align: center; font-weight: bold">
+                                    <p:outputLabel value="Empresa"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel 
+                                        value="#{oRptResMesJB.rpt.cantUrgenciasEmpresas}"/>
+                                </p:column> 
+                                <p:column style="text-align: right">
+                                    <p:outputLabel value=""/>
+                                </p:column> 
+                            </p:row>
+                        </p:panelGrid>
+                        <center>
+                            <h:panelGrid columns="2">
+                                <p:commandButton value="Imprimir" type="button" 
+                                                 icon="ui-icon-print" >  
+                                     <p:printer target="dtRpt" />  
+                                 </p:commandButton>
+                            </h:panelGrid>
+                        </center>
+                </h:form>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

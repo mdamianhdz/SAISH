@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Transformar paquete a particular</title>
+            <h:body>
+                <center><h3>Transformar paquete a particular</h3></center>
+                #{TransformaPaqAPartJB.limpia()}
+
+                <p:dialog closable="false" dynamic="true" height="550" width="900"  appendTo="@(body)" modal="true" id="dlgCompBusq" header="Busqueda de paciente"  widgetVar="dlgCompBusqVar" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >
+
+                    <h:form id="form">
+                        <p:growl id="grow3" sticky="true" /> 
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include> 
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar" action="#{TransformaPaqAPartJB.pacienteExistente()}"  oncomplete="dlgCompBusqVar.hide()" update=":formulario :formulario:grow1" icon="ui-icon-search"/>
+                        <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" action="#{TransformaPaqAPartJB.limpia()}" update=":formulario" icon="ui-icon-circle-close" />
+                    </h:form> 
+                </p:dialog>  
+                <br/>
+                
+                <h:form>
+                    <p:growl id="grow2" sticky="true" />        
+                    <center>
+                        <p:commandButton value="Seleccionar paciente" action="#{oPacienteJB.limpiaSelectedPaciente()}" update=":formulario :form:dtPacientes" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+                    </center>
+                </h:form>
+                <br/>
+                
+                <center>
+                <h:form id="formulario">
+                    <p:growl id="grow1" />
+                    <p:panel rendered="#{TransformaPaqAPartJB.panelActivo}" style="width:90%">
+                            <p:panelGrid columns="2">
+                                folio:<h:outputText value="#{TransformaPaqAPartJB.folioPac}"></h:outputText>
+                                nombre:<h:outputText value="#{TransformaPaqAPartJB.nombreCompleto}"></h:outputText>
+                                fecha de ingreso:<h:outputText value="#{TransformaPaqAPartJB.fechaIngreso}"></h:outputText>
+                                tipo de paquete contratado:<h:outputText value="#{TransformaPaqAPartJB.tipoPaqueteContratado}"></h:outputText>
+                                costo ddel paquete:<h:outputText value="#{TransformaPaqAPartJB.costoPaquete}"></h:outputText>
+                                monto pagado:<h:outputText value="#{TransformaPaqAPartJB.totalPagado}"></h:outputText>
+                            </p:panelGrid>
+                            <p:separator/>
+                            Motivo por el cual se realiza el cambio 
+                            <h:inputTextarea id="sMotivos" style="text-transform: uppercase" value="#{TransformaPaqAPartJB.motivoCambio}" rows="10" cols="42"  />
+                            <p:separator/>
+                            <p:commandButton value="Guardar" action="#{TransformaPaqAPartJB.cambiarPaqueteAParticular()}" update=":dlgOperacionCompleta :formulario:grow1 " icon="ui-icon-disk" />
+                    </p:panel>
+                </h:form>
+                </center>
+                
+                <p:dialog closable="false" id="dlgOperacionCompleta" visible="#{TransformaPaqAPartJB.ventanaCambioCompleto}" dynamic="true" header="Cambio realizado exitosamente"  widgetVar="dlgOperacionCompleta">
+                    <h:form id="formExito">
+                        <p:panel id="panelComprobanteCambio" styleClass="text-align: center;" style="font-size: 12pt;" >
+                            <center>
+                                <p:panel>
+                                    <h:graphicImage style="alignment-baseline: central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                </p:panel>
+                            </center>
+                            <h3>Transformación de paquete a cuenta particular</h3>
+                            <p align="right">Fecha: <h:outputText value="#{TransformaPaqAPartJB.fecha}" /></p>
+                            Nombre del paciente: <h:outputText value="#{TransformaPaqAPartJB.nombreCompleto}"/><br/>
+                            Motivo de cambio: <h:outputText value="#{TransformaPaqAPartJB.motivoCambio}" /><br/>
+                            Nombre del paquete: <h:outputText value="#{TransformaPaqAPartJB.tipoPaqueteContratado}" /><br/>
+                            Costo del paquete: <h:outputText value="#{TransformaPaqAPartJB.costoPaquete}" /><br/>
+                            Total pagado: <h:outputText value="#{TransformaPaqAPartJB.totalPagado}" /><br/>    
+                        </p:panel>
+                        <p:commandButton  value="Imprimir" type="button" icon="ui-icon-print" >
+                            <p:printer target="panelComprobanteCambio" />
+                        </p:commandButton>
+                        <!--<p:commandButton value="generar comprobante" oncomplete="dlgCambioPaq.show()" action="#{TransformaPaqAPartJB.imprimeComprobante()}" icon="ui-icon-print"  /> 
+                        -->
+                        <p:commandButton value="Cerrar" oncomplete="dlgOperacionCompleta.hide()" action="#{TransformaPaqAPartJB.limpia()}" update=":formulario" icon="ui-icon-circle-close" />
+                    </h:form>    
+                </p:dialog>
+                
+                <!-- por si se necesita posteriormente en pdf
+                <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="paqCambiado" header="Cambio de Paquete"  widgetVar="dlgCambioPaq" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                    <h:form id="formDocComp">
+                        <p:media id="contr" value="/resources/#{TransformaPaqAPartJB.rutaComprobanteCambio}" width="800" height="500">
+                            Tu navegador no puede abrir el PDF, <h:outputLink value="/resources/#{TransformaPaqAPartJB.rutaComprobanteCambio}">click</h:outputLink> para descargar el PDF.  
+                        </p:media>
+                        <p:separator />
+                        <center>                                        
+                            <p:commandButton value="Regresar"  oncomplete="dlgCambioPaq.hide()" icon="ui-icon-arrowreturnthick-1-w"/>
+                        </center>
+                    </h:form> 
+                </p:dialog>
+                -->
+            </h:body> 
+        </ui:define>
+    </ui:composition>
+</html>

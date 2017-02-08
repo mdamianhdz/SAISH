@@ -1,0 +1,280 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Administrar receptores</title> 
+    <h:body>
+        <h:form id="formulario"> 
+            <p:growl id="messages" showDetail="true"/>
+            <p:dataTable id="receptores" value="#{oReceptor.receptores}" var="oRec"
+                         paginator="true" rows="5"
+                         paginatorTemplate="{FirstPageLink} {PreviousPageLink} {CurrentPageReport}  {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,6,7">
+                    <f:facet name="header">
+                        <h:outputText value="Receptores"/>
+                    </f:facet>
+                    <p:column >
+                        <f:facet name="header"> RFC</f:facet>  
+                        <h:outputText value="#{oRec.rfc}" /> 
+                    </p:column>
+                    <p:column>                            
+                        <f:facet name="header">Nombre</f:facet>  
+                        <h:outputText value="#{oRec.nombre}" />
+                    </p:column>
+                    <p:column >
+                        <f:facet name="header">Domicilio</f:facet> 
+                        <h:outputText value="CP: " />
+                        <h:outputText value="#{oRec.domicilio.codigoPostal}" /> 
+                        <h:outputText value=", colonia: " />
+                        <h:outputText value="#{oRec.domicilio.colonia}" /> 
+                        <h:outputText value=", país: " />
+                        <h:outputText value="#{oRec.domicilio.pais}" /> 
+                    </p:column>
+                    <p:column >
+                        <f:facet name="header">Correo electrónico</f:facet>  
+                        <h:outputText value="#{oRec.correoElectronico}" /> 
+                    </p:column>
+                    <p:column>
+                        <center> 
+                        <p:commandButton value="Actualizar" update=":formActualizar:actualizar" oncomplete="dialogActualizar.show()" 
+                                         actionListener="#{oReceptor.habilitarActualizar(oRec)}"> 
+                            <f:setPropertyActionListener target="#{oReceptor.receptorSeleccionado}" value="#{oRec}" />
+                        </p:commandButton>
+                        <p:commandButton value="Eliminar" update=":formEliminar:eliminar :formEliminar:mensajeEli" oncomplete="dialogEliminar.show()" 
+                                         actionListener="#{oReceptor.verificarEliminacion(oRec)}">
+                            <f:setPropertyActionListener target="#{oReceptor.receptorSeleccionado}" value="#{oRec}" />
+                        </p:commandButton>
+                        </center>
+                    </p:column>                
+            </p:dataTable>
+            <center><table>
+                <tr>
+                    <td><p:commandButton value="Crear nuevo receptor" update=":formulario:messages :formNuevo:crear" 
+                                         oncomplete="dialogNuevo.show()" actionListener="#{oReceptor.crearReceptor()}"></p:commandButton></td>
+                </tr>
+            </table></center>
+        </h:form>
+        <p:dialog id="idDialogEliminar" appendTo="@(body)" widgetVar="dialogEliminar" resizable="false" showEffect="fade" hideEffect="explode" modal="true"> 
+            <h:form id="formEliminar">
+                <h:panelGrid id="mensajeEli" columns="1" >
+                    <h:outputLabel value="Confirme si desea eliminar el siguiente receptor:" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputLabel value="#{oReceptor.mensajeError}" rendered="#{oReceptor.datoHabilitado==false}"/>
+                </h:panelGrid>
+                <h:panelGrid id="eliminar" columns="2" >
+                    <h:outputLabel value="RFC"  rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputLabel value="#{oReceptor.receptorSeleccionado.rfc}" style="font-weight:bold;" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputLabel value="Nombre" rendered="#{oReceptor.datoHabilitado==true}"/>   
+                    <h:outputLabel value="#{oReceptor.receptorSeleccionado.nombre}" style="font-weight:bold;" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputLabel value="Correo electr&oacute;nico" for="txtCorreo"  rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputLabel value="#{oReceptor.receptorSeleccionado.correoElectronico}"  style="font-weight:bold;" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputLabel value="Colonia" for="txtCol"  rendered="#{oReceptor.datoHabilitado==true}"/>   
+                    <h:outputLabel value="#{oReceptor.receptorSeleccionado.domicilio.colonia}"  style="font-weight:bold;" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputLabel value="Calle" rendered="#{oReceptor.datoHabilitado==true}"/>    
+                    <h:outputLabel value="#{oReceptor.receptorSeleccionado.domicilio.calle}"  style="font-weight:bold;" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputLabel value="N&uacute;mero exterior" rendered="#{oReceptor.datoHabilitado==true}"/>  
+                    <h:outputLabel value="#{oReceptor.receptorSeleccionado.domicilio.noExterior}"  style="font-weight:bold;" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputLabel value="N&uacute;mero interior" for="txtNoInt" rendered="#{oReceptor.datoHabilitado==true}"/>   
+                    <h:outputLabel id="txtNoInt" value="#{oReceptor.receptorSeleccionado.domicilio.noInterior}" style="font-weight:bold;" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputLabel value="Referencia" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputLabel value="#{oReceptor.receptorSeleccionado.domicilio.referencia}" style="font-weight:bold;"  rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputLabel value="Pa&iacute;s" rendered="#{oReceptor.datoHabilitado==true}"/>   
+                    <h:outputLabel value="#{oReceptor.receptorSeleccionado.domicilio.pais}"  style="font-weight:bold;" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:commandButton value="Guardar"  actionListener="#{oReceptor.eliminar}" update=":formulario:messages :formEliminar:eliminar :formulario:receptores"
+                                 rendered="#{oReceptor.botonActivado==true}"></p:commandButton>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        <p:dialog id="idDialogActualizar" appendTo="@(body)" widgetVar="dialogActualizar" resizable="true" showEffect="fade" hideEffect="explode" modal="true"> 
+            <h:form id="formActualizar">
+                <h:panelGrid id="actualizar" columns="3" >
+                    <h:outputLabel value="RFC" for="txtIde"/>
+                    <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                    <h:inputText id="txtIde" value="#{oReceptor.receptorSeleccionado.rfc}" required="true" readonly="true"/>
+                    <h:outputLabel value="Nombre" for="txtNombre"/>   
+                    <h:outputText value=""/>
+                    <p:inputText id="txtNombre" value="#{oReceptor.receptorSeleccionado.nombre}"
+                                 size="80" maxlength="80" ></p:inputText>
+                    <h:outputLabel value="Correo electr&oacute;nico" for="txtCorreo"/>
+                    <h:outputText value=""/>
+                    <p:inputText id="txtCorreo" size="30" maxlength="30"
+                                 value="#{oReceptor.receptorSeleccionado.correoElectronico}" />
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==false}"/>
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==false}"/>
+                    <p:commandButton value="Registrar domicilio"  update=":formActualizar:actualizar" rendered="#{oReceptor.datoHabilitado==false}" actionListener="#{oReceptor.setDatoHabilitado(true)}"></p:commandButton>
+                    <h:outputText value="Código Postal:" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText  id="txtCP" size="10" maxlength="5"
+                                  value="#{oReceptor.receptorSeleccionado.domicilio.codigoPostal}" 
+                                  rendered="#{oReceptor.datoHabilitado==true}">
+                        <p:ajax event="change" listener="#{oReceptor.buscaDomicilioPorCP()}" update=" selEdo selMun selLoc txtPais"/>
+                    </p:inputText>
+                    <h:outputText value="Estado:" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:selectOneMenu id="selEdo" value="#{oReceptor.receptorSeleccionado.domicilio.edo}"  converter="#{oConverterEstadoDF}" rendered="#{oReceptor.datoHabilitado==true}"> 
+                        <c:choose>
+                            <c:when test="#{oReceptor.receptorSeleccionado.domicilio.edo.descrip==null}">
+                                <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                            </c:when>
+                            <c:otherwise>
+                                <f:selectItem itemLabel="#{oReceptor.receptorSeleccionado.domicilio.edo.descrip}" itemValue="#{oReceptor.receptorSeleccionado.domicilio.edo}" /> 
+                            </c:otherwise>
+                        </c:choose>
+                        <f:selectItems value="#{oReceptor.listEdo}" var="oEdo" itemLabel="#{oEdo.descrip}" itemValue="#{oEdo}" />  
+                        <p:ajax event="change" update=" selMun selLoc txtPais" listener="#{oReceptor.buscarDomicilioPorEdo()}"/> 
+                    </p:selectOneMenu>
+                    <h:outputText value="Municipio: " rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:selectOneMenu id="selMun" value="#{oReceptor.receptorSeleccionado.domicilio.mun}"  converter="#{oConverterMunicipioDF}" rendered="#{oReceptor.datoHabilitado==true}">  
+                        <c:choose>
+                            <c:when test="#{oReceptor.receptorSeleccionado.domicilio.mun.descrip==null}">
+                                <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                            </c:when>
+                            <c:otherwise>
+                                <f:selectItem itemLabel="#{oReceptor.receptorSeleccionado.domicilio.mun.descrip}" itemValue="#{oReceptor.receptorSeleccionado.domicilio.mun}" /> 
+                            </c:otherwise>
+                        </c:choose>
+                        <f:selectItems value="#{oReceptor.listMun}" var="oMun" itemLabel="#{oMun.descrip}" itemValue="#{oMun}" />  
+                        <p:ajax event="change" update=" selLoc" listener="#{oReceptor.buscarDomicilioPorMun()}" /> 
+                    </p:selectOneMenu>                    
+                    <h:outputText value="Localidad:" rendered="#{oReceptor.datoHabilitado==true}"/>        
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:selectOneMenu id="selLoc" value="#{oReceptor.receptorSeleccionado.domicilio.cd}" converter="#{oConverterCiudadDF}" rendered="#{oReceptor.datoHabilitado==true}">
+                        <c:choose>
+                            <c:when test="#{oReceptor.receptorSeleccionado.domicilio.cd.descrip==null}">
+                                <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                            </c:when>
+                            <c:otherwise>
+                                <f:selectItem itemLabel="#{oReceptor.receptorSeleccionado.domicilio.cd.descrip}" itemValue="#{oReceptor.receptorSeleccionado.domicilio.cd}" /> 
+                            </c:otherwise>
+                        </c:choose>
+                        <f:selectItems value="#{oReceptor.listCd}" var="oLoc" itemLabel="#{oLoc.descrip}" itemValue="#{oLoc}"/>
+                        <p:ajax event="change" listener="#{oReceptor.actCiudad()}" /> 
+                    </p:selectOneMenu>
+                    <h:outputLabel value="Colonia" for="txtCol" rendered="#{oReceptor.datoHabilitado==true}"/>   
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText id="txtCol" size ="50" maxlength="50"
+                                 value="#{oReceptor.receptorSeleccionado.domicilio.colonia}" rendered="#{oReceptor.datoHabilitado==true}"></p:inputText>
+                    <h:outputLabel value="Calle" for="txtCalle" rendered="#{oReceptor.datoHabilitado==true}"/>  
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText id="txtCalle" size="50" maxlength="50"
+                                 value="#{oReceptor.receptorSeleccionado.domicilio.calle}" rendered="#{oReceptor.datoHabilitado==true}"></p:inputText>
+                    <h:outputLabel value="N&uacute;mero exterior" for="txtNoExt" rendered="#{oReceptor.datoHabilitado==true}"/>  
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText id="txtNoExt" size="30" maxlength="30" 
+                                 value="#{oReceptor.receptorSeleccionado.domicilio.noExterior}" rendered="#{oReceptor.datoHabilitado==true}"></p:inputText>
+                    <h:outputLabel value="N&uacute;mero interior" for="txtNoInt" rendered="#{oReceptor.datoHabilitado==true}"/>   
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText id="txtNoInt" size="30" maxlength="30"
+                                 value="#{oReceptor.receptorSeleccionado.domicilio.noInterior}" rendered="#{oReceptor.datoHabilitado==true}"></p:inputText>
+                    <h:outputLabel value="Referencia" for="txtRef" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText id="txtRef" value="#{oReceptor.receptorSeleccionado.domicilio.referencia}" rendered="#{oReceptor.datoHabilitado==true}"></p:inputText>
+                    <h:outputLabel value="Pa&iacute;s" for="txtPais" rendered="#{oReceptor.datoHabilitado==true}"/> 
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText id="txtPais" value="#{oReceptor.receptorSeleccionado.domicilio.objPais.descrip}" rendered="#{oReceptor.datoHabilitado==true}"></p:inputText>  
+                    <p:commandButton value="Guardar" update=":formActualizar:actualizar :formulario:messages :formulario:receptores" 
+                                     actionListener="#{oReceptor.modificar}" rendered="#{oReceptor.botonActivado==true}"></p:commandButton>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        <p:dialog id="idDialogNuevo" appendTo="@(body)" widgetVar="dialogNuevo" resizable="true" showEffect="fade" hideEffect="explode" modal="true"> 
+            <h:form id="formNuevo">
+                <h:panelGrid id="crear" columns="3" >
+                    <h:outputLabel value="RFC" for="txtIde"/>
+                    <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                    <p:inputText id="txtIde" value="#{oReceptor.receptorSeleccionado.rfc}"/>
+                    <h:outputLabel value="Nombre" for="txtNombre"/>   
+                    <h:outputText value=""/>
+                    <p:inputText id="txtNombre" size="80" maxlength="80"
+                                 value="#{oReceptor.receptorSeleccionado.nombre}"></p:inputText>
+                    <h:outputLabel value="Correo electr&oacute;nico" for="txtCorreo"/>
+                    <h:outputText value=""/>
+                    <p:inputText id="txtCorreo" size="32" maxlength="30" 
+                                 value="#{oReceptor.receptorSeleccionado.correoElectronico}" />
+                    <h:outputLabel value="" rendered="#{oReceptor.datoHabilitado==false}"/>
+                    <h:outputLabel value="" rendered="#{oReceptor.datoHabilitado==false}"/>
+                    <p:commandButton value="Registrar domicilio"  update=":formNuevo:crear" rendered="#{oReceptor.datoHabilitado==false}" actionListener="#{oReceptor.setDatoHabilitado(true)}"></p:commandButton>
+                    <h:outputText value="Código Postal:" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText  id="txtCP" size="10" maxlength="5" 
+                                  value="#{oReceptor.receptorSeleccionado.domicilio.codigoPostal}" rendered="#{oReceptor.datoHabilitado==true}">
+                        <p:ajax event="change" listener="#{oReceptor.buscaDomicilioPorCP()}" update=" selEdo selMun selLoc txtPais"/>
+                    </p:inputText>
+                    <h:outputText value="Estado:" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputText value=" * " style="font-weight:bold;color: red" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:selectOneMenu id="selEdo" value="#{oReceptor.receptorSeleccionado.domicilio.edo}"  converter="#{oConverterEstadoDF}" rendered="#{oReceptor.datoHabilitado==true}"> 
+                        <c:choose>
+                            <c:when test="#{oReceptor.receptorSeleccionado.domicilio.edo.descrip==null}">
+                                <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                            </c:when>
+                            <c:otherwise>
+                                <f:selectItem itemLabel="#{oReceptor.receptorSeleccionado.domicilio.edo.descrip}" itemValue="#{oReceptor.receptorSeleccionado.domicilio.edo}" /> 
+                            </c:otherwise>
+                        </c:choose>
+                        <f:selectItems value="#{oReceptor.listEdo}" var="oEdo" itemLabel="#{oEdo.descrip}" itemValue="#{oEdo}" /> 
+                        <p:ajax event="change" update=" selMun selLoc txtPais" listener="#{oReceptor.buscarDomicilioPorEdo()}"/> 
+                    </p:selectOneMenu>
+                    <h:outputText value="Municipio: " rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:selectOneMenu id="selMun" value="#{oReceptor.receptorSeleccionado.domicilio.mun}"  converter="#{oConverterMunicipioDF}" rendered="#{oReceptor.datoHabilitado==true}">  
+                        <c:choose>
+                            <c:when test="#{oReceptor.receptorSeleccionado.domicilio.mun.descrip==null}">
+                                <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                            </c:when>
+                            <c:otherwise>
+                                <f:selectItem itemLabel="#{oReceptor.receptorSeleccionado.domicilio.mun.descrip}" itemValue="#{oReceptor.receptorSeleccionado.domicilio.mun}" /> 
+                            </c:otherwise>
+                        </c:choose>
+                        <f:selectItems value="#{oReceptor.listMun}" var="oMun" itemLabel="#{oMun.descrip}" itemValue="#{oMun}" />  
+                        <p:ajax event="change" update=" selLoc" listener="#{oReceptor.buscarDomicilioPorMun()}" /> 
+                    </p:selectOneMenu>                    
+                    <h:outputText value="Localidad:" rendered="#{oReceptor.datoHabilitado==true}"/>                        
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:selectOneMenu id="selLoc" value="#{oReceptor.receptorSeleccionado.domicilio.cd}" converter="#{oConverterCiudadDF}" rendered="#{oReceptor.datoHabilitado==true}">
+                        <c:choose>
+                            <c:when test="#{oReceptor.receptorSeleccionado.domicilio.cd.descrip==null}">
+                                <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                            </c:when>
+                            <c:otherwise>
+                                <f:selectItem itemLabel="#{oReceptor.receptorSeleccionado.domicilio.cd.descrip}" itemValue="#{oReceptor.receptorSeleccionado.domicilio.cd}" /> 
+                            </c:otherwise>
+                        </c:choose>
+                        <f:selectItems value="#{oReceptor.listCd}" var="oLoc" itemLabel="#{oLoc.descrip}" itemValue="#{oLoc}"/>
+                    </p:selectOneMenu>
+                    <h:outputLabel value="Colonia" for="txtCol" rendered="#{oReceptor.datoHabilitado==true}"/>   
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText id="txtCol" size="50" maxlength="50"
+                                 value="#{oReceptor.receptorSeleccionado.domicilio.colonia}" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputLabel value="Calle" for="txtCalle" rendered="#{oReceptor.datoHabilitado==true}"/>    
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText id="txtCalle" size="50" maxlength="50" 
+                                 value="#{oReceptor.receptorSeleccionado.domicilio.calle}" rendered="#{oReceptor.datoHabilitado==true}"></p:inputText>
+                    <h:outputLabel value="N&uacute;mero exterior" for="txtNoExt" rendered="#{oReceptor.datoHabilitado==true}"/>  
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText id="txtNoExt" size="30" maxlength="30" 
+                                 value="#{oReceptor.receptorSeleccionado.domicilio.noExterior}" rendered="#{oReceptor.datoHabilitado==true}"></p:inputText>
+                    <h:outputLabel value="N&uacute;mero interior" for="txtNoInt" rendered="#{oReceptor.datoHabilitado==true}"/>   
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText id="txtNoInt" size="30" maxlength="30" 
+                                 value="#{oReceptor.receptorSeleccionado.domicilio.noInterior}" rendered="#{oReceptor.datoHabilitado==true}"></p:inputText>
+                    <h:outputLabel value="Referencia" for="txtRef" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText id="txtRef" value="#{oReceptor.receptorSeleccionado.domicilio.referencia}" rendered="#{oReceptor.datoHabilitado==true}"></p:inputText>
+                    <h:outputLabel value="Pa&iacute;s" for="txtPais" rendered="#{oReceptor.datoHabilitado==true}"/>   
+                    <h:outputText value="" rendered="#{oReceptor.datoHabilitado==true}"/>
+                    <p:inputText id="txtPais" value="#{oReceptor.receptorSeleccionado.domicilio.objPais.descrip}" readonly="true" rendered="#{oReceptor.datoHabilitado==true}"></p:inputText> 
+                    <p:commandButton value="Guardar"  update=":formNuevo:crear :formulario:messages :formulario:receptores" actionListener="#{oReceptor.insertar}"
+                                     rendered="#{oReceptor.botonActivado==true}"></p:commandButton>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+    </h:body>
+	</ui:define> 
+    </ui:composition>
+</html>

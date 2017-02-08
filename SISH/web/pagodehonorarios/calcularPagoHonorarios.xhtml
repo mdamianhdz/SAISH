@@ -1,0 +1,309 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+ 
+<ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+<ui:define name="cuerpo">
+<title>Calcular pago de honorarios</title>
+<h:body>
+      <h:form id="form">  
+        #{oCalPHon.limpiar()}
+       <p:growl id="msgs" showDetail="true"/>
+       <p:panel header="Calcular pago de honorarios" style="margin-bottom:10px;">  
+           <h:panelGrid id="panelIdMes" columns="5" style="width: 50%;">
+               <h:outputText value="Fecha inicial: " style="font-weight: bold"/>
+                <p:calendar value="#{oCalPHon.fechaInicio}" 
+                            showOn="button" locale="es">
+                    <p:ajax event="dateSelect" 
+                            listener="#{oCalPHon.validaFecha}" 
+                            update="msgs" />
+                </p:calendar>
+                <h:outputText value="  Fecha final: " style="font-weight: bold"/>
+                <p:calendar value="#{oCalPHon.fechaFin}" 
+                            showOn="button" locale="es">
+                    <p:ajax event="dateSelect" 
+                            listener="#{oCalPHon.validaFecha}" 
+                            update="msgs" />
+                </p:calendar>
+               <p:commandButton actionListener="#{oCalPHon.buscarPersonal()}" 
+                                value="Buscar" 
+                                update=":form:msgs :form:regaliasDT" />  
+           </h:panelGrid>
+           <br/>
+           <p:dataTable id="regaliasDT" rows="7" paginator="true" var="cr1" 
+                        value="#{oCalPHon.dist}" paginatorPosition="bottom"
+                        emptyMessage="No hay información disponible">
+               <f:facet name="header"> Honorarios </f:facet>
+               <p:columns value="#{oCalPHon.nameColumnas}"  var="column" >  
+                    <f:facet name="header">  
+                        #{column}  
+                    </f:facet>  
+               </p:columns>
+               <p:subTable var="cr" value="#{oCalPHon.distribucion}" >
+                    <p:column>
+                        <h:outputText value="#{cr.personal.nombreCompleto}" />
+                        <ui:repeat value="#{cr.numConceptos}" var="nums">
+                            <td>
+                                <h:outputText value="#{nums}">
+                                    <f:convertNumber integerOnly="true"/>
+                                </h:outputText>
+                            </td>
+                        </ui:repeat>
+                    </p:column>
+                    <p:column style="width:32px;text-align: center">
+                        <p:commandButton update=":form:calcular :form:msgs " 
+                                         oncomplete="PF('calcularDialog').show()" 
+                                         icon="ui-icon-calculator" title="View">
+                            <f:setPropertyActionListener value="#{cr}" 
+                                target="#{oCalPHon.selectedDistribucionRegalias}"/>
+                        </p:commandButton>
+                   </p:column>
+               </p:subTable>
+           </p:dataTable>
+       </p:panel>
+       
+       <p:dialog header="Calcula pago de honorarios" 
+                 appendTo="@(body)" widgetVar="calcularDialog" 
+                 modal="true" showEffect="fade" hideEffect="fade" 
+                 resizable="true" closable="false" >
+        <p:panel id="calcular">
+             <p:scrollPanel mode="native" style="width:900px;height:550px">
+                #{oCalPHon.obtenerDatosPersona()}
+                <h:panelGrid id="calcularPagoHonVista">
+                    <p:panel>
+                    <center>
+                        <h:graphicImage style="alignment-baseline:central" 
+                                        url="#{oPlantilla.logo2}"  
+                                        height="130px"/>
+                    </center>
+                    </p:panel>
+                    <div align="center">
+                        <h:outputText value="CALCULA PAGO DE HONORARIOS" 
+                                      style="font-weight: bold;"/>
+                    </div>
+                    <p:separator />
+                <h:panelGrid id="calcularVista" width="100%">
+                    <h:panelGrid columns="4" width="80%">
+                        <h:outputText value="Fecha:  "/>
+                        <h:outputText value="#{oCalPHon.fechaInicio}" 
+                                      style="font-weight: bold">
+                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                        </h:outputText>
+                        <h:outputText value="Al: "/>
+                        <h:outputText value="#{oCalPHon.fechaFin}" 
+                                      style="font-weight: bold">
+                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                        </h:outputText>
+                        <h:outputText value="Personal: "/>
+                        <h:outputText value="#{oCalPHon.selectedDistribucionRegalias.personal.folioPers}" 
+                                      style="font-weight: bold"/>  
+                        <h:outputText value="#{oCalPHon.selectedDistribucionRegalias.personal.nombreCompleto}" 
+                                      style="font-weight: bold"/>
+                    </h:panelGrid>
+                </h:panelGrid>
+                <br/>
+                <h:form>
+                    <p:dataTable id="dtServicios"  rows="7" paginator="true" 
+                                 var="sp" value="#{oCalPHon.serviciosPers}" 
+                                 editable="true" paginatorPosition="bottom"
+                        emptyMessage="No hay información disponible">
+                        <f:facet name="header"> Otros Servicios </f:facet>
+                        <p:ajax event="rowEdit" listener="#{oCalPHon.onRowEdit}" 
+                                update=":form:msgs :form:formTotal:calcularTotal" />
+                        <p:column headerText="Fecha">
+                            <h:outputText value="#{sp.servicioPrestado.realizado}">
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Folio del Paciente">
+                            <h:outputText value="#{sp.servicioPrestado.paciente.folioPac}"/>
+                        </p:column>
+                        <p:column headerText="Paciente">
+                            <h:outputText value="#{sp.servicioPrestado.paciente.nombreCompleto}"/>
+                        </p:column>
+                        <p:column headerText="Folio del servicio">
+                            <h:outputText value="#{sp.servicioPrestado.idFolio}"/>
+                        </p:column>
+                        <p:column headerText="Concepto">
+                            <h:outputText value="#{sp.servicioPrestado.concepPrestado.descripConcep}"/>
+                        </p:column>
+                        <p:column headerText="Monto original">
+                            <h:outputText value="#{sp.servicioPrestado.costoOriginal}">
+                                <f:convertNumber type="currency" locale="es_MX"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">Monto cobrado</f:facet>
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{sp.servicioPrestado.costoCobrado}" 
+                                                  style="float:right;" >
+                                        <f:convertNumber type="currency" locale="es_MX"/>
+                                    </h:outputText>
+                                </f:facet>  
+                                <f:facet name="input">  
+                                    <p:inputText value="#{sp.servicioPrestado.costoCobrado}" 
+                                                 style="width:100%"/>  
+                                </f:facet>  
+                            </p:cellEditor> 
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">Monto a pagar</f:facet>
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{sp.autorizado}" 
+                                                  style="float:right;">
+                                        <f:convertNumber type="currency" 
+                                                         locale="es_MX"/>
+                                    </h:outputText>
+                                </f:facet>  
+                                <f:facet name="input">  
+                                    <p:inputText value="#{sp.autorizado}" style="width:100%"/>  
+                                </f:facet>  
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="Indicado por M&eacute;dico">
+                            <p:selectBooleanCheckbox value="#{sp.servicioPrestado.indicadoPorMedico}"/>
+                        </p:column>
+                        <p:column headerText="Situación del servicio">
+                            <h:outputText value="#{sp.servicioPrestado.situacion}"/>
+                        </p:column>
+                        <p:column style="width:32px">
+                            <p:rowEditor />
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+                <br/>
+                <h:form>
+                    <p:dataTable id="dtHonorarios"  rows="7" paginator="true" 
+                                 var="hon" value="#{oCalPHon.serviciosHon}" 
+                                 editable="true" paginatorPosition="bottom"
+                        emptyMessage="No hay información disponible">
+                        <f:facet name="header"> Honorarios Médicos </f:facet>
+                        <p:ajax event="rowEdit" listener="#{oCalPHon.onRowEdit}" 
+                                update=":form:msgs :form:formTotal:calcularTotal"/>
+                        <p:column headerText="Fecha">
+                            <h:outputText value="#{hon.servicioPrestado.realizado}">
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </h:outputText>
+                        </p:column>
+                         <p:column headerText="Folio del Paciente">
+                            <h:outputText value="#{hon.servicioPrestado.paciente.folioPac}"/>
+                        </p:column>
+                        <p:column headerText="Paciente">
+                            <h:outputText value="#{hon.servicioPrestado.paciente.nombreCompleto}"/>
+                        </p:column>
+                        <p:column headerText="Folio del servicio">
+                            <h:outputText value="#{hon.servicioPrestado.idFolio}"/>
+                        </p:column>
+                        <p:column headerText="Concepto">
+                            <h:outputText value="#{hon.servicioPrestado.concepPrestado.descripConcep}"/>
+                        </p:column>
+                        <p:column headerText="Fecha/Hora Inicio">
+                            <h:outputText value="#{hon.servicioPrestado.procedimientoRealizado.ini}">
+                                <f:convertDateTime pattern="dd/MM/yyyy hh:mm" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Fecha/Hora Fin">
+                            <h:outputText value="#{hon.servicioPrestado.procedimientoRealizado.fin}">
+                                <f:convertDateTime pattern="dd/MM/yyyy hh:mm" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Duración (hr:mm:ss)">
+                            <h:outputText value="#{hon.servicioPrestado.procedimientoRealizado.duracion}"/>
+                        </p:column>
+                        <p:column headerText="Tipo de programación">
+                            <h:outputText value="#{hon.servicioPrestado.procedimientoRealizado.tipoProg}"/>
+                        </p:column>
+                        <p:column headerText="Procedimiento">
+                            <h:outputText value="#{hon.servicioPrestado.procedimientoRealizado.tipoProcQx.descripcion}"/>
+                        </p:column>
+                        <p:column headerText="Nota Médica">
+                            <h:outputText value="#{hon.servicioPrestado.procedimientoRealizado.notaMedica}"/>
+                        </p:column>
+                        <p:column headerText="Monto original">
+                            <h:outputText value="#{hon.servicioPrestado.costoOriginal}">
+                                <f:convertNumber type="currency" 
+                                                 locale="es_MX"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">Monto cobrado</f:facet>
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{hon.servicioPrestado.costoCobrado}" style="float:right;">
+                                        <f:convertNumber type="currency" 
+                                                         locale="es_MX"/>
+                                    </h:outputText>
+                                </f:facet>  
+                                <f:facet name="input">  
+                                    <p:inputText value="#{hon.servicioPrestado.costoCobrado}" style="width:100%"/>  
+                                </f:facet>  
+                            </p:cellEditor> 
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">Monto a pagar</f:facet>
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{hon.autorizado}" 
+                                                  style="float:right;">
+                                        <f:convertNumber type="currency" locale="es_MX"/>
+                                    </h:outputText>
+                                </f:facet>  
+                                <f:facet name="input">  
+                                    <p:inputText value="#{hon.autorizado}"
+                                                 style="width:100%"/>  
+                                </f:facet>  
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="Indicado por M&eacute;dico">
+                            <p:selectBooleanCheckbox value="#{hon.servicioPrestado.indicadoPorMedico}"/>
+                        </p:column>
+                        <p:column headerText="Situación del servicio">
+                            <h:outputText value="#{hon.servicioPrestado.situacion}"/>
+                        </p:column>
+                        <p:column style="width:32px">
+                            <p:rowEditor />
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+                <br/>
+                <h:form id="formTotal">
+                    <h:panelGrid id="calcularTotal" columns="2" 
+                                 style="float:right;width:35%;" width="100%">
+                        <h:outputText value="Total a pagar por honorarios:" 
+                                      style="float:right;font-weight: bold"/>
+                        <h:outputText value="#{oCalPHon.totalHonorarios}" 
+                                      style="float:right;">
+                            <f:convertNumber type="currency" locale="es_MX"/>
+                        </h:outputText>
+                    </h:panelGrid>
+                </h:form>
+                </h:panelGrid>
+                <br/><br/><br/>
+                <h:form>
+                    <h:panelGrid columns="3" style="float:right;">
+                            <p:button outcome="calcularPagoHonorarios.xhtml?faces-redirect=true" value="Regresar"  />  
+                            <p:commandButton value="Imprimir" type="button" 
+                                             icon="ui-icon-print" >  
+                                <p:printer target=":form:calcularPagoHonVista"/>  
+                            </p:commandButton>
+                            <p:commandButton id="btn" update=":form:msgs" 
+                                actionListener="#{oCalPHon.guardarHonorarios()}" 
+                                value="Guardar" process="@parent" 
+                                style="float:right;" />
+                    </h:panelGrid>
+                </h:form>
+             </p:scrollPanel>
+        </p:panel>
+        </p:dialog>
+       </h:form>     
+</h:body>
+</ui:define> 
+</ui:composition> 
+</html>

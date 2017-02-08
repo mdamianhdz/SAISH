@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Concepto de Nomina</title>
+            <h:body> 
+                <center><h2>Administracion de Concepto de Nomina</h2>
+                    <h:form id="formulario">
+                        <p:growl id="msg" sticky="true" showDetail="true"/>
+                        <p:dialog id="dlgUsuario" widgetVar="dlgUsu"  position="center" closable="false" dynamic="true" resizable="false"
+                                  appendTo="@(body)" modal="true">
+                            <center>
+                                <h3>Concepto de Nomina</h3>
+                                <h:form>
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Clave:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtClave" value="#{oConceptoNomina.currentNomina.cveConcepNom}" size="6" disabled="true">
+                                                    <p:ajax />
+                                                </p:inputText>
+                                            </p:column>
+                                            
+                                            <p:column>
+                                                <p:outputLabel value="Tipo de Concepto:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtTipo" value="#{oConceptoNomina.currentNomina.tipoConNom}" size="1" disabled="#{oConceptoNomina.disDatos}">
+                                                    <p:ajax />
+                                                </p:inputText>
+                                            </p:column>
+                                            
+                                            <p:column>
+                                                <p:outputLabel value="Descripción:"/>
+                                            </p:column>
+                                            
+                                            <p:column>
+                                                <p:inputText id="txtDescripcion" value="#{oConceptoNomina.currentNomina.descripcion}" size="50" disabled="#{oConceptoNomina.disDatos}">
+                                                    <p:ajax />
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        
+                                    </p:panelGrid>
+                                    <br/><br/><p:commandButton value="Guardar">
+                                        <p:ajax listener="#{oConceptoNomina.guardar()}" update=":formulario:msg :formulario:dtUsuarios"/>
+                                    </p:commandButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <p:commandButton value="Regresar" oncomplete="PF('dlgUsu').hide()"/>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        
+                        <p:dataTable id="dtUsuarios" value="#{oConceptoNomina.conceptoNomina}" rows="5" editable="true" paginator="true" 
+                                     paginatorPosition="bottom" var="oCN"
+                                     style="width: 900px" selection="#{oConceptoNomina.selectedNomina}" rowKey="#{oCN.descripcion}">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Clave:">
+                                <h:outputText value="#{oCN.cveConcepNom}" />
+                            </p:column>
+                            
+                            <p:column headerText="Tipo de Concepto:">
+                                <h:outputText value="#{oCN.tipoConNom}" />
+                            </p:column>
+                            
+                            <p:column headerText="Descripci&oacute;n:">
+                                <h:outputText value="#{oCN.descripcion}" />
+                            </p:column>
+                           
+                            
+                            <f:facet name="footer">
+                                <p:commandButton value="Agregar Concepto Nomina" icon="ui-icon-pencil" oncomplete="dlgUsu.show()">
+                                    <p:ajax update=":formulario:msg :formulario:dlgUsuario" listener="#{oConceptoNomina.agregarConceptoNomina()}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Modificar Concepto Nomina" icon="ui-icon-pencil">
+                                    <p:ajax update=":formulario:msg :formulario:dlgUsuario" listener="#{oConceptoNomina.modificarConceptoNomina()}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Eliminar Concepto Nomina" icon="ui-icon-pencil">
+                                    <p:ajax update=":formulario:msg :formulario:dlgUsuario" listener="#{oConceptoNomina.eliminarConceptoNomina()}"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                 
+                    </h:form></center>
+            </h:body>
+            </ui:define> 
+            </ui:composition> 
+</html>

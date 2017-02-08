@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"> 
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Registrar Préstamo</title>
+            <h:body>
+                <center>
+                    <h2>Registrar Préstamo</h2>
+                    <h:form id="form">
+                        <p:growl id="msg" showDetail="true" sticky="true"/>
+                        <p:dialog id="dlgPrestamo" widgetVar="dlgPres" appendTo="@(body)" closable="false" resizable="false" dynamic="true" modal="true">
+                            <center>
+                                <h3>Registrar Préstamo a Personal</h3>
+                                <h:form id="formPrestamo">
+                                    <p:panelGrid>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Folio Personal: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText readonly="true"  value="#{oRegPres.selectedPersonal.folioPers}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Nombre: "/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputText readonly="true" 
+                                                             value="#{oRegPres.selectedPersonal.nombreCompleto}" size="58"/>
+                                                <br/>
+                                                <p:inputText value="#{oRegPres.prestamo.nombreOtro}"
+                                                             size="60" maxlength="60"
+                                                             style="visibility: #{oRegPres.esDeudorExterno}}">
+                                                    <p:ajax/></p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Fecha: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText readonly="true" value="#{oRegPres.prestamo.fechaRegistro}">
+                                                     <f:convertDateTime type="date" pattern="dd-MMMM-yyyy"/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Tipo: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oRegPres.prestamo.concep.cveConcepEgr}">
+                                                    <p:ajax/>
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="-1"/>
+                                                    <f:selectItems value="#{oRegPres.tipos}"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Monto: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText  value="#{oRegPres.prestamo.monto}" size="9"><p:ajax/></p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Situación: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oRegPres.prestamo.situacion}" style="width: 140px">
+                                                    <p:ajax/>
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="S"/>
+                                                    <f:selectItem itemLabel="Autorizado" itemValue="A"/>
+                                                    <f:selectItem itemLabel="Entregado" itemValue="E"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid><br/><br/>
+                                    <p:commandButton value="Registrar Préstamo" oncomplete="PF('dlgPres').hide()" >
+                                        <p:ajax update=":form:msg" listener="#{oRegPres.registraPrestamo()}"/>
+                                    </p:commandButton> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <p:commandButton value="Cancelar" oncomplete="PF('dlgPres').hide()"/><br/>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        <p:dataTable style="width: 900px" id="dtPers" 
+                                     value="#{oRegPres.listPersonal}" var="oPH" 
+                                     paginator="true" paginatorPosition="bottom" 
+                                     rows="6" emptyMessage="No hay registros" 
+                                     filteredValue="#{oRegPres.persFiltrado}"
+                                     selection="#{oRegPres.selectedPersonal}" 
+                                     rowKey="#{oPH.folioPers}">
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Folio Personal">
+                                <p:outputLabel value="#{oPH.folioPers}"/>
+                            </p:column>
+                            <p:column headerText="Nombre"
+                                    filterBy="#{oPH.nombre}"
+                                    filterMatchMode="startsWith">
+                                <p:outputLabel value="#{oPH.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Apellido Paterno"
+                                    filterBy="#{oPH.apellidoPaterno}"
+                                    filterMatchMode="startsWith">
+                                <p:outputLabel value="#{oPH.apellidoPaterno}"/>
+                            </p:column>
+                            <p:column headerText="Apellido Materno">
+                                <p:outputLabel value="#{oPH.apellidoMaterno}"/>
+                            </p:column>
+                            <p:column headerText="RFC">
+                                <p:outputLabel value="#{oPH.RFC}"/>
+                            </p:column>
+                            <p:column headerText="CURP">
+                                <p:outputLabel value="#{oPH.CURP}"/>
+                            </p:column>
+                            <p:column headerText="Puesto">
+                                <p:outputLabel value="#{oPH.puesto.descrip}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Registrar Préstamo" oncomplete="PF('dlgPres').show()"  icon="ui-icon-pencil">
+                                    <p:ajax listener="#{oRegPres.confPres()}" update=":form:dlgPrestamo"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                    </h:form>
+                </center>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

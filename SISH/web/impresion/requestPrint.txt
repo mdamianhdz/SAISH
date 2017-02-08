@@ -1,0 +1,262 @@
+"SERVICIO EXTERNO"
+
+{
+    "reimpresion": false,
+    "title": 1,
+    "fecha": "03-MAR-14", 
+    "hora": "10:34",
+    "folioope": 2000,
+    "paciente": {
+        "folio": 441,
+        "nombre": "Miguel Angel Damian Hernandez"
+    },
+    "empresa": "PARTICULARES",
+    "doctor": "Dr. Daniel Huerta Rivadeneyra",
+    "fmapago": "Efectivo",
+    "usuario": "Fernando Cabrera Brenis",
+    "servicios": [
+        {
+            "cantidad": 1,
+            "descripcion": "CONCEPTO DE INGRESO O EGRESO DE SANATORIO HUERTA USANDO UN TEXTO LARGO",
+            "precio": 1000
+        }
+    ],
+    "subtotal": 12.9,
+    "iva": 2.07,
+    "desc": 0,
+    "total": 15.01
+}
+
+2    |  CARGO A CUENTA                       |  "CARGOS"
+{
+    "reimpresion": false,
+    "title": 2,
+    "fecha": "03-MAR-14", 
+    "hora": "10:34",
+    "folioope": 2000,
+    "foliohosp": 18048,
+    "paciente": {
+        "nombre": "Miguel Angel Damian Hernandez"
+    },
+    "empresa": "METLIFE MEXICO SA DE CV",
+    "usuario": "Fernando Cabrera Brenis",
+    "servicios": [
+        {
+            "cantidad": 1,
+            "descripcion": "HONORARIOS CIRDHR PSH",
+            "precio": 10108
+        },
+        {
+            "cantidad": 1,
+            "descripcion": "HONORARIOS AYUDEXT PSH",
+            "precio": 2022
+        }
+    ],
+    "subtotal": 15162,
+    "iva": 0,
+    "total": 15162
+}
+
+3    |  PAGO Ó ANTICIPO A CUENTA             |  "PAGO A CUENTA DE HOSPITALIZACION"
+{
+    "reimpresion": false,
+    "title": 3,
+    "fecha": "03-MAR-14", 
+    "hora": "10:34",
+    "folioope": 2000,
+    "foliohosp": 18048,
+    "paciente": {
+        "nombre": "Miguel Angel Damian Hernandez"
+    },
+    "fmapago": "Efectivo",
+    "usuario": "Fernando Cabrera Brenis",
+    "servicios": [
+        {
+            "cantidad": 1,
+            "descripcion": "ANTICIPO",
+            "precio": 2500
+        }
+    ],
+    "subtotal": 2500,
+    "desc": 0,
+    "total": 2500
+}
+
+4    |  CIERRE DE CUENTA                     |  "CIERRE DE CUENTA"
+{
+    "reimpresion": false,
+    "title": 4,
+    "fecha": "03-MAR-14", 
+    "hora": "10:34",
+    "folioope": 2000,
+    "foliohosp": 18048,
+    "fingreso": "01-MAR-14",
+    "paciente": {
+        "nombre": "Miguel Angel Damian Hernandez"
+    },
+    "empresa": "METLIFE MEXICO SA DE CV",
+    "fmapago": "CREDITO",
+    "usuario": "Fernando Cabrera Brenis",
+    "servicios": [
+        {
+            "cantidad": 1,
+            "descripcion": "CIERRE DE CUENTA",
+            "precio": 100
+        }
+    ],
+    "subtotal": 100,
+    "desc": 0,
+    "total": 100,
+    "debe":100
+}
+
+5    |  PAGO DE RENTA                        |  "PAGO DE RENTA"
+{
+    "reimpresion": false,
+    "title": 5,
+    "fecha": "03-MAR-14", 
+    "hora": "10:34",
+    "folioope": 2000,
+    "doctor": "Dr. Miguel Francisco Armiella Perez",
+    "recfiscal": "",
+    "mes": "SEPTIEMBRE",
+    "anio": "2013",
+    "usuario": "Fernando Cabrera Brenis",
+    "servicios": [
+        {
+            "cantidad": 1,
+            "descripcion": "PAGO DE RENTA",
+            "precio": 1000
+        }
+    ]
+}
+
+6    |  CONTRATO DE PAQUETE                  |  "CONTRATO PAQUETE"
+{
+    "reimpresion": false,
+    "title": 6,
+    "fecha": "03-MAR-14", 
+    "hora": "10:34",
+    "folioope": 2000,
+    "paciente": {
+        "folio": 441,
+        "nombre": "Miguel Angel Damian Hernandez"
+    },
+    "usuario": "Fernando Cabrera Brenis",
+    "paquete": "PAQUETE PEDIATRICO",
+    "importe": 5000,
+    "debe": 5000
+}
+
+7    |  OTORGAR SERVICIO DE PAQUETE          |  "SERVICIO PAQUETE"
+{
+    "reimpresion": false,
+    "title": 7,
+    "fecha": "03-MAR-14", 
+    "hora": "10:34",
+    "folioope": 2000,
+    "foliocontrato": 3500,
+    "paciente": {
+        "nombre": "Miguel Angel Damian Hernandez"
+    },
+    "paquete": "PAQUETE PEDIATRICO",
+    "usuario": "Fernando Cabrera Brenis",
+    "servicios": [
+        {
+            "cantidad": 1,
+            "descripcion": "CONSULTA PAQUETE PEDIATRICO",
+            "precio": 0
+        }
+    ],
+    "subtotal": 0,
+    "iva": 0,
+    "total": 0
+}
+
+8    |  REGISTRO DE R/A(RECUPERACION/ADEUDO) |  "PAGO CREDITO"
+{
+    "reimpresion": false,
+    "title": 8,
+    "fecha": "03-MAR-14", 
+    "hora": "10:34",
+    "folioope": 2000,
+    "paciente": {
+        "nombre": "Miguel Angel Damian Hernandez"
+    },
+    "fmapago": "CREDITO",
+    "factura": "36538",
+    "usuario": "Fernando Cabrera Brenis",
+    "servicios": [
+        {
+            "cantidad": 1,
+            "descripcion": "PAGO",
+            "precio": 758.44
+        }
+    ],
+    "cuenta": 758.44,
+    "abonos": 0,
+    "pago": 758.44,
+    "desc": 0,
+    "debe": 0
+}
+9    |  PAGO Ó ANTICIPO A PAQUETE            |  "PAGO PAQUETES"
+{
+    "reimpresion": false,
+    "title": 9,
+    "fecha": "03-MAR-14", 
+    "hora": "10:34",
+    "folioope": 2000,
+    "paciente": {
+        "nombre": "Miguel Angel Damian Hernandez"
+    },
+    "paquete": "PAQUETE PEDIATRICO",
+    "fmapago": "EFECTIVO",
+    "usuario": "Fernando Cabrera Brenis",
+    "servicios": [
+        {
+            "cantidad": 1,
+            "descripcion": "PAGO",
+            "precio": 3000
+        }
+    ],
+    "cuenta": 9000,
+    "abonos": 0,
+    "pago": 3000,
+    "debe": 6000
+}
+
+10   |  PAGO DE PRESTAMO DE PERSONAL         |  "PAGO DE PRESTAMO"
+{
+    "reimpresion": false,
+    "title": 10,
+    "fecha": "03-MAR-14", 
+    "hora": "10:34",
+    "prestamo": 2000,
+    "folioegreso": 23450,
+    "foliopago": 190398,
+    "personal": "Miguel Angel Damian Hernandez",
+    "abono": 2000,
+    "resta": 0
+}
+
+11   |  PRESTAMO A PERSONAL                  |  "PRESTAMO A PERSONAL"
+{
+    "reimpresion": false,
+    "title": 11,
+    "fecha": "03-MAR-14", 
+    "hora": "10:34",
+    "folioope": 23450,
+    "personal": "Miguel Angel Damian Hernandez",
+    "usuario": "Fernando Cabrera Brenis",
+    "concepto": "PRESTAMO PERSONAL",
+    "importe": 300
+}
+
+12   |  VALE DE EFECTIVO                    |  "VALE DE EFECTIVO"
+{
+    "reimpresion": false,
+    "title": 11,
+    "fecha": "03-MAR-14", 
+    "hora": "10:34",
+    "folioope": 23450,
+}

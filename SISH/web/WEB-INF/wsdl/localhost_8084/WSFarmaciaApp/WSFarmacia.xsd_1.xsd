@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8'?><!-- Published by JAX-WS RI at http://jax-ws.dev.java.net. RI's version is JAX-WS RI 2.2-hudson-740-. --><xs:schema xmlns:tns="http://ws.aplic.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" targetNamespace="http://ws.aplic.org/">
+
+<xs:element name="buscarPorArea" type="tns:buscarPorArea" />
+
+<xs:element name="buscarPorAreaResponse" type="tns:buscarPorAreaResponse" />
+
+<xs:element name="buscarPorClave" type="tns:buscarPorClave" />
+
+<xs:element name="buscarPorClaveResponse" type="tns:buscarPorClaveResponse" />
+
+<xs:element name="buscarPorDescripcion" type="tns:buscarPorDescripcion" />
+
+<xs:element name="buscarPorDescripcionResponse" type="tns:buscarPorDescripcionResponse" />
+
+<xs:element name="buscarPorSustanciaActiva" type="tns:buscarPorSustanciaActiva" />
+
+<xs:element name="buscarPorSustanciaActivaResponse" type="tns:buscarPorSustanciaActivaResponse" />
+
+<xs:element name="cancelarRequisicion" type="tns:cancelarRequisicion" />
+
+<xs:element name="cancelarRequisicionResponse" type="tns:cancelarRequisicionResponse" />
+
+<xs:element name="modificarRequisicion" type="tns:modificarRequisicion" />
+
+<xs:element name="modificarRequisicionResponse" type="tns:modificarRequisicionResponse" />
+
+<xs:element name="registrarRequisicion" type="tns:registrarRequisicion" />
+
+<xs:element name="registrarRequisicionResponse" type="tns:registrarRequisicionResponse" />
+
+<xs:complexType name="buscarPorClave">
+<xs:sequence>
+<xs:element name="nCveMedicamento" type="xs:int" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="buscarPorClaveResponse">
+<xs:sequence>
+<xs:element name="return" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="buscarPorDescripcion">
+<xs:sequence>
+<xs:element name="sNomMedicamento" type="xs:string" minOccurs="0" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="buscarPorDescripcionResponse">
+<xs:sequence>
+<xs:element name="return" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="registrarRequisicion">
+<xs:sequence>
+<xs:element name="nFolioPaciente" type="xs:int" />
+<xs:element name="sNombre" type="xs:string" minOccurs="0" />
+<xs:element name="sMedicamentos" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="nHabitacion" type="xs:int" />
+<xs:element name="sEmpresa" type="xs:string" minOccurs="0" />
+<xs:element name="sCveCliente" type="xs:string" minOccurs="0" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="registrarRequisicionResponse">
+<xs:sequence>
+<xs:element name="return" type="xs:int" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modificarRequisicion">
+<xs:sequence>
+<xs:element name="nRequisicion" type="xs:int" />
+<xs:element name="sMedicamentos" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modificarRequisicionResponse">
+<xs:sequence>
+<xs:element name="return" type="xs:int" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="buscarPorSustanciaActiva">
+<xs:sequence>
+<xs:element name="sNomSustancia" type="xs:string" minOccurs="0" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="buscarPorSustanciaActivaResponse">
+<xs:sequence>
+<xs:element name="return" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="cancelarRequisicion">
+<xs:sequence>
+<xs:element name="nRequisicion" type="xs:int" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="cancelarRequisicionResponse">
+<xs:sequence>
+<xs:element name="return" type="xs:int" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="buscarPorArea">
+<xs:sequence>
+<xs:element name="nCveArea" type="xs:int" />
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="buscarPorAreaResponse">
+<xs:sequence>
+<xs:element name="return" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded" />
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Recibir pedido de farmacia</title>
+            <h:body> 
+                <center><h2>Recibir Pedido de Farmacia</h2></center>                               
+                    #{oRecibirFarmacia.limpiarDatos()}
+                <p:dialog closable="false" dynamic="true"  appendTo="@(body)" modal="true" id="dlgCompBusq" header="Busqueda de paciente"  widgetVar="dlgCompBusqVar" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >
+                    <h:form id="form">
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include>
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar"  action="#{oRecibirFarmacia.obtenerDatos()}" oncomplete="dlgCompBusqVar.hide()" update=":formulario:panel" icon="ui-icon-search"/>
+                        <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" action="#{oRecibirFarmacia.limpiarDatos()}" update=":formulario:panel"/>
+                    </h:form>
+                </p:dialog>
+                <br/>
+                <h:form>
+                    <center>
+                        <p:commandButton value="Seleccionar paciente" update=":dlgCompBusq" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+                    </center>
+                </h:form>
+                <br/>
+                <center>
+                    <h:form id="formulario">
+                        <p:growl id="grow1" sticky="true" />
+                        <p:panel rendered="#{(oRecibirFarmacia.validaUsuario() and oRecibirFarmacia.pacHospitalizado and oRecibirFarmacia.pedidosPendientes )}" id="panel" style="width:90%">
+                            <h:panelGrid columns="1">
+                                <p:column>
+                                    Folio Paciente
+                                    <p:inputText readonly="true" 
+                                                 value="#{oRecibirFarmacia.paciente.folioPac}" 
+                                                 required="true"/>
+                                    Nombre del paciente
+                                    <p:inputText readonly="true" 
+                                                 value="#{oRecibirFarmacia.paciente.nombreCompleto}" 
+                                                 required="true" />
+                                    Habitaci&oacute;n
+                                    <p:inputText readonly="true" 
+                                                 value="#{oRecibirFarmacia.episodioMedico.hab.hab}" 
+                                                 required="true" />
+                                </p:column>
+                            </h:panelGrid>
+                            <p:separator/>
+                            <p:panel id="panel2" style="width:90%" >
+                                <p:dataTable emptyMessage="Sin requisiciones pendientes" editMode="cell" editable="true"  id="tb2" value="#{oRecibirFarmacia.listSP}" rows="6" paginator="true" paginatorPosition="bottom" var="sp">
+                                    <f:facet name="header">
+                                        <h:outputText value="Material y Medicamentos pendientes"/>
+                                    </f:facet>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            Cantidad
+                                        </f:facet>
+                                        <h:outputText value="#{sp.cantidad}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            Unidad
+                                        </f:facet>
+                                        <h:outputText value="#{sp.uniMed.descrip}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Descripci&oacute;n
+                                        </f:facet>
+                                        <h:outputText value="#{(empty sp.medicamento.nomMedicamento) ? sp.materialCuracion.descripcion : sp.medicamento.nomMedicamento}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Recibido
+                                        </f:facet>
+                                        <p:selectBooleanCheckbox value="#{sp.recibido}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                            <br/>
+                            <p:commandButton update="grow1 tb2"  value="Guardar" actionListener="#{oRecibirFarmacia.actualizaSitFarmacia()}" />
+                            <p:commandButton update="grow1" action="recibirPedidoFarmacia.xhtml?faces-redirect=true"  value="Regresar" /> 
+                        </p:panel>
+                    </h:form>
+                </center>
+            </h:body>
+        </ui:define>
+    </ui:composition>
+</html>

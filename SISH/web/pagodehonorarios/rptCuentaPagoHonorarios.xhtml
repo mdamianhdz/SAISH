@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+<ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+<ui:define name="cuerpo">
+<title>Reporte de cuenta de pago de honorarios</title>
+<h:body>
+    
+      <h:form id="form">  
+          #{rptCuentaPgHon.limpiar()}
+       <p:growl id="msgs" showDetail="true"/>
+       <p:panel header="Reporte de cuenta de pago de honorarios" style="margin-bottom:10px;">  
+           <p:outputPanel id="customPanel" style="margin-bottom:10px">
+                <p:selectOneRadio id="customRadio" value="#{rptCuentaPgHon.opcion}" layout="custom">
+                    <f:selectItem itemLabel="Todos" itemValue="0" />
+                    <f:selectItem itemLabel="Por paciente" itemValue="1" />
+                    <f:selectItem itemLabel="Por hospital" itemValue="2" />
+                    <f:selectItem itemLabel="Por consulta externa" itemValue="3" />
+                </p:selectOneRadio>
+ 
+                <h:panelGrid columns="3" cellpadding="5">
+                    <p:radioButton id="opt1" for="customRadio" itemIndex="0" />
+                    <h:outputLabel for="opt1" value="Todos" />
+                    <br/>
+ 
+                    <p:radioButton id="opt2" for="customRadio" itemIndex="1" />
+                    <h:outputLabel for="opt2" value="Por paciente" />
+                    <p:selectOneMenu id="txtFolioM2" value="#{rptCuentaPgHon.nomPaciente}" >  
+                        <f:selectItem itemLabel="Pacientes" itemValue="" />  
+                        <f:selectItems value="#{rptCuentaPgHon.nombrePaciente}" />  
+                    </p:selectOneMenu>
+                    
+                    <p:radioButton id="opt3" for="customRadio" itemIndex="2" />
+                    <h:outputLabel for="opt3" value="Por hospital" />
+                    <br/>
+ 
+                    <p:radioButton id="opt4" for="customRadio" itemIndex="3" />
+                    <h:outputLabel for="opt4" value="Por consulta externa" />
+                    <br/>
+ 
+                    <p:commandButton value="Buscar" actionListener="#{rptCuentaPgHon.buscarDatos()}" update=":form:msgs :form:rptVista" />
+                </h:panelGrid>
+            </p:outputPanel>
+       </p:panel>
+      
+               <p:panel id="rptVista">
+                   <p:panel>
+                    <center>
+                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                    </center>
+                    </p:panel>
+                    <div align="center"><h:outputText value="REPORTE DE PAGO DE HONORARIOS" style="font-weight: bold;"/></div>
+                    <p:separator />                   
+                    <br/>
+                    <p:dataTable id="honorariosDT2"  var="disHn" value="#{rptCuentaPgHon.distribucion}" >
+                        <p:columnGroup type="header">
+                            <p:row>
+                                <p:column headerText="Fecha de registro" />
+                                <p:column headerText="Personal" />
+                                <p:column headerText="Especialidad"/>
+                                <p:column headerText="Situacion"/>
+                                <p:column headerText="Monto total a pagar"/>
+                                <p:column headerText="Servicios"/>
+                            </p:row>
+                        </p:columnGroup>
+                        <p:column>
+                            <h:outputText value="#{disHn.pagoHonorarios.registro}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputText value="#{disHn.pagoHonorarios.personalHospitalario.nombreCompleto}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputText value="#{disHn.pagoHonorarios.personalHospitalario.puesto.cve}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputText value="#{disHn.pagoHonorarios.situacion}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputText value="#{disHn.montoTotalAPagar}"/>
+                        </p:column>
+                        <p:column>
+                                <p:dataTable var="hn" value="#{disHn.detalles}">
+                                    <p:column headerText="Paciente">
+                                        <h:outputText value="#{hn.servicioPrestado.paciente.nombreCompleto}"/>
+                                    </p:column>
+                                    <p:column headerText="Concepto">
+                                        <h:outputText value="#{hn.servicioPrestado.concepPrestado.descripConcep}"/>
+                                    </p:column>
+                                    <p:column headerText="Folio">
+                                        <h:outputText value="#{hn.servicioPrestado.idFolio}"/>
+                                    </p:column>
+                                    <p:column headerText="Fecha">
+                                        <h:outputText value="#{hn.servicioPrestado.realizado}"/>
+                                    </p:column>
+                                    <p:column headerText="Situacion">
+                                        <h:outputText value="#{hn.servicioPrestado.situacion}"/>
+                                    </p:column>
+                                    <p:column headerText="Monto cobrado">
+                                        <h:outputText value="#{hn.servicioPrestado.costoCobrado}"/>
+                                    </p:column>
+                                    <p:column headerText="Monto honorarios">
+                                        <h:outputText value="#{hn.autorizado}"/>
+                                    </p:column>
+                                </p:dataTable>
+                        </p:column>
+                    </p:dataTable>
+               </p:panel>
+               <br/>
+               <center>
+                   <h:panelGrid columns="2">
+                       <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" >  
+                            <p:printer target="rptVista" />  
+                        </p:commandButton>
+                   </h:panelGrid>
+               </center>
+        
+      </h:form>     
+</h:body>
+</ui:define> 
+</ui:composition> 
+</html>

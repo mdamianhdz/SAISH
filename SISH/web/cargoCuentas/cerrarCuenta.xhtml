@@ -1,0 +1,340 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+<ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+<ui:define name="cuerpo">
+    <title>Cerrar cuenta</title>
+<h:body>
+    <h:form id="form">  
+        #{oCerrarCta.limpiarAgenda()}
+        
+        <p:growl id="msgsCC" showDetail="true"/>
+        <p:panel header="Cerrar cuenta" style="margin-bottom:10px; width:98%;">  
+               
+        <h:panelGrid id="agenda" columns="4" width="60%" >
+            <h:outputText value="Fecha:  " />
+            <h:outputText value="#{oCerrarCta.fecha}" style="font-weight:bold" >
+                <f:convertDateTime pattern="dd/MM/yyyy" />
+            </h:outputText>
+                   
+            <h:outputText value="Paciente: " />
+            <p:selectOneMenu id="txtFolioM1" value="#{oCerrarCta.nombrePaciente}">  
+                <f:selectItem itemLabel="Pacientes con cuenta" itemValue="" />  
+                <f:selectItems value="#{oCerrarCta.nomPacientes}" />  
+                <p:ajax update="datos" listener="#{oCerrarCta.datosEpisodio()}" />  
+            </p:selectOneMenu>
+        </h:panelGrid>    
+               
+        <h:panelGrid id="datos" columns="1">
+            <h:outputText value="DATOS PACIENTE" style="font-weight:bold"/>
+            <h:panelGrid id="datosPac" columns="6">
+                <h:outputText value="Folio: "/>
+                <p:inputText value="#{oCerrarCta.paciente.folioPac}" size="30" readonly="true"/>
+                <h:outputText value="RFC: "/>
+                <p:inputText value="#{oCerrarCta.paciente.RFC}" size="30" readonly="true"/>
+                <h:outputText value="CURP: "/>
+                <p:inputText value="#{oCerrarCta.paciente.CURP}" size="30" readonly="true"/>
+                <h:outputText value="Fecha de nacimiento: "/>
+                <p:inputText value="#{oCerrarCta.paciente.nac}" size="30" readonly="true">
+                    <f:convertDateTime pattern="dd/MM/yyyy" timeZone="EST"/>
+                </p:inputText>
+                <h:outputText value="Sexo: "/>
+                <p:inputText value="#{oCerrarCta.paciente.genero}" size="30" readonly="true"/>
+                <h:outputText value="Edad: "/>
+                <p:inputText value="#{oPreCCta.paciente.edad}" size="30" readonly="true"/>
+                <h:outputText value="Domicilio: "/>
+                <p:inputText value="#{oCerrarCta.paciente.calleYNum}" size="30" readonly="true"/>
+                <h:outputText value="Colonia: "/>
+                <p:inputText value="#{oCerrarCta.paciente.colonia}" size="30" readonly="true"/>
+                <h:outputText value="Ciudad: "/>
+                <p:inputText value="#{oPreCCta.paciente.ciudadPoblacion}" size="30" readonly="true"/>
+                <h:outputText value="Teléfono: "/>
+                <p:inputText value="#{oCerrarCta.paciente.telCasa}" size="30" readonly="true"/>
+                <h:outputText value="Celular: "/>
+                <p:inputText value="#{oCerrarCta.paciente.telCelular}" size="30" readonly="true"/>
+            </h:panelGrid>
+
+            <br/>
+            <h:outputText value="DATOS DE HOSPITALIZACION" style="font-weight: bold"/>
+            <h:panelGrid id="datosHops" columns="6" >
+                <h:outputText value="Fecha  de  ingreso : "/>
+                <p:inputText value="#{oCerrarCta.episodioMedico.inicio}"  readonly="true">
+                    <f:convertDateTime pattern="dd/MM/yyyy" timeZone="EST"/>
+                </p:inputText>
+                <h:outputText value="Habitación: "/>
+                <p:inputText value="#{oCerrarCta.episodioMedico.hab.hab}" readonly="true"/>
+                <h:outputText value="Diagnóstico Inicial: "/>
+                <p:inputText value="#{oCerrarCta.episodioMedico.dxIngreso.descrip}" readonly="true"/>
+                <h:outputText value="Diagnóstico Final*: "/>
+                <p:autoComplete size="50" scrollHeight="300" minQueryLength="4" 
+                    itemtipMyPosition="left center" itemtipAtPosition="right center"  
+                    label="Diagnóstico de egreso" required="true" id="txtAutoDx"
+                    widgetVar="dxEg" 
+                    value="#{oCerrarCta.episodioMedico.dxEgreso.cve}" 
+                    completeMethod="#{oListaDiag.obtenerDiagnostico}" 
+                    var="oDiag1" itemLabel="#{oDiag1.descrip2}" 
+                    itemValue="#{oDiag1.cve}" >
+                    <p:ajax/>
+                </p:autoComplete>
+                <h:outputText value=" "/>
+                <h:outputText value=" "/>
+                <h:outputText value=" "/>
+                <h:outputText value=" "/>
+            </h:panelGrid>
+
+            <br/><br/>
+            <h:outputText value="SERVICIOS" style="font-weight: bold"/>
+            <p:dataTable  id="tb2" value="#{oCerrarCta.serviciosNoPagados}" rows="7" editable="true" paginator="true" paginatorPosition="bottom" var="oSPr"
+                          rowKey="#{oSPr.idFolio}" selection="#{oCerrarCta.selectedServiciosParaDesc}" >
+                <p:ajax event="rowEdit" listener="#{oCerrarCta.onRowEdit}" update=":form:msgsCC :form:tb2 :form:total" />
+                <p:ajax event="rowSelectCheckbox"   listener="#{oCerrarCta.noSeleccionado()}" />
+                <p:ajax event="rowUnselectCheckbox" listener="#{oCerrarCta.noSeleccionado()}" />                     
+                <p:column selectionMode="multiple" rendered="#{!oCerrarCta.disable}" />
+                <p:column headerText="Fecha de registro">
+                    <h:outputText value="#{oSPr.registro}" >
+                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Fecha de realización">
+                    <h:outputText value="#{oSPr.realizado}" >
+                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Concepto">
+                    <h:outputText value="#{oSPr.concepPrestado.descripConcep}" />
+                </p:column>
+                <p:column headerText="Costo original">
+                    <h:outputText value="#{oSPr.costoOriginal}" style="float:right;">
+                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                    </h:outputText>
+                </p:column>
+                <p:column>
+                    <f:facet name="header"> 
+                        Costo cobrado
+                    </f:facet>
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{oSPr.costoCobrado}" style="float:right;">
+                                <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                            </h:outputText>
+                        </f:facet>  
+                        <f:facet name="input">  
+                            <p:inputText value="#{oSPr.costoCobrado}" style="width:100%"/>
+                            <h:outputText value="Contraseña para autorizar cambios:" />
+                            <p:password value="#{oCerrarCta.utilidad.valor}" required="true" label="Contraseña"/>
+                        </f:facet>  
+                    </p:cellEditor> 
+                </p:column>
+                <p:column style="width:6%">  
+                            <p:rowEditor rendered="#{!oCerrarCta.disable}" />
+                </p:column> 
+            </p:dataTable> 
+            <h:panelGrid id="checkBoxDesc" columns="2" rendered="#{!oCerrarCta.disable}">
+                <p:selectBooleanCheckbox id="checkboxId" value="#{oCerrarCta.disableDesc}" >
+                    <p:ajax event="change" update="panel123" />
+                </p:selectBooleanCheckbox>
+                <h:outputText value="Aplicar descuento" />
+            </h:panelGrid>
+            <p:panel id="panel123" >
+                <h:panelGrid id="panelId" rendered="#{oCerrarCta.disableDesc}">
+                    <h:outputText value="Aplicar descuento" style="font-weight: bold" />                
+                    <h:panelGrid columns="2" >
+                        <p:outputLabel for="opciones" value="Seleccionar:"  style="font-weight: bold"/>
+                        <p:selectOneRadio id="opciones" value="#{oCerrarCta.disableTipo}">
+                            <f:selectItem itemLabel="Porcentaje" itemValue="true" />
+                            <f:selectItem itemLabel="Pesos" itemValue="false" />
+                            <p:ajax event="change" update=":form:datosADesc"/>
+                        </p:selectOneRadio>
+                    </h:panelGrid>                    
+                    <h:panelGrid id="datosADesc" >
+                        <h:panelGrid id="panelIdPorcentaje" rendered="#{oCerrarCta.disableTipo}" columns="7" style="width: 100%">
+                            <h:outputText value="Porcentaje (%): "/>
+                            <p:inputText value="#{oCerrarCta.descPorc}" />
+                            <h:outputText value="Observaciones para el descuento: "/>
+                            <p:inputText value="#{oCerrarCta.obsPrecio}"/>
+                            <h:outputText value="Contraseña para autorizar: " />
+                            <p:password value="#{oCerrarCta.utilidad.valor}" required="true" label="Contraseña"/>
+                            <p:commandButton actionListener="#{oCerrarCta.aplicaDescuentoPorc()}" value="Aplica Descuento" process="@parent" update=":form:msgsCC :form:tb2" rendered="#{!oCerrarCta.disable}"  />                        
+                        </h:panelGrid>                      
+                        <h:panelGrid id="panelIdPesos" rendered="#{!oCerrarCta.disableTipo}" columns="7" style="width: 100%" >
+                            <h:outputText value=" Pesos: "/>
+                            <p:inputText value="#{oCerrarCta.descPesos}" />
+                            <h:outputText value=" Observaciones para el descuento: "/>
+                            <p:inputText value="#{oCerrarCta.obsPrecio}"/> 
+                            <h:outputText value=" Contraseña para autorizar: " />
+                            <p:password value="#{oCerrarCta.utilidad.valor}" required="true" label="Contraseña"/>
+                            <p:commandButton actionListener="#{oCerrarCta.aplicaDescuentoPesos()}" value="Aplica Descuento" process="@parent" update=":form:msgsCC :form:tb2" rendered="#{!oCerrarCta.disable}"  />
+                        </h:panelGrid> 
+                    </h:panelGrid>                
+              </h:panelGrid>
+            </p:panel>
+            <br/>
+            <h:outputText value="SERVICIOS DEL PAQUETE" style="font-weight: bold"/>
+            <p:dataTable id="dtPaquete" value="#{oCerrarCta.serviciosPaquete}" var="oPaq">
+                <p:column headerText="Fecha de registro">
+                    <h:outputText value="#{oPaq.registro}">
+                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Fecha de realización">
+                    <h:outputText value="#{oPaq.realizado}">
+                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Concepto">
+                    <h:outputText value="#{oPaq.concepPrestado.descripConcep}" />
+                </p:column>
+                <p:column headerText="Costo original">
+                    <h:outputText value="#{oPaq.costoOriginal}" style="float:right;">
+                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Costo cobrado">
+                    <h:outputText value="#{oPaq.costoCobrado}" style="float:right;">
+                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                    </h:outputText>
+                </p:column>
+            </p:dataTable>
+            <br/>
+            <br/>
+            <h:outputText value="PAGOS EXTERNOS" style="font-weight: bold"/>
+            <p:dataTable id="dtPagosExternos" value="#{oCerrarCta.serviciosPagosExterno}" var="oPext">
+                <p:column headerText="Fecha de registro">
+                    <h:outputText value="#{oPext.registro}">
+                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Fecha de realización">
+                    <h:outputText value="#{oPext.realizado}">
+                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Concepto">
+                    <h:outputText value="#{oPext.concepPrestado.descripConcep}" />
+                </p:column>
+                <p:column headerText="Costo original">
+                    <h:outputText value="#{oPext.costoOriginal}" style="float:right;">
+                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Costo cobrado">
+                    <h:outputText value="#{oPext.costoCobrado}" style="float:right;">
+                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                    </h:outputText>
+                </p:column>
+            </p:dataTable>
+            <br/>
+            <h:outputText value="ANTICIPOS" style="font-weight: bold"/>
+            <p:dataTable id="dtAnticipos" value="#{oCerrarCta.serviciosAnticipo}" var="oPant">
+                <p:column headerText="Fecha de registro">
+                    <h:outputText value="#{oPant.registro}">
+                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Fecha de realización">
+                    <h:outputText value="#{oPant.realizado}">
+                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Concepto">
+                    <h:outputText value="#{oPant.concepPrestado.descripConcep}" />
+                </p:column>
+                <p:column headerText="Costo original">
+                    <h:outputText value="#{oPant.costoOriginal}" style="float:right;" >
+                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Costo cobrado">
+                    <h:outputText value="#{oPant.costoCobrado}" style="float:right;" >
+                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                    </h:outputText>
+                </p:column>
+            </p:dataTable>
+            
+            <h:form id="form2">
+                <h:panelGrid id="datosAdicionales" columns="2">
+                    <h:outputText value="Tipo de alta: " />   
+                    <p:selectOneMenu value="#{oCerrarCta.episodioMedico.tipoAlta}" 
+                                     disabled="#{oCerrarCta.disable}" required="true">  
+                        <f:selectItem itemLabel="Tipo de alta" itemValue="-1" noSelectionOption="true"/>  
+                        <f:selectItem itemLabel="Alta médica " itemValue="0" />  
+                        <f:selectItem itemLabel="Alta voluntaria" itemValue="1" />  
+                        <f:selectItem itemLabel="Alta por traslado" itemValue="2" />  
+                        <f:selectItem itemLabel="Defunción" itemValue="3" />  
+                        <p:ajax update=":form:form2:" />
+                    </p:selectOneMenu>
+                </h:panelGrid>
+                <p:panel id="panelSalida">
+                    <h:panelGrid id="panelAltaTraslado" rendered="#{oCerrarCta.episodioMedico.tipoAlta==2}">
+                        <h:outputText value="ALTA POR TRASLADO" style="font-weight: bold" />
+                        <br/>
+                        <h:panelGrid columns="4">
+                            <h:outputText value="Razón: "/>
+                            <p:inputText value="#{oCerrarCta.episodioMedico.razonAltaVoluntTrasl}">
+                                <p:ajax/>
+                            </p:inputText>
+                            <h:outputText value="Destino: "/>
+                            <p:inputText value="#{oCerrarCta.episodioMedico.destino}">
+                                <p:ajax/>
+                            </p:inputText>
+                        </h:panelGrid>
+                    </h:panelGrid>
+                    <h:panelGrid id="panelAltaVoluntaria" 
+                                 rendered="#{oCerrarCta.episodioMedico.tipoAlta==1}">
+                        <h:outputText value="ALTA VOLUNTARIA" style="font-weight: bold" />
+                        <br/>
+                        <h:panelGrid columns="2">
+                            <h:outputText value="Razón: "/>
+                            <p:inputText value="#{oCerrarCta.episodioMedico.razonAltaVoluntTrasl}">
+                                <p:ajax/>
+                            </p:inputText>
+                        </h:panelGrid>
+                    </h:panelGrid>
+                </p:panel>
+                <h:panelGrid id="datosAdicionales2" columns="2">
+                    <p:selectBooleanCheckbox value="#{oCerrarCta.episodioMedico.reqAtnPostQx}" 
+                                             disabled="#{oCerrarCta.disable}"/>
+                    <h:outputText value="Atención posterior a la hospitalización." />
+                </h:panelGrid>
+            </h:form>
+            <h:panelGrid id="total" columns="2" style="float:right;" title="CERRAR CUENTA" >
+                <h:outputText value=" CERRAR CUENTA" style="font-weight: bold;"/><br/>
+                <h:outputText value="Subtotal:  " />
+                <h:outputText value="#{oCerrarCta.subtotal}"  style="float:right;">
+                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                </h:outputText>
+                <h:outputText value="I.V.A.:  " />
+                <h:outputText value="#{oCerrarCta.iva}"  style="float:right;">
+                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                </h:outputText>
+                <h:outputText value="Total:  " />
+                <h:outputText value="#{oCerrarCta.totalCuenta}"  style="float:right;font-weight: bold;">
+                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                </h:outputText>
+                <h:outputText value="Pagos:  "/>
+                <h:outputText value="#{oCerrarCta.totalPagos}"  style="float:right;font-weight: bold;">
+                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                </h:outputText>
+                <h:outputText value="Total pendiente de pago:  "/>
+                <h:outputText value="#{oCerrarCta.totalPendientePago}"  style="float:right;font-weight: bold;">
+                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                </h:outputText>
+                <p:panel id="pBoton" >
+                    <p:commandButton id="btn" validateClient="true"
+                                     actionListener="#{oCerrarCta.cerrarCuenta()}" 
+                                     value="Cerrar cuenta" process="@parent" 
+                                     update=":form:msgsCC :form:pBoton :form:tb2 :form:dtPagosExternos :form:checkBoxDesc :form:panel123 :form:total" 
+                                     disabled="#{oCerrarCta.disable}" /> 
+                </p:panel>
+            </h:panelGrid>
+          </h:panelGrid>
+        </p:panel>  
+  </h:form>     
+  </h:body>
+</ui:define> 
+</ui:composition> 
+</html>

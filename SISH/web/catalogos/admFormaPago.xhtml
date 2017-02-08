@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Forma de Pago</title>
+                <center>
+                    <h2>Administraci&oacute;n de forma de pago</h2>
+                        <p:dialog id="dlgEdita" widgetVar="dlgEdicion" 
+                                  position="center" closable="false" 
+                                  dynamic="true" resizable="false"
+                                  appendTo="@(body)" modal="true">
+                            <center>
+                                <h3>Administraci&oacute;n de Forma de Pago</h3>
+                                <h:form id="frm">
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Clave:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtClave" 
+                                                    value="#{oFrmPago.current.cveFrmPago}" 
+                                                    disabled="#{oFrmPago.disDatos}" 
+                                                    size="6" required="true" maxlength="5">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Descripci&oacute;n:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtDescrip" 
+                                                   value="#{oFrmPago.current.descripcion}" 
+                                                   disabled="#{oFrmPago.disDatosDescrip}" 
+                                                   required="true">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                    <br/><br/>
+                                    <p:commandButton value="#{oFrmPago.nomButton}"
+                                                     actionListener="#{oFrmPago.guarda2}"
+                       update=":formulario:msg :formulario:dtFormaPago">
+                                    </p:commandButton>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <p:commandButton value="Regresar" 
+                                       oncomplete="PF('dlgEdicion').hide()"/>
+                               </h:form>
+                            </center>
+                        </p:dialog>
+                    <h:form id="formulario"> 
+                        <p:growl id="msg" sticky="true" showDetail="true"/> 
+                        <p:dataTable id="dtFormaPago" value="#{oFrmPago.lista}" 
+                                     rows="5" editable="true" paginator="true" 
+                                     paginatorPosition="bottom" var="oFrmP"
+                                     style="width: 900px" 
+                                     selection="#{oFrmPago.selected}" 
+                                     rowKey="#{oFrmP.descripcion}">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single" width="25"/>
+                            <p:column headerText="Clave" width="25">
+                                <h:outputText value="#{oFrmP.cveFrmPago}" />
+                            </p:column>
+                            <p:column headerText="Descripci&oacute;n:" >
+                                <h:outputText value="#{oFrmP.descripcion}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Modificar forma de pago"  
+                                                 icon="ui-icon-pencil" >
+                                    <p:ajax update=":formulario:msg :dlgEdita" 
+                                            listener="#{oFrmPago.confModificar}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Eliminar forma de pago"  
+                                                 icon="ui-icon-pencil" >
+                                    <p:ajax update=":formulario:msg :dlgEdita" 
+                                            listener="#{oFrmPago.confEliminar}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Agregar forma de pago" 
+                                                 icon="ui-icon-pencil" 
+                                                 oncomplete="dlgEdicion.show()">
+                                    <p:ajax update=":formulario:msg :dlgEdita"
+                                            listener="#{oFrmPago.confInsertar}"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable> 
+                    </h:form>
+                </center> 
+        </ui:define> 
+    </ui:composition> 
+</html>

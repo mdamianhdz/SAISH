@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Cuentas incobrables</title>
+            <h:body>
+                <br/>
+                <h:form id="form1">
+                    #{oCuentIncrbl.limpia()}    
+                    <p:growl id="grow1" sticky="true" />    
+                    <center>
+                        <h2>Cuentas incobrables</h2>    
+                        <p:panel  id="panelDialog" style=" width: 70%; text-align: center" >  
+                            <center>
+                                Periodo: <br/>
+                                <p:panelGrid columns="2">                              
+                                    Fecha de inicio: <p:calendar locale="es" label="Fecha de inicio" value="#{oCuentIncrbl.fechaInicio}" required="true"  showButtonPanel="true" navigator="true"  /> Fecha de finalización: <p:calendar locale="es" value="#{oCuentIncrbl.fechaFinal}" label="Fecha fin" required="true"  showButtonPanel="true" navigator="true" />   
+                                </p:panelGrid>
+                                <p:panelGrid id="pg1" columns="2">  
+                                    <h:outputText value="Busqueda por:" />
+                                    <p:selectOneRadio required="true" rendered="true" label="Busqueda por" value="#{oCuentIncrbl.tipo}">  
+                                        <f:selectItem  itemLabel="Lista de empresas" itemValue="1" />
+                                        <f:selectItem itemLabel="Folio del paciente" itemValue="2" />                                  
+                                        <p:ajax listener="#{oCuentIncrbl.validaBusqueda()}" update="pg1"/>
+                                    </p:selectOneRadio>
+                                    <h:outputText id="textempresa" rendered="#{oCuentIncrbl.isEmpresa}" value="Empresa:" /> <p:selectOneMenu id="listaempre" rendered="#{oCuentIncrbl.isEmpresa}" converter="#{oCuentIncrbl}" required="true"  label="Empresa" value="#{oCuentIncrbl.compañia}">  
+                                        <f:selectItem  itemLabel="Selecciona una empresa" itemValue="" />  
+                                        <f:selectItems value="#{oCuentIncrbl.empresas}"  var="oEmpresa" 
+                                                       itemLabel="#{oEmpresa.nombreCorto}" 
+                                                       itemValue="#{oEmpresa}"/> 
+                                    </p:selectOneMenu>
+                                    <h:outputText id="textid" rendered="#{oCuentIncrbl.id}" value="Folio del paciente" /><p:inputText id="inputid" rendered="#{oCuentIncrbl.id}" required="true" value="#{oCuentIncrbl.idPers}" />
+
+                                </p:panelGrid> 
+
+                                <p:separator />
+
+                                <p:commandButton actionListener="#{oCuentIncrbl.realizaBusquedaCuentas()}" value="Buscar" icon="ui-icon-search" update="grow1 panel2"/>  
+                            </center>
+                        </p:panel>
+                    </center>
+
+
+                    <br/>
+                    <p:panel  id="panel2" style=" border: 0" >                 
+                        <p:dataTable selection="#{oCuentIncrbl.cuentasSeleccionadas}" rowKey="#{oCIE.numContraRecibo}"  id="tb3" value="#{oCuentIncrbl.cuentas}" rows="6" paginator="true" paginatorPosition="bottom" var="oCIE">
+                            <f:facet name="header">
+                                <h:outputText value="Reporte"/>
+                            </f:facet>
+
+                            <p:column style=" width: 5%" selectionMode="multiple">
+                                <f:facet name="header"> 
+                                    Cuenta incobrable
+                                </f:facet>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Empresa
+                                </f:facet>  
+                                <h:outputText value="#{oCIE.compania}" /> 
+                            </p:column  >
+                            <p:column  >
+                                <f:facet name="header"> 
+                                    Fecha de factura
+                                </f:facet>  
+                                <h:outputText value="#{oCIE.factura.expedicion}">
+                                    <f:convertDateTime type="date" pattern="dd-MMMM-yyyy HH:mm" />
+                                </h:outputText>    
+                            </p:column>
+                            <p:column  >
+                                <f:facet name="header"> 
+                                    Folio
+                                </f:facet>  
+                                <h:outputText value="#{oCIE.factura.folio}" /> 
+                            </p:column>                                                     
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Razon social
+                                </f:facet>  
+                                <h:outputText value="#{oCIE.factura.rfcReceptor}" /> 
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Paciente
+                                </f:facet>  
+                                <h:outputText value="#{oCIE.factura.paciente.nombreCompleto}" /> 
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Importe
+                                </f:facet>  
+                                <h:outputText value="#{oCIE.factura.importeTotal}" > 
+                                    <f:convertNumber pattern="#.##"/>
+                                </h:outputText> 
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    ID de contra recibo
+                                </f:facet>  
+                                <h:outputText value="#{oCIE.numContraRecibo}" />  
+                            </p:column>
+                            <p:column  >
+                                <f:facet name="header"> 
+                                    Fecha de contra recibo
+                                </f:facet>  
+                                <h:outputText value="#{oCIE.fecRecepcion}">
+                                    <f:convertDateTime type="date" pattern="dd-MMMM-yyyy HH:mm" />
+                                </h:outputText>    
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Fecha esperada de pago
+                                </f:facet>  
+                                <h:outputText value="#{oCIE.fecProbPago}">
+                                    <f:convertDateTime type="date" pattern="dd-MMMM-yyyy HH:mm" />
+                                </h:outputText>    
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Observaciones
+                                </f:facet>  
+                                <h:outputText value="#{oCIE.observaciones}" /> 
+                            </p:column>
+                        </p:dataTable>
+
+
+
+                    </p:panel>     
+                    <center>
+                        <p:commandButton value="Marcar como incobrables" icon="ui-icon-circle-check" actionListener="#{oCuentIncrbl.realizarCuentasIncobrables()}" update="grow1 tb3"/>
+                        <p:commandButton value="Refrescar" icon="ui-icon-refresh" action="CuentasIncobrables.xhtml?faces-redirect=true" />
+                    </center>
+
+                </h:form>
+
+                <br/>
+                <br/><br/>
+            </h:body>
+        </ui:define> 
+    </ui:composition>    
+</html>

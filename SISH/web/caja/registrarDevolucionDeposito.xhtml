@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Registrar Devolución de Depósito</title>
+            <h:body>
+                #{oRegDevDep.limpiaPagina()}
+                <center><h3> Registrar Devolución de Depósito</h3></center>
+                <p:growl id="msgs2" showDetail="true"/>
+
+                <p:dialog closable="false" dynamic="true" appendTo="@(body)" modal="true" id="dlgCompBusq" header="Búsqueda de paciente" 
+                          widgetVar="dlgCompBusqVar" style="font-size: 12px" styleClass="text-align: center;" position="center" showEffect="clip" hideEffect="fold">
+                    <h:form id="form">
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include>
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar" update=":formp:panelP " actionListener="#{oRegDevDep.buscaDepositosPaciente()}" oncomplete="dlgCompBusqVar.hide()" icon="ui-icon-search"/>
+                        <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" />
+                    </h:form>
+                </p:dialog>
+                <br/>
+                <h:form>
+                    <center>
+                        <p:commandButton value="Seleccionar paciente" update=":dlgCompBusq :formp:panelP  " oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search"/>
+                    </center>
+                </h:form>
+                <h:form id="formp">
+                    <p:panel header="Registrar Devolución de Depósito" id="panelP" visible="#{oRegDevDep.validaUsuario()}">
+                        Paciente: <p:outputLabel rendered="#{oRegDevDep.validaUsuario()}" value="#{oRegDevDep.paciente.nombreCompleto}"/> 
+                        <p:dataTable selection="#{oRegDevDep.selectedServ}"  value="#{oRegDevDep.listDP}" var="oDD" rowKey="#{oDD.idFolio}" id="dataTableDev" style="margin-bottom: 0px" 
+                                     paginator="true" paginatorPosition="bottom" rows="6" emptyMessage="No se encontraron servicios"> 
+                            <f:facet name="header">
+                                Dep&oacute;sitos por Concepto
+                            </f:facet>
+                            <p:column selectionMode="single" style="width: 16px; text-align: center"/>
+                            <p:column headerText="Folio" style="width: 16px; text-align: center">
+                                <h:outputText value="#{oDD.idFolio}"/>
+                            </p:column>
+                            <p:column headerText="Folio Paciente" style="width: 16px; text-align: center">
+                                <h:outputText value="#{oDD.paciente.folioPac}"/>
+                            </p:column>
+                            <p:column headerText="Costo" style="width: 16px; text-align: center">
+                                <h:outputText value="#{oDD.costoOriginal}"/>
+                            </p:column>
+                            <p:column headerText="Concepto" style="width: 16px; text-align: center">
+                                <h:outputText value="#{oDD.concepPrestado.descripConcep}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton process="dataTableDev" label="Seleccionar" update=":formp:inputMonto" action="#{oRegDevDep.calculaMonto()}" value="Seleccionar" icon="ui-icon-check"></p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                        <center>
+                            <h:panelGrid  columns="2">
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Monto Devolución:  "/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel id="inputMonto" value="#{oRegDevDep.montoDev}">
+                                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:row>
+                                <br></br>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Total a Devolver:  "/>
+                                    </p:column>    
+                                    <p:column>
+                                        <p:inputText id="monto" value="#{oRegDevDep.monto}">
+                                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row>
+                            </h:panelGrid>
+
+                        </center>
+                        <center>    
+                            <h:panelGrid>
+                                <p:commandButton rendered="#{oRegDevDep.validaUsuario()}" value="Guardar"  type="button">
+                                    <p:ajax listener="#{oRegDevDep.validaDevolucion()}" process="panelP" update=":dialogs:display"/>
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </center>
+                    </p:panel> 
+
+                </h:form> 
+                <h:form>
+                    <p:dialog id="dialogN" resizable="false" widgetVar="diaN" modal="true" appendTo="@(body)">
+                        <p:outputLabel value="El monto debe ser mayor o igual a 0" />
+                    </p:dialog>
+                </h:form>
+                <h:form>
+                    <p:dialog id="dialogD" resizable="false" header="El monto a devolver es menor al monto original" widgetVar="diaD" modal="true" appendTo="@(body)">
+                        <p:outputLabel value="Razón: " />
+                        <br></br>
+                        <p:inputTextarea required="true" requiredMessage="Se requiere una razón" value="#{oRegDevDep.razon}">
+                        </p:inputTextarea>    
+                        <br></br>
+                        <p:commandButton value="Continuar" >
+                            <p:ajax listener="#{oRegDevDep.registraDevolucion()}" update=":dialogs:display" process="dialogD" />
+                        </p:commandButton>
+                    </p:dialog>
+                </h:form>
+
+                <h:form>
+                    <p:dialog id="dialogNS" resizable="false" widgetVar="diaNS" modal="true" appendTo="@(body)">
+                        <p:outputLabel value="No hay servicios seleccionados." />
+                    </p:dialog>
+                </h:form>
+
+                <h:form id="dialogs">
+
+                    <p:dialog id="dialogE" resizable="false" header="Operación Exitosa" widgetVar="diaE" modal="true" appendTo="@(body)" closable="false">
+                        <p:panel id="display">
+                            <h:panelGrid>
+                                <p:row>
+                                    Se ha registrado egreso por devoluci&oacute;n <br></br>
+                                    de los dep&oacute;sitos:  <p:outputLabel style="font-weight: bold" value="#{oRegDevDep.selectedServ.idFolio}"/>
+                                </p:row>
+                                <br></br>
+                                <p:row>
+                                    Se ha generado el Folio de caja:  <p:outputLabel style="font-weight: bold" value="#{oRegDevDep.folioRet}"/>
+                                </p:row>
+                                <p:row>
+                                    <br></br>
+                                    <p:column>     
+                                         <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" onclick="printTicket();
+                                        return false;"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:commandButton label="Regresar" value="Regresar">
+                                            <p:ajax listener="#{oRegDevDep.regresar()}" />
+                                        </p:commandButton>
+                                    </p:column>
+
+                                </p:row>
+                            </h:panelGrid>
+                        </p:panel>  
+                    </p:dialog>
+                </h:form>
+
+                <script>
+                    var ticket;
+                    function printTicket() {
+                        ticket = {
+                            "reimpresion": false,
+                            "title": 1,
+                            "fecha": "03-MAR-14",
+                            "hora": "10:34",
+                            "folioope": #{oRegDevDep.folioRet},
+                            "doctor": "Dr. Miguel Ángel Dámian Hernández",
+                            "recfiscal": "",
+                            "mes": "SEPTIEMBRE",
+                            "anio": "2013",
+                            "usuario": "Fernando Cabrera Brenis",
+                            "servicios": [
+                                {
+                                    "cantidad": 1,
+                                    "descripcion": "PAGO DE RENTA",
+                                    "precio": 1000
+                                }
+                            ]
+                        };
+                        print(ticket);
+                    }
+                </script>
+
+
+            </h:body>
+
+
+        </ui:define> 
+    </ui:composition> 
+</html>

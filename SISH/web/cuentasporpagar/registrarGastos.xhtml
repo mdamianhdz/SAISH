@@ -1,0 +1,235 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Registrar Gastos</title>
+            <h:body>
+
+                <center>
+                    <h2>Registrar Gastos</h2>
+                    <h:form id="form">
+                        <p:growl id="msg" showDetail="true" sticky="true"/>
+                        <p:dialog id="dlgDetalles" widgetVar="dlgDet" appendTo="@(body)" closable="false" resizable="false"  
+                                  dynamic="true" modal="false" >
+                            <center>
+                                <h3>Registrar Gasto</h3>
+                                <h:form id="importDevicesForm2" enctype="multipart/form-data">
+                                    <p:panelGrid id="panelDetalles">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Descripción gasto:"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column colspan="5">
+                                                <p:inputText value="#{oRegGastos.currentGasto.descripcion}" size="135" disabled="#{oRegGastos.readOnly}"><p:ajax/></p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Monto:"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oRegGastos.currentGasto.monto}" size="8" disabled="#{oRegGastos.readOnly}"><p:ajax/></p:inputText>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <p:selectBooleanCheckbox  itemLabel="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deducible" value="#{oRegGastos.deducible}" disabled="#{oRegGastos.readOnly}">
+                                                    <p:ajax update="txtFactura fileXML"/>
+                                                </p:selectBooleanCheckbox>
+                                            </p:column>
+                                            <p:column >
+                                                <p:outputLabel value="Proveedor:"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oRegGastos.currentGasto.prov.idProv}" disabled="#{oRegGastos.readOnly}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="S"/>
+                                                    <f:selectItems value="#{oRegGastos.listProvedores}" var="oProv" itemLabel="#{oProv.nombreRazSoc}" itemValue="#{oProv.idProv}"/>
+                                                    <p:ajax/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Factura:" />
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/><br/><br/>
+                                                <p:inputText id="txtFactura" value="#{oRegGastos.currentGasto.factura}" disabled="#{(!oRegGastos.deducible or oRegGastos.readOnly)}"><p:ajax/></p:inputText><br/>
+                                            </p:column>
+                                            <p:column colspan="5">
+                                                <p:fileUpload id="fileXML" fileUploadListener="#{oRegGastos.handleFileUpload}" mode="advanced" update=":form:msg" uploadLabel="Cargar"
+                                                              fileLimit="1" allowTypes="/(\.|\/)(xml)$/" label="Archivo XML" disabled="#{(!oRegGastos.deducible or oRegGastos.readOnly)}" 
+                                                              cancelLabel="Cancelar"/>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Linea Egreso:"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oRegGastos.currentGasto.concEgreso.sublineaEgreso.lineaEgre.cveLineaEgr}" disabled="#{oRegGastos.readOnly}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="0"/>
+                                                    <f:selectItems value="#{oRegGastos.listLineasEgreso}" var="oLE" itemLabel="#{oLE.descripcion}" itemValue="#{oLE.cveLineaEgr}"/>
+                                                    <p:ajax listener="#{oRegGastos.buscaSublineas()}" update="selSublineas"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Sublinea Egreso:"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu id="selSublineas" value="#{oRegGastos.currentGasto.concEgreso.sublineaEgreso.cveSublineaEgre}" disabled="#{oRegGastos.readOnly}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="0"/>
+                                                    <f:selectItems value="#{oRegGastos.listSublineas}" var="oSub" itemLabel="#{oSub.descripcion}" itemValue="#{oSub.cveSublineaEgre}"/>
+                                                    <p:ajax listener="#{oRegGastos.buscaConceptos()}" update="selConceptos"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Concepto Egreso:"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oRegGastos.currentGasto.concEgreso.cveConcepEgr}" id="selConceptos" disabled="#{oRegGastos.readOnly}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="0"/>
+                                                    <f:selectItems value="#{oRegGastos.listConceptoEgr}" var="oCE" itemLabel="#{oCE.descripcion}" itemValue="#{oCE.cveConcepEgr}"/>
+                                                    <p:ajax listener="#{oRegGastos.buscaAreas()}" update="selAreaF selAreaS"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Situación:"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oRegGastos.currentGasto.situacion}" disabled="#{oRegGastos.readOnly}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="S" />
+                                                    <f:selectItem itemLabel="POR AUTORIZAR" itemValue="0"/>
+                                                    <f:selectItem itemLabel="PAGO AUTORIZADO" itemValue="1"/>
+                                                    <f:selectItem itemLabel="PAGADO" itemValue="2"/>                                                   
+                                                    <p:ajax/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Área Física:"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oRegGastos.currentGasto.areaFis.cve}" id="selAreaF" disabled="#{oRegGastos.readOnly}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="0"/>
+                                                    <f:selectItems  value="#{oRegGastos.listAreaF}" var="oAF" itemLabel="#{oAF.descrip}" itemValue="#{oAF.cve}"/>
+                                                    <p:ajax/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Área de Servicio:"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oRegGastos.currentGasto.areaServ.cve}" id="selAreaS" disabled="#{oRegGastos.readOnly}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="S"/>
+                                                    <f:selectItems  value="#{oRegGastos.listAreaS}" var="oAS" itemLabel="#{oAS.descrip}" itemValue="#{oAS.cve}"/>
+                                                    <p:ajax/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                               <br/>
+                               <p:commandButton value="Guardar" rendered="#{oRegGastos.renderBotonOp}" oncomplete="PF('dlgDet').hide()">
+                                   <p:ajax listener="#{oRegGastos.guardaGasto()}" update=":form:msg :form:dtGastos"/>
+                               </p:commandButton>
+                               <p:commandButton value="Eliminar" rendered="#{!oRegGastos.renderBotonOp}" oncomplete="PF('dlgDet').hide()">
+                                   <p:ajax listener="#{oRegGastos.eliminaGasto()}" update=":form:msg :form:dtGastos"/>
+                               </p:commandButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                               <p:commandButton value="Regresar" oncomplete="PF('dlgDet').hide()"/><br/><br/></h:form> 
+                               </center>
+                        </p:dialog>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Proveedor:"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu value="#{oRegGastos.prov}">
+                                        <f:selectItem itemLabel="Seleccione" itemValue="0"/>
+                                        <f:selectItems  value="#{oRegGastos.listProvedores}" var="oProv" itemLabel="#{oProv.nombreRazSoc}" itemValue="#{oProv.idProv}"/>
+                                        <p:ajax/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Área Física"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu value="#{oRegGastos.areaFis}">
+                                        <f:selectItem itemLabel="Seleccione" itemValue="0"/>
+                                        <f:selectItems  value="#{oRegGastos.listAreaF}" var="oAF" itemLabel="#{oAF.descrip}" itemValue="#{oAF.cve}"/>
+                                        <p:ajax/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Área de Servicio:"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu value="#{oRegGastos.areaServ}">
+                                        <f:selectItem itemLabel="Seleccione" itemValue="S"/>
+                                        <f:selectItems  value="#{oRegGastos.listAreaS}" var="oAS" itemLabel="#{oAS.descrip}" itemValue="#{oAS.cve}"/>
+                                        <p:ajax/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Buscar"><p:ajax listener="#{oRegGastos.buscaGastos()}" update="dtGastos"/></p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/><br/>
+                        <p:dataTable id="dtGastos" var="oGasto" emptyMessage="No hay gastos registrados"
+                                     paginator="true" paginatorPosition="bottom" rows="5" value="#{oRegGastos.listGastos}">
+                            <p:column headerText="Proveedor">
+                                <p:outputLabel value="#{oGasto.prov.nombreRazSoc}"/>
+                            </p:column>
+                            <p:column headerText="Área Física">
+                                <p:outputLabel value="#{oGasto.areaFis.descrip}"/>
+                            </p:column>
+                            <p:column headerText="Área de Servicio">
+                                <p:outputLabel value="#{oGasto.areaServ.descrip}"/>
+                            </p:column>
+                            <p:column headerText="Descripcion">
+                                <p:outputLabel value="#{oGasto.descripcion}"/>
+                            </p:column>
+                            <p:column headerText="Monto">
+                                <p:outputLabel value="#{oGasto.monto}"/>
+                            </p:column>
+                            <p:column headerText="Factura">
+                                <p:outputLabel value="#{oGasto.factura}"/>
+                            </p:column>
+                            <p:column headerText="Forma de Pago">
+                                <p:outputLabel value="#{oGasto.formaPago}"/>
+                            </p:column>
+                            <p:column headerText="Situacion">
+                                <p:outputLabel value="#{oRegGastos.cambiaSituacion(oGasto.situacion)}"/>
+                            </p:column>
+                            <p:column headerText="Operación">
+                                <p:commandButton icon="ui-icon-search" oncomplete="PF('dlgDet').show()">
+                                    <p:ajax listener="#{oRegGastos.consultaGasto(oGasto,'C')}" update=":form:dlgDetalles"/>
+                                </p:commandButton>
+                                <p:commandButton icon="ui-icon-pencil" rendered="#{oRegGastos.renderBotones(oGasto.situacion)}" oncomplete="PF('dlgDet').show()">
+                                    <p:ajax listener="#{oRegGastos.consultaGasto(oGasto,'M')}" update=":form:dlgDetalles"/>
+                                </p:commandButton>
+                                <p:commandButton icon="ui-icon-trash" rendered="#{oRegGastos.renderBotones(oGasto.situacion)}" oncomplete="PF('dlgDet').show()">
+                                    <p:ajax listener="#{oRegGastos.consultaGasto(oGasto,'E')}" update=":form:dlgDetalles"/>
+                                </p:commandButton>
+                            </p:column> 
+                            <f:facet name="footer">
+                                <p:commandButton value="&nbsp;&nbsp;Registrar Nuevo Gasto&nbsp;&nbsp;" oncomplete="PF('dlgDet').show()" action="#{oRegGastos.nuevoGasto()}" update=":form:dlgDetalles"/>
+                            </f:facet>
+                        </p:dataTable>
+                    </h:form>
+                </center>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

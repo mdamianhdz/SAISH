@@ -1,0 +1,202 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inicio</title>
+            <h:body> 
+                <h:form id="form">
+                    <p:growl id="msgs" showDetail="true"/>
+                    <p:selectOneRadio id="customRadio" layout="custom" value="#{oA.tipoCia}">
+                        <p:ajax event="valueChange" listener="#{oA.habilitaBuscar()}" update="btnBuscar txtCR txtEmp txtAseg txtBanco"/>
+                        <f:selectItem itemValue="1" />
+                        <f:selectItem itemValue="2" />
+                        <f:selectItem itemValue="3" />
+                        <f:selectItem itemValue="4" />
+                        <f:selectItem itemValue="5" />
+                    </p:selectOneRadio>
+                    <h:panelGrid columns="3">
+                        <p:radioButton id="opt1" for="customRadio" itemIndex="0"/>
+                        <h:outputLabel for="opt1" value="Núm.Contra Recibo" />
+                        <p:inputText id="txtCR" value="#{oA.numCR}" disabled="#{oA.disCR}"/>
+                        <p:radioButton id="opt2" for="customRadio" itemIndex="1"/>
+                        <h:outputLabel for="opt2" value="Empresa" />
+                        <p:inputText id="txtEmp" value="#{oA.nomEmpresa}" disabled="#{oA.disEmp}"/>
+                        <p:radioButton id="opt3" for="customRadio" itemIndex="2"/>
+                        <h:outputLabel for="opt3" value="Aseguradora" />
+                        <p:inputText id="txtAseg" value="#{oA.nomAseguradora}" disabled="#{oA.disAseg}"/>
+                        <p:radioButton id="opt4" for="customRadio" itemIndex="3"/>
+                        <h:outputLabel for="opt4" value="Banco" />
+                        <p:inputText id="txtBanco" value="#{oA.nomBanco}" disabled="#{oA.disBanco}"/>
+                        <p:radioButton id="opt5" for="customRadio" itemIndex="4"/>
+                        <h:outputLabel for="opt5" value="Todos los contra recibos en proceso" />
+                     </h:panelGrid><br/>
+                     <p:commandButton id="btnBuscar" disabled="#{oA.disBuscar}" value="Buscar" action="#{oA.llenaLista()}"  update=":form:dtCR"/>&nbsp;&nbsp;&nbsp;
+                    <p:commandButton value="Nueva Busqueda" update=":form:dtCR" action="#{oA.nuevaBusqueda()}"/><br/><br/><br/>
+                    <p:dataTable  id="dtCR" value="#{oA.CR}" paginator="true" paginatorPosition="bottom" var="oCR"
+                                  selection="#{oA.selectedCR}" rowKey="#{oCR.numContraRecibo}" rows="5">
+                        <p:ajax event="rowSelectRadio"   update=":form:btnActualizar"/>
+                        <p:column selectionMode="single"/>
+                        <p:column headerText="Núm. Contra Recibo">
+                            <h:outputText value="#{oCR.numContraRecibo}"/>
+                        </p:column>
+                        <p:column headerText="Fecha de Vencimiento">
+                            <h:outputText value="#{oCR.fecVencimiento}">
+                                <f:convertDateTime type="date" pattern="dd-MMMM-yyyy HH:mm"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Empresa/Aseguradora/Banco">
+                            <h:outputText value="#{oCR.compCred.nombreCorto}"/>
+                        </p:column>
+                        <p:column headerText="Número Guía">
+                            <h:outputText value="#{oCR.guiaEnvio}"/>
+                        </p:column>
+                    </p:dataTable><br/>
+                    <p:commandButton id="btnActualizar" disabled="#{oA.disActualizar}"  value="Actualizar" update=":formDialog:dgSel :form2:tbLlamadas  :form2:panelLlam "  oncomplete="PF('dlg').show() " action="#{oA.buscaLlamadas()}"/>
+                </h:form>
+                 <p:dialog appendToBody="true" modal="true"  id="dialog" widgetVar="dlg" resizable="false" >
+                    <h:form id="formDialog">
+                        <p:panel id="dgSel">
+                            <h:outputText value="Número de Contra Recibo: "/>
+                            <h:outputText value=" #{oA.selectedCR.numContraRecibo}" style="font-weight:bold"/><br/>
+                            <h:outputText value="Fecha de vencimiento: "/>
+                            <h:outputText value=" #{oA.selectedCR.fecVencimiento}" style="font-weight:bold">
+                                <f:convertDateTime type="date" pattern="dd-MMMM-yyyy"/>
+                            </h:outputText><br/>
+                            <h:outputText value="Empresa/Aseguradora/Banco: "/>
+                            <h:outputText value=" #{oA.selectedCR.compCred.nombreCorto  }" style="font-weight:bold"/>
+                        </p:panel>
+                    </h:form>
+                     <h:form id="form2">
+                         <p:panelGrid id="panelLlam">
+                             <p:row>
+                                 <p:column>
+                                     <h:outputText value="Recibió Factura: "/>
+                                 </p:column>
+                                 <p:column>
+                                     <p:inputText value="#{oA.recibioFactura}" rendered="#{oA.renderInput(oA.selectedCR.recibioFactura)}"/>
+                                     <h:outputText value="#{oA.selectedCR.recibioFactura}" rendered="#{oA.renderOutput(oA.selectedCR.recibioFactura)}"/>
+                                 </p:column>
+                                 <p:column>
+                                     <h:outputText value="Fecha de Recepción: "/>
+                                 </p:column>
+                                 <p:column>
+                                     <p:calendar showOn="button" value="#{oA.fechaRecepcion}" rendered="#{oA.renderInput(oA.selectedCR.fecRecepcion)}"/>
+                                     <h:outputText value="#{oA.selectedCR.fecRecepcion}" rendered="#{oA.renderOutput(oA.selectedCR.fecRecepcion)}">
+                                         <f:convertDateTime type="date" pattern="dd-MMMM-yyyy"/>
+                                    </h:outputText>
+                                 </p:column>
+                             </p:row>
+                            <p:row>
+                                <p:column>
+                                    <h:outputText value="Fecha probable de pago: "/>
+                                </p:column>
+                                <p:column>
+                                    <p:calendar showOn="button" value="#{oA.fechaProbPago}" rendered="#{oA.renderInput(oA.selectedCR.fecProbPago)}"/>
+                                    <h:outputText value="#{oA.selectedCR.fecProbPago}" rendered="#{oA.renderOutput(oA.selectedCR.fecProbPago)}">
+                                         <f:convertDateTime type="date" pattern="dd-MMMM-yyyy"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="Observaciones: "/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputTextarea rows="2" cols="28" value="#{oA.observaciones}" rendered="#{oA.renderInput(oA.selectedCR.observaciones)}"/>
+                                    <h:outputText value="#{oA.selectedCR.observaciones}" rendered="#{oA.renderOutput(oA.selectedCR.observaciones)}"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <h:outputText value="Núm. Guía: " />
+                                </p:column>
+                                <p:column colspan="3">
+                                    <p:inputText value="#{oA.guiaEnvio}" rendered="#{oA.renderInput(oA.selectedCR.guiaEnvio)}"/>
+                                     <h:outputText value="#{oA.selectedCR.guiaEnvio}" rendered="#{oA.renderOutput(oA.selectedCR.guiaEnvio)}"/>
+                                </p:column>
+                            </p:row>
+                             <p:row>
+                                <p:column colspan="4">
+                                    <h:outputText value="Llamadas/Visitas Realizadas" style="font-weight:bold"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <h:outputText value="Realizó Llamada/Visita: "/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText value="#{oA.realizoLlamada}" style="width: 170px"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="Recibió Llamada/Visita: "/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText value="#{oA.recibioLlamada}"/>
+                                </p:column>
+                            </p:row>
+                             <p:row>
+                                <p:column>
+                                    <h:outputText value="Tipo : "/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu value="#{oA.tipo}" style="width: 177px">
+                                        <f:selectItem itemLabel="Seleccione" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItem itemLabel="Llamada" itemValue="L"/>
+                                        <f:selectItem itemLabel="Visita" itemValue="V"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="Fecha: "/>
+                                </p:column>
+                                <p:column>
+                                    <p:calendar value="#{oA.fechaLlamada}" showOn="button" />
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <h:outputText value="Resultado: "/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputTextarea rows="2" cols="28" value="#{oA.resultadoLlamada}"/>
+                                </p:column>
+                                <p:column colspan="2">
+                                    <p:commandButton value="Agregar" action="#{oA.agregaLlamada()}" update="tbLlamadas panelLlam :form:msgs"/>
+                                </p:column>
+                                
+                            </p:row>
+                        </p:panelGrid><br/>
+                        <p:dataTable id="tbLlamadas" value="#{oA.selectedCR.llamadas}" var="llam" rows="2" paginator="true" paginatorPosition="bottom">
+                            <p:column headerText="Tipo">
+                                <p:outputLabel value="#{oA.cambiaTipo(llam.tipo)}"/>
+                            </p:column>
+                            <p:column headerText="Realizó">
+                                <p:outputLabel value="#{llam.realizoLlamada}"/>
+                            </p:column>
+                            <p:column headerText="Recibió">
+                                <p:outputLabel value="#{llam.recibioLlamada}"/>
+                            </p:column>
+                            <p:column headerText="Fecha">
+                                <p:outputLabel value="#{llam.fecLlamada}">
+                                    <f:convertDateTime type="date" pattern="dd-MMMM-yyyy  HH:mm"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Resultado">
+                                <p:outputLabel value="#{llam.resultado}"/>
+                            </p:column>
+                            <p:column headerText="Eliminar">
+                                <p:commandButton value=" " icon="ui-icon-trash" style=" height: 25px; width: 25px" actionListener="#{oA.eliminaLlamada(llam)}" update="tbLlamadas"/>
+                            </p:column> 
+                        </p:dataTable>
+                        <br/><br/>
+                        <p:commandButton value="Guardar" update=":form:msgs panelLlam" action="#{oA.guarda()}"/>
+                        <p:commandButton value="Cancelar" oncomplete="PF('dlg').hide()"/>
+                    </h:form>
+                </p:dialog>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Reporte agenda m&eacute;dica</title>
+            <h:body> 
+                <h:form id="form">  
+                    #{rptAgMed.limpiarRptAgendaMed()}
+                    <p:growl id="msgsAM" showDetail="true"/>
+                    <p:panel header="Reporte de agenda médica">
+                        <p:panelGrid id="datos" style=" width: 95%;" columns="6">
+                            <h:outputText value="Rango de fechas:  "/>
+                            <h:outputText value="Del: "/>
+                            <p:calendar value="#{rptAgMed.fechaInicio}" 
+                                        pattern="dd-MMMM-yyyy" locale="es" 
+                                        showOn="button">
+                                <p:ajax update=":form"/>
+                            </p:calendar>
+                            <h:outputText value="Al: "/>
+                            <p:calendar value="#{rptAgMed.fechaFin}" 
+                                        pattern="dd-MMMM-yyyy" locale="es" 
+                                        showOn="button">
+                                <p:ajax update=":form"/>
+                            </p:calendar>
+                            <p:commandButton update=":form:rpt :form:msgsAM :form:tableXP" actionListener="#{rptAgMed.datosAgenda()}" value="Reporte" icon="ui-icon-print" oncomplete="PF('rptDialog').show()" process="@parent" >
+                            </p:commandButton>
+
+                            <h:outputText value="&#160;"/>
+                            <h:outputText value="Especialidad: "/>
+                            <p:selectOneMenu id="txtEspecialidad" value="#{rptAgMed.medico.esp.descrip}">  
+                                <f:selectItem itemLabel="Selecciona" itemValue="" />  
+                                <f:selectItems value="#{rptAgMed.especialidades}" />  
+                                <p:ajax update="txtMedico" listener="#{rptAgMed.cargaMedicosEsp()}" /> 
+                            </p:selectOneMenu>
+                            <h:outputText value="Médico: "/>
+                            <p:selectOneMenu id="txtMedico" 
+                                             filter="true" 
+                                             filterMatchMode="startsWith"
+                                             value="#{rptAgMed.doctor}">  
+                                <f:selectItem itemLabel="Selecciona" itemValue="" />  
+                                <f:selectItems value="#{rptAgMed.medicos}" />  
+                            </p:selectOneMenu>
+                        </p:panelGrid>
+                    </p:panel>
+
+                    <p:dialog header="Reporte de agenda m&eacute;dica" appendTo="@(body)" widgetVar="rptDialog" modal="true" showEffect="fade" hideEffect="fade" resizable="false" closable="false">
+                        <p:scrollPanel mode="native" style="width:100%;height:500px">
+                            <p:panel id="rpt" style="width:100%;">
+                                <h:panelGrid id="rptVista" width="100%">
+                                    <p:panel>
+                                        <center>
+                                            <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                        </center>
+                                    </p:panel>
+                                    <div align="center"><h:outputText value="REPORTE DE AGENDA MÉDICA" style="font-weight: bold;"/></div>
+                                    <p:separator />
+                                    <h:panelGrid columns="4" width="80%">
+                                        <h:outputText value="Reporte del:  "/>
+                                        <h:outputText value="#{rptAgMed.fechaInicio}" style="font-weight: bold; text-transform: capitalize;">
+                                            <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                                        </h:outputText>
+                                        <h:outputText value="Al: "/>
+                                        <h:outputText value="#{rptAgMed.fechaFin}" style="font-weight: bold; text-transform: capitalize;">
+                                            <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                                        </h:outputText>
+                                        <h:outputText value="Especialidad: "/>
+                                        <h:outputText value="#{rptAgMed.medico.esp.descrip}" style="font-weight: bold"/>  
+                                        <h:outputText value="Médico: "/>
+                                        <h:outputText value="#{rptAgMed.doctor}" style="font-weight: bold"/>
+                                    </h:panelGrid>
+                                    <br/>
+                                    <p:dataTable value="#{rptAgMed.citas}" var="rptAM" id="tableXP" >
+                                        <p:columnGroup type="header">
+                                            <p:row>
+                                                <p:column rowspan="2" headerText="Fecha" />
+                                                <p:column rowspan="2" headerText="Hora" />
+                                                <p:column rowspan="2" headerText="Paciente" />
+                                                <p:column colspan="2" headerText="Tel&eacute;fono" />
+                                                <p:column rowspan="2" headerText="Tipo" />
+                                                <p:column rowspan="2" headerText="Observaciones" />
+                                            </p:row>
+                                            <p:row>
+                                                <p:column headerText="Casa"/>
+                                                <p:column headerText="Celular"/>
+                                            </p:row>
+                                        </p:columnGroup>
+                                        <p:column>
+                                            <h:outputText value="#{rptAM.fecCita}" style=" text-transform: capitalize;">
+                                                <f:convertDateTime pattern="dd-MMMM-yyyy" timeZone="EST"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{rptAM.fecCita}">
+                                                <f:convertDateTime pattern="hh:mm" timeZone="EST"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value=" #{rptAM.paciente.nombreCompleto}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{rptAM.paciente.telCasa}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{rptAM.paciente.telCelular}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Contado" 
+                                                          rendered="#{rptAgMed.isContado(rptAM.tipoPrincipal)}"/>
+                                            <h:outputText value="Cr&eacute;dito" 
+                                                          rendered="#{rptAgMed.isCredito(rptAM.tipoPrincipal)}"/>
+                                            <h:outputText value="Paquete" 
+                                                          rendered="#{rptAgMed.isPaquete(rptAM.tipoPrincipal)}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{rptAM.obs}"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                </h:panelGrid>
+                                <h:panelGrid columns="2" style=" float: right;">
+                                    <p:button outcome="rptAgendaMedica.xhtml?faces-redirect=true" value="Regresar"  />  
+                                    <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" >  
+                                        <p:printer target="rptVista"/>  
+                                    </p:commandButton>
+                                </h:panelGrid>
+                            </p:panel>
+                        </p:scrollPanel>
+                    </p:dialog>
+
+                </h:form>     
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

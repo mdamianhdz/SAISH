@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Consultar Tabulador de Precios</title>
+            <h:body>
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    <center>
+                        <h2>Consultar Tabulador de Precios</h2>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Compa&ntilde;&iacute;a" 
+                                                   style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column colspan="3">
+                                    <p:selectOneMenu id="selComp" filter="true"
+                                                     value="#{oRptTabPreJB.idEmpSelec}">
+                                        <p:ajax/>
+                                        <f:selectItem itemLabel="Selecciona" 
+                                                      itemValue="-1"/>
+                                        <f:selectItem itemLabel="Sanatorio Huerta" 
+                                                      itemValue="0"/>
+                                        <f:selectItems value="#{oRptTabPreJB.listaCiaCred}"
+                                                       var ="oCiaCred"
+                                                       itemValue="#{oCiaCred.idEmp}"
+                                                       itemLabel="#{oCiaCred.nombreCorto}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Buscar">
+                                    <p:ajax update="dtRpt" 
+                                     listener="#{oRptTabPreJB.buscaTabulador}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid>
+                        <br/>
+                        <p:dataTable id="dtRpt" var="oRpt" 
+                                     value="#{oRptTabPreJB.listaPrecios}" 
+                                     paginator="true" 
+                                     paginatorPosition="bottom" 
+                                     rows="10" 
+                                     filteredValue="#{oRptTabPreJB.filtrado}"
+                                     emptyMessage="No hay datos" 
+                                     style="width:800px">
+                            <p:column headerText="L&iacute;nea de Ingreso"
+                                      filterBy="#{oRpt.concepIngr.lineaIngreso.descrip}"
+                                      filterMatchMode="startsWith">
+                                <p:outputLabel 
+                                    value="#{oRpt.concepIngr.lineaIngreso.descrip}"/>
+                            </p:column>
+                            <p:column headerText="Clave Interna">
+                                <p:outputLabel value="#{oRpt.concepIngr.cveConcep}"/>
+                            </p:column>
+                            <p:column headerText="Concepto de Ingreso"
+                                      filterBy="#{oRpt.concepIngr.descripcion}"
+                                      filterMatchMode="startsWith">
+                                <p:outputLabel 
+                                    value="#{oRpt.concepIngr.descripcion}"/>
+                            </p:column>
+                            <p:column headerText="Precio con IVA" 
+                                      style="text-align: right">
+                                <p:outputLabel value="#{oRpt.monto}">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                            </p:column>
+                        </p:dataTable> 
+                        <p:commandButton value="Excel" ajax="false"
+                                         onclick="PrimeFaces.monitorDownload(start, stop);">
+                            <p:fileDownload value="#{oRptTabPreJB.arch}" />
+                        </p:commandButton>
+                        <p:commandButton value="PDF" ajax="false">
+                            <p:dataExporter type="pdf" target="dtRpt" 
+                                            fileName="tabulador" 
+                                            preProcessor="#{oRptTabPreJB.preProcessPDF}"/>
+                        </p:commandButton>
+                    </center>
+                </h:form>
+                <p:dialog modal="true" widgetVar="statusDialog" header="Status" 
+                          draggable="false" closable="false" resizable="false">
+                    <p:graphicImage name="/imgs/ajax-loader.gif" />
+                </p:dialog>
+                <script type="text/javascript">
+                    function start() {
+                        PF('statusDialog').show();
+                    }
+
+                    function stop() {
+                        PF('statusDialog').hide();
+                    }
+                </script>
+            </h:body>
+        </ui:define>
+    </ui:composition>
+</html>

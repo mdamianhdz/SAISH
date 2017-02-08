@@ -1,0 +1,636 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Procedimiento Quirúrgico</title>
+            <h:body>             
+                <center><h2>Procedimiento Quirúrgico</h2></center>
+                    #{oProceQuiruJB.limpia()}
+                <p:dialog height="550" width="900" closable="false" dynamic="true"  appendTo="@(body)" modal="true" id="dlgCompBusq" header="Busqueda de paciente"  widgetVar="dlgCompBusqVar" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                    <h:form id="form">
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include> 
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar"  action="#{oProceQuiruJB.llena()}" oncomplete="dlgCompBusqVar.hide()" update=":formulario:panel :formulario:panelPaq" icon="ui-icon-search"/>
+                        <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" action="#{oProceQuiruJB.limpia()}" update=":formulario:panel" icon="ui-icon-circle-close" />
+                    </h:form> 
+                </p:dialog>  
+                <br/>
+                <h:form>
+                    <center>
+                        <p:commandButton value="Seleccionar paciente" update=":dlgCompBusq" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+                    </center>
+                </h:form>
+                <br/>
+                <center><h:form id="formulario">
+
+                        <p:growl id="grow1" sticky="true" />
+
+                        <p:panel visible="#{oProceQuiruJB.panelActivo}" id="panel" >
+                            <p:panelGrid columns="2">
+                                Folio Paciente <h:outputText value="#{oProceQuiruJB.paciente.folioPac}"/>
+                                CURP <h:outputText value="#{oProceQuiruJB.paciente.CURP}" />
+                                RFC <h:outputText value="#{oProceQuiruJB.paciente.RFC}" />
+                                Nombre del paciente <h:outputText value="#{oProceQuiruJB.paciente.nombreCompleto}" />
+                                Género <h:outputText value="#{oProceQuiruJB.paciente.genero}" />
+                                Habitaci&oacute;n <h:outputText value="#{oProceQuiruJB.episodioMedico.hab.hab}" />                                   
+                            </p:panelGrid>
+                            <p:separator/>
+                            <p:panelGrid >
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText rendered="#{!oProceQuiruJB.facturaRegistrada}" value="¿Desea Factura?" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectBooleanCheckbox rendered="#{!oProceQuiruJB.facturaRegistrada}" value="#{oProceQuiruJB.facturable}" />  
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        Tipo de Paciente
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu rendered="#{!oProceQuiruJB.esPaquete}" 
+                                                         value="#{oProceQuiruJB.tipoPaciente}" >
+                                            <f:selectItem itemLabel="Selecciona" itemValue="-1" />
+                                            <f:selectItems  value="#{oProceQuiruJB.tiposPacientes}"
+                                                            var="oTipoPral1"
+                                                            itemValue="#{oTipoPral1.tipo}"
+                                                            itemLabel="#{oTipoPral1.descripcion}"/>
+                                        </p:selectOneMenu>
+                                        <h:outputText rendered="#{oProceQuiruJB.esPaquete}" value="PAQUETE"/>
+                                        <p:commandButton rendered="#{oProceQuiruJB.esPaquete}" value=" Ver Detalle del Paquete" oncomplete="dlgPaquete.show()" />
+
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        Tipo de programación:
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu label="Tipo de Programación" value="#{oProceQuiruJB.procRealizado.tipoProg}" >
+                                            <f:selectItem itemLabel="Selecciona" itemValue="" />
+                                            <f:selectItem itemLabel="Programada" itemValue="R" />
+                                            <f:selectItem itemLabel="Urgencia" itemValue="U" />
+                                            <f:selectItem itemLabel="Paquete" itemValue="P" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        Tipo de Cirugía:
+                                    </p:column>
+                                    <p:column>
+                                        <p:panelGrid>
+                                            <p:row>
+                                                <p:column>
+                                                    Tipo
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value="#{oProceQuiruJB.tipoQx}"
+                                                    style="text-transform: uppercase"> 
+                                                        <p:ajax/>
+                                                    </p:inputText>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row rendered="false">
+                                                <p:column>
+                                                    <h:outputText value="Sistema"/>
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value="#{oProceQuiruJB.sistema}"/> 
+                                                </p:column>
+                                            </p:row>
+                                            <p:row rendered="false">
+                                                <p:column>
+                                                    Localizaci&oacute;n
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value="#{oProceQuiruJB.localizacion}"/> 
+                                                </p:column>
+                                            </p:row> 
+                                            <p:row rendered="false">
+                                                <p:column>
+                                                    Abordaje
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value="#{oProceQuiruJB.abordaje}"/> 
+                                                </p:column>
+                                            </p:row>  
+                                            <p:row rendered="false">
+                                                <p:column>
+                                                    Dispositivo
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value="#{oProceQuiruJB.dispositivo}"/>
+                                                </p:column>
+                                            </p:row>  
+                                            <p:row>
+                                                <p:column colspan="2">
+                                                    <center>
+                                                        <p:commandButton value="Actualiza Cirugías" 
+                                                                         update="tblTiposQx" 
+                                                                         actionListener="#{oProceQuiruJB.cargaLista}" />
+                                                    </center>
+                                                </p:column>
+                                            </p:row> 
+                                            <p:row>
+                                                <p:column colspan="2">
+                                                    <p:dataTable var="oTip" value="#{oProceQuiruJB.listaQx}" 
+                                                                 id="tblTiposQx" 
+                                                                 paginator="true" rows="5"
+                                                                 paginatorTemplate="{FirstPageLink} {PreviousPageLink} {CurrentPageReport}  {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                                 rowsPerPageTemplate="2,3,4"
+                                                                 lazy="true"
+                                                                 emptyMessage="No hay datos"
+                                                                 selection="#{oProceQuiruJB.procRealizado.tipoProcQx}" 
+                                                                 rowKey="#{oTip.cveTipoProcQx}"
+                                                                 >
+                                                        <f:facet name="header">
+                                                            Procedimientos Quir&uacute;gicos
+                                                        </f:facet>
+                                                        <p:column selectionMode="single"/>
+                                                        <p:column>
+                                                            <f:facet name="header"> 
+                                                                <h:outputText value="Cve"/>
+                                                            </f:facet>
+                                                            <h:outputText value="#{oTip.cveTipoProcQx}"/>
+                                                        </p:column>
+                                                        <p:column>
+                                                            <f:facet name="header"> 
+                                                                <h:outputText value="Descrip"/>
+                                                            </f:facet>
+                                                            <h:outputText value="#{oTip.descripcion}"/>
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </p:column>
+                                            </p:row>
+                                        </p:panelGrid>
+                                    </p:column>
+                                </p:row>                                
+                                <p:row>
+                                    <p:column>
+                                        Fecha de Inicio:
+                                    </p:column>
+                                    <p:column>
+                                        <p:calendar locale="es" label="Fecha de Inicio"  navigator="true"  pattern="yyyy-MM-dd HH:mm:ss"    yearRange="c-100:c+0" showOn="button" value="#{oProceQuiruJB.procRealizado.ini}"/>                              
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        Fecha de Fin:
+                                    </p:column>
+                                    <p:column>
+                                        <p:calendar locale="es" label="Fecha de Fin"  navigator="true"   pattern="yyyy-MM-dd HH:mm:ss"    yearRange="c-100:c+0" showOn="button" value="#{oProceQuiruJB.procRealizado.fin}"/>                   
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        Descripción:
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputTextarea 
+                                            style="text-transform: uppercase"
+                                            value="#{oProceQuiruJB.procRealizado.notaMedica}" />
+                                    </p:column>
+                                </p:row>                                
+                            </p:panelGrid>
+                            <br/>
+                            <p:panel id="panel2" >
+                                Servicios:<br/>
+                                <center>
+                                    <p:panelGrid columns="1" rendered="#{oProceQuiruJB.esPaquete}">
+                                        <p:commandButton rendered="#{oProceQuiruJB.carritoServiciosAConsumir.size()!=0}" value="Seleccionar Servicios a Consumir del Paquete" update=":formServACons" oncomplete="dlgServPaquete.show()"  icon="ui-icon-search"/>
+                                        <h:outputText value="*Servicios Fuera de Paquete:" style="font-weight:bold;color: red" />
+                                    </p:panelGrid>
+                                </center>
+                                <br/>
+                                <h:panelGrid id="cargadatos" columns="2" >                                
+                                    Línea ingreso
+                                    <p:selectOneMenu id="lineas" 
+                                                     converter="#{oProceQuiruJB}" 
+                                                     label="Línea ingreso " 
+                                                     filter="true"
+                                                     value="#{oProceQuiruJB.lineaIngreso}">
+                                        <f:selectItem itemLabel="Selecciona" itemValue="" />
+                                        <f:selectItems value="#{oProceQuiruJB.lineasIngreso}" var="oLinea" 
+                                                       itemLabel="#{oLinea.descrip}" 
+                                                       itemValue="#{oLinea}"/>
+                                        <p:ajax update="servicios MedEnf outTipoMedEnf tipoMedEnf" listener="#{oProceQuiruJB.actualizaListaServicios()}" />
+                                    </p:selectOneMenu>                                    
+                                    Servicio:
+                                    <p:autoComplete id="servicios" size="50" 
+                                        scrollHeight="300" minQueryLength="4" 
+                                        itemtipMyPosition="left center" 
+                                        itemtipAtPosition="right center" 
+                                        label="Servicio" converter="#{oProceQuiruJB}" 
+                                        value="#{oProceQuiruJB.servicioSeleccionado}" 
+                                        completeMethod="#{oProceQuiruJB.obtenerServicios}" 
+                                        var="oServ" itemLabel="#{oServ.descripcion}" 
+                                        itemValue="#{oServ}" >
+                                    </p:autoComplete>
+                                    <h:outputText value="Tipo Médico o Enfermera" /> 
+                                    <p:selectOneMenu id="tipoMedEnf" value="#{oProceQuiruJB.tipoMedEnf}" >
+                                        <f:selectItem itemLabel="Selecciona" itemValue=""/>
+                                        <f:selectItem itemLabel="Médicos" itemValue="Médicos"/>
+                                        <f:selectItem itemLabel="Enfermeras" itemValue="Enfermeras"/>
+                                        <p:ajax listener="#{oProceQuiruJB.validaMedicoEnfermera()}" 
+                                                update="MedEnf outTipoMedEnf" />
+                                    </p:selectOneMenu>
+
+                                    <h:outputText id="outTipoMedEnf" value="#{oProceQuiruJB.tipoMedEnf}" /> 
+                                    <p:selectOneMenu label="#{oProceQuiruJB.tipoMedEnf}" 
+                                                     id="MedEnf" 
+                                                     filter="true"
+                                                     converter="#{oProceQuiruJB}" 
+                                                     value="#{oProceQuiruJB.medEnf}" >
+                                        <f:selectItem itemLabel="Selecciona" itemValue=""/>
+                                        <f:selectItems value="#{oProceQuiruJB.listaMedEnf}"  var="oMedEnf" 
+                                                       itemLabel="#{oMedEnf.nombreCompleto}" 
+                                                       itemValue="#{oMedEnf}" /> 
+                                    </p:selectOneMenu>
+                                    Rol: 
+                                    <p:selectOneMenu label="Rol" id="rol" value="#{oProceQuiruJB.rol}" >
+                                        <f:selectItem itemLabel="Selecciona" itemValue=""/>
+                                        <f:selectItem itemLabel="Cirujano" itemValue="C"/>
+                                        <f:selectItem itemLabel="Anestesiólogo" itemValue="A"/>
+                                        <f:selectItem itemLabel="Primer ayudante" itemValue="P"/>
+                                        <f:selectItem itemLabel="Segundo ayudante" itemValue="S"/>
+                                        <f:selectItem itemLabel="Enfermera Instrumentista" itemValue="I"/>
+                                    </p:selectOneMenu>
+
+                                </h:panelGrid> 
+                                <p:commandButton value="Agregar" 
+                                                 update=":formulario:grow1 :formulario:tb2 panel2" 
+                                                 actionListener="#{oProceQuiruJB.agregaServicio}"/>
+
+
+                                <br/><br/>
+                                <p:dataTable liveScroll="true"  emptyMessage="Sin servicios agregados" sortBy="concepPrestado.descripcion" editMode="cell" editable="true"  id="tb2" value="#{oProceQuiruJB.carritoServicios}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoServicios">
+                                    <f:facet name="header">
+                                        <h:outputText value="Servicios"/>
+                                    </f:facet> 
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Servicio
+                                        </f:facet>  
+                                        <h:outputText value="#{carritoServicios.concepPrestado.descripcion}" />
+                                    </p:column>                               
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Monto
+                                        </f:facet> 
+                                        <p:inputText size="5" value="#{carritoServicios.concepPrestado.montoNuevo}"/>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Médico/Enfermera
+                                        </f:facet>                                       
+                                        <h:outputText value="#{carritoServicios.servProcQx.personal.nombreCompleto}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Rol
+                                        </f:facet>                                       
+                                        <h:outputText value="#{carritoServicios.servProcQx.descripRol}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Eliminar
+                                        </f:facet>
+                                        <p:commandButton value=" " icon="ui-icon-trash" 
+                                                         style=" height: 25px; width: 25px" actionListener="#{oProceQuiruJB.eliminaServicioInt(carritoServicios.concepPrestado.idGenerico)}" update=":formulario:tb2"/>
+                                    </p:column>    
+                                    <p:summaryRow>  
+                                        <p:column colspan="4" style="text-align:right">  
+                                            Total:  
+                                        </p:column>  
+                                        <p:column>  
+                                            <h:outputText value="#{carritoServicios.concepPrestado.montoNuevo}">
+                                                <f:convertNumber pattern="#.##"/>
+                                            </h:outputText>
+                                        </p:column>  
+                                    </p:summaryRow>
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column colspan="4" style="text-align:right" footerText="Costo total:" />
+                                            <p:column footerText="$#{oProceQuiruJB.totalCarrito}" />
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+
+                                <br/>        
+                            </p:panel>
+                            <br/>
+                            <p:separator/>
+                            <p:commandButton update="grow1 basicDialog2"  value="Registrar procedimiento Quirurgico" actionListener="#{oProceQuiruJB.insertaProcedomientoQuiru()}" icon="ui-icon-disk" />
+                        </p:panel>
+
+                        <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="basicDialog2" header="!Operación exitosa!"  widgetVar="dlg1" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+
+                            <p:panel id="panelDialog">  
+                                <center>
+                                    <p:panel>
+                                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                    </p:panel>
+                                </center>
+                                <h:panelGrid columns="2" cellpadding="5">  
+                                    Paciente: <h:outputText value="#{oProceQuiruJB.proceQuiruJB.paciente.folioPac} #{oProceQuiruJB.proceQuiruJB.paciente.nombreCompleto}" />
+                                    Tipo de paciente: <h:outputText value="#{oProceQuiruJB.proceQuiruJB.tipoPaciente}" />
+
+                                    Servicios:
+
+                                    <p:dataTable liveScroll="true"  emptyMessage="Sin servicios agregados" sortBy="concepPrestado.descripcion" editMode="cell" editable="true"  id="tb4" value="#{oProceQuiruJB.proceQuiruJB.carritoServicios}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoServicios">
+                                        <f:facet name="header">
+                                            <h:outputText value="Servicios"/>
+                                        </f:facet> 
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Folio
+                                            </f:facet>  
+                                            <h:outputText value="#{carritoServicios.idFolio}" />
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Servicio
+                                            </f:facet>  
+                                            <h:outputText value="#{carritoServicios.concepPrestado.descripcion}" />
+                                        </p:column>                               
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Monto
+                                            </f:facet> 
+                                            <h:outputText value="#{carritoServicios.costoCobrado}"/>
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Médico/Enfermera
+                                            </f:facet>                                       
+                                            <h:outputText value="#{carritoServicios.servProcQx.personal.nombreCompleto}" />
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Rol
+                                            </f:facet>                                       
+                                            <h:outputText value="#{carritoServicios.servProcQx.descripRol}" />
+                                        </p:column>                                      
+                                        <p:summaryRow>  
+                                            <p:column colspan="4" style="text-align:right">  
+                                                Total:  
+                                            </p:column>  
+                                            <p:column>  
+                                                <h:outputText value="#{carritoServicios.costoCobrado}">
+                                                    <f:convertNumber pattern="#.##"/>
+                                                </h:outputText>
+                                            </p:column>  
+                                        </p:summaryRow>
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column colspan="4" style="text-align:right" footerText="Costo total:" />
+                                                <p:column footerText="$#{oProceQuiruJB.proceQuiruJB.totalCarrito}" />
+                                            </p:row>
+                                        </p:columnGroup>
+                                    </p:dataTable>
+
+                                    Médico tratante: <h:outputText value="#{oProceQuiruJB.proceQuiruJB.episodioMedico.medTratante.nombreCompleto}" />
+                                    Observaciones:<h:outputText value="#{oProceQuiruJB.proceQuiruJB.procRealizado.notaMedica}" />
+
+                                </h:panelGrid>  
+                            </p:panel> 
+                            <p:separator />
+                            <center>
+                                <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" >
+                                    <p:printer target="panelDialog" />
+                                </p:commandButton>
+
+                                <p:commandButton value="Ver Comprobante Quirúrgico" oncomplete="diagSolicInter.show()" icon="ui-icon-document" />
+
+                                <p:commandButton value="Regresar" icon="ui-icon-arrowreturnthick-1-w" >
+                                    <p:ajax listener="#{oProceQuiruJB.proceQuiruJB.regresar()}"/>
+                                </p:commandButton>
+                            </center>
+                        </p:dialog>
+
+                        <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="iddlgPaquete" header="Detalle del Paquete "  widgetVar="dlgPaquete" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                            <center>
+                                <p:panel id="panelPaq" >
+                                    <center>
+                                        <p:panel>
+                                            <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                        </p:panel>
+                                    </center>
+                                    <p:panel>
+                                        <h4>Servicios que incluye el Paquete: #{oProceQuiruJB.paqueteContratado.paquete.nombre}</h4>
+                                        <h:outputText rendered="#{oProceQuiruJB.paqueteContratado.situacionPago=='0'}" value="Situación de Pago del Paquete: Pendiente de Pago"/>
+                                        <h:outputText rendered="#{oProceQuiruJB.paqueteContratado.situacionPago=='1'}" value="Situación de Pago del Paquete: Pago parcial"/>
+                                        <h:outputText rendered="#{oProceQuiruJB.paqueteContratado.situacionPago=='2'}" value="Situación de Pago del Paquete: Pagado"/>
+                                        <br/><br/>
+                                        <p:dataTable emptyMessage="Sin servicios registrados" sortBy="conceptoIngreso.descripcion" id="tbPaq" value="#{oProceQuiruJB.carritoServiciosPaq}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoServicios">
+                                            <f:facet name="header">
+                                                <h:outputText value="Servicios que incluye el Paquete: #{oProceQuiruJB.paqueteContratado.paquete.nombre}"/>                                    
+
+                                            </f:facet> 
+                                            <p:column >
+                                                <f:facet name="header"> 
+                                                    Servicio
+                                                </f:facet>  
+                                                <h:outputText value="#{carritoServicios.conceptoIngreso.descripcion}" />
+                                            </p:column>                                   
+                                            <p:column width="50%!important"  >
+                                                <f:facet name="header"> 
+                                                    <h:outputText value="Cantidad" />
+                                                </f:facet> 
+                                                <h:outputText value="#{carritoServicios.conceptoIngreso.cantidad}" /> 
+                                            </p:column>                                        
+                                            <p:column width="50%!important"  >
+                                                <f:facet name="header"> 
+                                                    Unidad de medida
+                                                </f:facet>
+                                                <h:outputText value="#{carritoServicios.conceptoIngreso.unidadMedida.descrip}" />                               
+                                            </p:column>
+                                            <p:column >
+                                                <f:facet name="header"> 
+                                                    Monto
+                                                </f:facet> 
+                                                <p:inputText size="5" readonly="true" value="#{carritoServicios.conceptoIngreso.montoNuevo}"/>   
+                                            </p:column>
+                                            <p:column >
+                                                <f:facet name="header"> 
+                                                    Observaciones
+                                                </f:facet> 
+                                                <h:outputText value="#{carritoServicios.obs}" />
+                                            </p:column>                                       
+
+                                            <p:summaryRow >  
+                                                <p:column colspan="4"  style="text-align:right">  
+                                                    Total:  
+                                                </p:column>  
+                                                <p:column>  
+                                                    <h:outputText value="#{carritoServicios.conceptoIngreso.montoNuevo*carritoServicios.conceptoIngreso.cantidad}">
+                                                        <f:convertNumber pattern="#.##"/>
+                                                    </h:outputText>
+                                                </p:column>  
+                                            </p:summaryRow>
+                                            <p:columnGroup type="footer">
+                                                <p:row >
+                                                    <p:column colspan="4" style="text-align:right" footerText="Costo total:" />
+                                                    <p:column footerText="$#{oProceQuiruJB.totalCarrito2}" />
+                                                </p:row>
+                                            </p:columnGroup>
+                                        </p:dataTable>
+                                    </p:panel>
+                                    <p:panel>
+                                        <h4>Descuentos que incluye</h4>
+                                        <p:dataTable emptyMessage="Sin descuentos registrados" id="tbPaq2" value="#{oProceQuiruJB.carritoDescuentos}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoDescuentos">
+                                            <f:facet name="header">
+                                                <h:outputText value="Descuentos que incluye"/>
+                                            </f:facet> 
+                                            <p:column>
+                                                <f:facet name="header"> 
+                                                    Línea
+                                                </f:facet>  
+                                                <h:outputText value="#{carritoDescuentos.lineaIngreso.descrip}" />
+                                            </p:column>
+                                            <p:column >
+                                                <f:facet name="header"> 
+                                                    Descuento
+                                                </f:facet>  
+                                                <h:outputText value="#{carritoDescuentos.pctDscto}" />
+                                            </p:column> 
+                                        </p:dataTable>
+                                    </p:panel>
+
+                                    <p:separator />
+                                    <center>                          
+                                        <p:commandButton oncomplete="dlgPaquete.hide()" value="Regresar" icon="ui-icon-arrowreturnthick-1-w"/>
+                                    </center>
+
+                                </p:panel> 
+                            </center>
+                        </p:dialog>
+
+                        <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="soliInter" header="Comprobante Quirúrgico"  widgetVar="diagSolicInter" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                            <h:form id="formaSoliInt">       
+                                <p:media id="contr" value="/resources/#{oProceQuiruJB.proceQuiruJB.rutaPDF}" width="800" height="500">  
+                                    Tu navegador no puede abrir el PDF, <h:outputLink value="/resources/#{oProceQuiruJB.proceQuiruJB.rutaPDF}">click</h:outputLink> para descargar el PDF.  
+                                </p:media>  
+                                <p:separator />
+                                <center>                                        
+                                    <p:commandButton value="Regresar"  oncomplete="diagSolicInter.hide()" icon="ui-icon-arrowreturnthick-1-w"/>
+                                </center>
+                            </h:form> 
+                        </p:dialog>  
+
+                    </h:form>
+                </center>    
+                <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="iddlgservPaq" header="Servicios a Consumir "  widgetVar="dlgServPaquete" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                    <h:form id="formServACons">
+                        <p:growl id="grow2" sticky="true" />
+                        <p:panel>
+                            <h4>Elegir servicios que incluye el Paquete: #{oProceQuiruJB.paqueteContratado.paquete.nombre}</h4>
+                            <h:outputText rendered="#{oProceQuiruJB.paqueteContratado.situacionPago=='0'}" value="Situación de Pago del Paquete: Pendiente de Pago"/>
+                            <h:outputText rendered="#{oProceQuiruJB.paqueteContratado.situacionPago=='1'}" value="Situación de Pago del Paquete: Pago parcial"/>
+                            <h:outputText rendered="#{oProceQuiruJB.paqueteContratado.situacionPago=='2'}" value="Situación de Pago del Paquete: Pagado"/>
+                            <br/><br/>
+                            
+                            <p:dataTable emptyMessage="Sin servicios registrados" 
+                                         rowKey="#{carServACons.idGenerico}"  
+                                         sortBy="descripcion" id="tbServPaq" 
+                                         value="#{oProceQuiruJB.carritoServiciosAConsumir}" 
+                                         rows="6" paginator="true" paginatorPosition="bottom" var="carServACons">
+                                
+                                <p:ajax event="rowSelectRadio" listener="#{oProceQuiruJB.onRowSelect}" update=":formServACons:MedEnf"  />
+                                
+                                <f:facet name="header">
+                                    <h:outputText value="Servicios que incluye el Paquete: #{oProceQuiruJB.paqueteContratado.paquete.nombre}"/>                                    
+                                </f:facet> 
+                                
+                                <p:column selectionMode="single" >
+                                    <f:facet name="header"> 
+                                        Servicio
+                                    </f:facet>  
+                                </p:column>
+                                <p:column >
+                                    <f:facet name="header"> 
+                                        Servicio
+                                    </f:facet>  
+                                    <h:outputText value="#{carServACons.descripcion}" />
+                                </p:column>                                   
+                                <p:column width="50%!important"  >
+                                    <f:facet name="header"> 
+                                        <h:outputText value="Cantidad" />
+                                    </f:facet> 
+                                    <h:outputText value="#{carServACons.cantidad}" /> 
+                                </p:column>                                        
+                                <p:column width="50%!important"  >
+                                    <f:facet name="header"> 
+                                        Unidad de medida
+                                    </f:facet>
+                                    <h:outputText value="#{carServACons.unidadMedida.descrip}" />                               
+                                </p:column>
+                                <p:column >
+                                    <f:facet name="header"> 
+                                        Monto
+                                    </f:facet> 
+                                    <h:outputText value="#{carServACons.montoNuevo}"/>   
+                                </p:column>                                   
+                                <p:summaryRow >  
+                                    <p:column colspan="4"  style="text-align:right">  
+                                        Total:  
+                                    </p:column>  
+                                    <p:column>  
+                                        <h:outputText value="#{carServACons.montoNuevo*carServACons.cantidadACobrar}">
+                                            <f:convertNumber pattern="#.##"/>
+                                        </h:outputText>
+                                    </p:column>  
+                                </p:summaryRow>
+                            </p:dataTable>
+                            <p:separator/>
+                            <p:panelGrid columns="2">
+                                <h:outputText value="Tipo Médico o Enfermera" /> 
+                                <p:selectOneMenu id="tipoMedEnf" value="#{oProceQuiruJB.tipoMedEnf}" >
+                                    <f:selectItem itemLabel="Selecciona" itemValue=""/>
+                                    <f:selectItem itemLabel="Médicos" itemValue="Médicos"/>
+                                    <f:selectItem itemLabel="Enfermeras" itemValue="Enfermeras"/>
+                                    <p:ajax listener="#{oProceQuiruJB.validaMedicoEnfermera()}" update=":formServACons:MedEnf :formServACons:outTipoMedEnf" />
+                                </p:selectOneMenu>
+
+                                <h:outputText id="outTipoMedEnf" value="#{oProceQuiruJB.tipoMedEnf}" /> 
+                                <p:selectOneMenu label="#{oProceQuiruJB.tipoMedEnf}" id="MedEnf" converter="#{oProceQuiruJB}" value="#{oProceQuiruJB.medEnf}" >
+                                    <f:selectItem itemLabel="Selecciona" itemValue=""/>
+                                    <f:selectItems value="#{oProceQuiruJB.listaMedEnf}"  var="oMedEnf" 
+                                                   itemLabel="#{oMedEnf.nombreCompleto}" 
+                                                   itemValue="#{oMedEnf}" /> 
+                                </p:selectOneMenu>
+                                Rol: 
+                                <p:selectOneMenu label="Rol" id="rol" value="#{oProceQuiruJB.rol}" >
+                                    <f:selectItem itemLabel="Selecciona" itemValue=""/>
+                                    <f:selectItem itemLabel="Cirujano" itemValue="C"/>
+                                    <f:selectItem itemLabel="Anestesiólogo" itemValue="A"/>
+                                    <f:selectItem itemLabel="Primer ayudante" itemValue="P"/>
+                                    <f:selectItem itemLabel="Segundo ayudante" itemValue="S"/>
+                                    <f:selectItem itemLabel="Enfermera Instrumentista" itemValue="I"/>
+                                </p:selectOneMenu>
+                            </p:panelGrid>
+                            <p:separator/>
+                            <center>
+                                <p:commandButton actionListener="#{oProceQuiruJB.agregaServicio2}" 
+                                                 ajax="true" update=":formulario:tb2 grow2" 
+                                                 value="Seleccionar" 
+                                                 icon="ui-icon-cart"/>
+                                <p:commandButton value="Regresar"  
+                                                 oncomplete="dlgServPaquete.hide()" 
+                                                 icon="ui-icon-arrowreturnthick-1-w"/>
+                            </center>
+                        </p:panel> 
+
+                    </h:form>
+                </p:dialog>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

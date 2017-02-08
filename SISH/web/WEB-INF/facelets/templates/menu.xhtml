@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8' ?> 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    
+    
+        <h:form style="width:170px"  >
+            
+           
+                <p:growl id="messages"/>
+                <p:panelMenu style="font-size: 12px; width: 150px" model="#{oMenu.model}"  />
+                <br/>
+                <p:commandButton value="Salir" action="#{oUsuario.salir()}" />
+        </h:form>
+    
+</html>
+

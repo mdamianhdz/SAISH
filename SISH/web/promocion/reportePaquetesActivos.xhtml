@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Reporte de Paquetes Activos</title>
+            <h:body>
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    
+                    <center>
+                        <h2>Reporte de Paquetes Activos</h2>
+                        <p:panelGrid id="operaciones">
+                            <p:row>
+                                <p:column><!--Lista de operaciones(Tipo de reporte)-->
+                                    <p:outputLabel value="Tipo de Reporte: " style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column><!--Escoger tipo de reporte-->
+                                    <p:selectOneMenu required="true" requiredMessage="Se requiere un tipo de Reporte" 
+                                                     value="#{oRptPqPromo.ope}">
+                                        <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                        <f:selectItem itemLabel="Todos" itemValue="T"/>
+                                        <f:selectItem itemLabel="Tipo Paquete" itemValue="Pq"/>
+                                        <f:selectItem itemLabel="Personal que realiza contrato" itemValue="Pc"/>                                       
+                                        <p:ajax update="operaciones" listener="#{oRptPqPromo.validaOpe()}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column rendered="#{oRptPqPromo.tipoPaqueteb}"><!--Dependiento del tipo de reporte, se hace la seleccion-->
+                                    <p:outputLabel rendered="#{oRptPqPromo.tipoPaqueteb}" value="Tipo de Paquete: " style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column rendered="#{oRptPqPromo.tipoPaqueteb}">
+                                   <p:selectOneMenu rendered="#{oRptPqPromo.tipoPaqueteb}" required="true" requiredMessage="Se requiere un tipo de paquete" 
+                                                    value="#{oRptPqPromo.tpq}">
+                                        <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                        <f:selectItem itemLabel="Pediátrico" itemValue="0"/>
+                                        <f:selectItem itemLabel="Maternidad" itemValue="1"/>
+                                        <f:selectItem itemLabel="Quirúrgico" itemValue="2"/>                                       
+                                        <f:selectItem itemLabel="Personalizado" itemValue="3"/>
+                                    </p:selectOneMenu>
+                                </p:column>   
+                                <p:column rendered="#{oRptPqPromo.tipoPersonalb}"><!--Dependiento del tipo de reporte, se hace la seleccion-->
+                                    <p:outputLabel rendered="#{oRptPqPromo.tipoPersonalb}" value="Personal que realiza contrato: " style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column rendered="#{oRptPqPromo.tipoPersonalb}">
+                                    <p:selectOneMenu rendered="#{oRptPqPromo.tipoPersonalb}" required="true" 
+                                                     requiredMessage="Se requiere un Personal que realice contrato" value="#{oRptPqPromo.personal}">
+                                        <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                        <f:selectItems value="#{oRptPqPromo.personalContrato}" var="ph"  
+                                                       itemLabel="#{ph.descLO}" 
+                                                       itemValue="#{ph.descLO}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                 <p:column><!--Fecha-->
+                                    <p:outputLabel value="Fecha:" style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column colspan="3">del&nbsp;&nbsp;
+                                    <p:calendar value="#{oRptPqPromo.fechaini}" showOn="button">
+                                        <p:ajax event="dateSelect" listener="#{oRptPqPromo.validaFecha()}" update="msg" />
+                                    </p:calendar>&nbsp;&nbsp;al&nbsp;&nbsp;
+                                    <p:calendar value="#{oRptPqPromo.fechafin}" showOn="button">
+                                        <p:ajax event="dateSelect" listener="#{oRptPqPromo.validaFecha()}" update="msg" />
+                                    </p:calendar>
+                                </p:column>
+                                <p:column><!--Boton consultar-->
+                                    <p:commandButton value="Consultar">
+                                        <p:ajax update="rptPqActivados" 
+                                                listener="#{oRptPqPromo.buscaReportesPaquetesActivados()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/>
+                        
+                        <!--Tabla de Datos con sus respectivos campos del Detalle-->
+                    <p:panel id="rptPqActivados" header="Detalle de Paquetes Activados">
+                        <h:panelGrid columns="4" width="60%">
+                            <h:outputText value="Reporte de Paquetes Activos del:  "/>
+                            <h:outputText value="#{oRptPqPromo.fechaini}" style="font-weight: bold; text-transform: capitalize;">
+                                    <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                                </h:outputText>
+                                <h:outputText value="Al: "/>
+                                <h:outputText value="#{oRptPqPromo.fechafin}" style="font-weight: bold; text-transform: capitalize;">
+                                    <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                                </h:outputText>                                        
+                        </h:panelGrid>
+                        
+                        <!--Tabla-->
+                        <p:dataTable id="rptPaquetesActivados" var="pqC" value="#{oRptPqPromo.listaRptPquetes}" paginator="true" 
+                                     paginatorPosition="bottom" emptyMessage="No hay registros" style="width:100%" 
+                                     selection="#{oRptPqPromo.rptPaquetes}">                            
+                            <p:column headerText="Fecha">
+                                <h:outputText value="#{pqC.registro.registro}">
+                                    <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Tipo de Paquete">
+                                <h:outputText value="#{pqC.tipoPq.descrip}"/>
+                            </p:column>
+                            <p:column headerText="Nombre del Paciente">
+                                <h:outputText value="#{pqC.nombrePac.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Costo del Paquete">
+                                <h:outputText value="$ #{pqC.costo.costo}"/>
+                            </p:column>
+                            <p:column headerText="Monto Pagado hasta el momento">
+                                <h:outputText value="$ #{pqC.anticipo.anticipo}"/>
+                            </p:column>
+                            <p:column headerText="Monto pendiente por pagar">
+                                <h:outputText value="$ #{pqC.montoPendientePagar}"/>
+                            </p:column>
+                            <p:column headerText="Nombre del personal que dio informes">
+                                <h:outputText value="#{pqC.persP.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Nombre del personal que hizo el contrato">
+                                <h:outputText value="#{pqC.persV.nombre}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                        <h:panelGrid columns="2">
+                                <p:commandButton value="Imprimir" type="button" 
+                                                 icon="ui-icon-print" >  
+                                     <p:printer target="rptPqActivados" />  
+                                 </p:commandButton>
+                        </h:panelGrid>
+                    </center>
+                </h:form>
+            </h:body>
+        </ui:define>
+    </ui:composition>
+</html>
+

@@ -1,0 +1,160 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inicio</title>
+            <h:body>
+                <center><h3> Registrar Egreso por Compra</h3></center>
+
+                <h:form id="form1">
+                    <p:growl id="growl" showDetail="true"/>
+                    #{oRegEgreCom.limpiaPagina()}
+                    <p:panel id="panelMV">
+                        <h:panelGrid columns="3">
+                            <p:outputLabel value="Vale No. "/>
+                            <p:selectOneMenu label="Vale No. " id="sMVE" value="#{oRegEgreCom.idvale}">
+                                <f:selectItem itemLabel="Selecciona número de Vale" itemValue=""/>
+                                <f:selectItems value="#{oRegEgreCom.listVE}" var="oVE"
+                                               itemLabel="#{oVE.idVale}"
+                                               itemValue="#{oVE.idVale}"/>
+                                <p:ajax update="lblNE lblMV" listener="#{oRegEgreCom.buscaValeEfectivo()}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+                        <br></br>
+                        <br></br>
+                        <h:panelGrid columns="4"> 
+                            <p:outputLabel value="Nombre del Empleado:  "/>
+                            <p:outputLabel id="lblNE" value="#{oRegEgreCom.valeEfectivo.personalHospitalario.nombreCompleto}" style="font-weight: bold"/>
+
+                            <p:outputLabel value="Monto del Vale: "/>
+                            <p:outputLabel id="lblMV" value="#{oRegEgreCom.valeEfectivo.opeCajaConcep.monto}" style="font-weight: bold">
+                                <f:convertNumber pattern="#0.00"/>
+                            </p:outputLabel>
+
+                            <p:outputLabel value="Monto de la Compra: "/>
+                            <p:inputText label="Monto de la Compra: " id="inMonto" value="#{oRegEgreCom.monto}" >
+                                <f:convertNumber pattern="#0.00"/>
+                            </p:inputText>
+
+                            <p:outputLabel value="Proveedor "/>
+                            <p:selectOneMenu label="Proveedor " id="sMP" value="#{oRegEgreCom.idProv}" >
+                                <f:selectItem  itemLabel="Seleccione un Proveedor" itemValue=""/>
+                                <f:selectItems value="#{oRegEgreCom.listPV}" var="oPV"
+                                               itemLabel="#{oPV.nombreRazSoc}"
+                                               itemValue="#{oPV.idProv}"/>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Línea de Egreso "/>
+                            <p:selectOneMenu label="Línea de Egreso" id="sMLE" value="#{oRegEgreCom.cveLineaEgre}" >
+                                <f:selectItem itemLabel="Seleccione una Linea de Egreso" itemValue=""/>
+                                <f:selectItems value="#{oRegEgreCom.listLE}" var="oLE"
+                                               itemLabel="#{oLE.descripcion}"
+                                               itemValue="#{oLE.cveLineaEgr}"/>
+                                <p:ajax update="sMSE" listener="#{oRegEgreCom.buscaSublineasEgreso()}"/>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Sublínea "/>
+                            <p:selectOneMenu label="Sublínea" id="sMSE" value="#{oRegEgreCom.cveSublineaEgre}" >
+                                <f:selectItem itemLabel="Seleccione una Sublinea" itemValue=""/>
+                                <f:selectItems value="#{oRegEgreCom.listSE}" var="oSE"
+                                               itemLabel="#{oSE.descripcion}"
+                                               itemValue="#{oSE.cveSublineaEgre}"/>
+                                <p:ajax update="sMCE" listener="#{oRegEgreCom.buscaConceptoEgreso()}"/>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Concepto "/>
+                            <p:selectOneMenu label="Concepto" id="sMCE" value="#{oRegEgreCom.cveConcepEgr}"  >
+                                <f:selectItem itemLabel="Seleccione un Concepto" itemValue=""/>
+                                <f:selectItems value="#{oRegEgreCom.listCE}" var="oCE"
+                                               itemLabel="#{oCE.descripcion}"
+                                               itemValue="#{oCE.cveConcepEgr}"/>
+                                <p:ajax update="sMAS sMAF" listener="#{oRegEgreCom.areasConcepEgre()}"/>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Area Física "/>
+                            <p:selectOneMenu label="Area Física " id="sMAF" value="#{oRegEgreCom.cveAreaFis}" >
+                                <f:selectItem itemLabel="Seleccione Area Física" itemValue="" />
+                                <f:selectItems value="#{oRegEgreCom.listAF}" var="oAF"
+                                               itemLabel="#{oAF.descrip}"
+                                               itemValue="#{oAF.cve}"/>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Area de Servicio "/>
+                            <p:selectOneMenu label="Area de Servicio " id="sMAS" value="#{oRegEgreCom.cveAreaServ}" >
+                                <f:selectItem  itemLabel="Seleccione Area de Servicio" itemValue=""/>
+                                <f:selectItems value="#{oRegEgreCom.listAS}" var="oAS"
+                                               itemLabel="#{oAS.descrip}"
+                                               itemValue="#{oAS.cve}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+                    </p:panel>
+                    <br></br>
+                    <br></br>
+                    <center>
+                        <p:commandButton value="Guardar" >
+                            <p:ajax listener="#{oRegEgreCom.validaEgresoCompra}" 
+                                     update="growl :form:display" process="@this,panelMV"/>
+                        </p:commandButton>
+                    </center>
+                </h:form>
+                <h:form id="form">                    
+                    <p:dialog header="Operación Exitosa" id="dialogE" widgetVar="diaE" appendTo="@(body)" closable="false" resizable="false" modal="true">
+                        <h:panelGrid id="display">
+                            <p:column>    
+                                Se ha registrado egreso por la cantidad de $<p:outputLabel id="monto" style="font-weight: bold" value="#{oRegEgreCom.monto}"><f:convertNumber pattern="#0.00"></f:convertNumber></p:outputLabel> 
+                            </p:column>
+                            <p:column>   
+                                por concepto de compra y se ha generado el Folio Caja <p:outputLabel style="font-weight: bold" value="#{oRegEgreCom.folioRet}"/>.
+                            </p:column>
+                        </h:panelGrid>
+                        <br></br>
+                        <br></br>
+                        <center>
+                            <h:panelGrid columns="2">   
+                                <p:commandButton label="Regresar" value="Regresar">
+                                    <p:ajax listener="#{oRegEgreCom.regresar()}" />
+                                </p:commandButton>
+                                <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" onclick="printTicket();
+                                        return false;"/>
+                            </h:panelGrid>
+                        </center>
+                    </p:dialog>
+                </h:form>
+                <script>
+                                    var ticket;
+                                    function printTicket() {
+                                        ticket = {
+                                            "reimpresion": false,
+                                            "title": 1,
+                                            "fecha": "03-MAR-14",
+                                            "hora": "10:34",
+                                            "folioope": #{oRegEgreCom.folioRet},
+                                            "doctor": "Dr. Miguel Ángel Dámian Hernández",
+                                            "recfiscal": "",
+                                            "mes": "SEPTIEMBRE",
+                                            "anio": "2013",
+                                            "usuario": "Fernando Cabrera Brenis",
+                                            "servicios": [
+                                                {
+                                                    "cantidad": 1,
+                                                    "descripcion": "PAGO DE RENTA",
+                                                    "precio": 1000
+                                                }
+                                            ]
+                                        };
+                                        print(ticket);
+                                    }
+                </script>
+
+
+
+
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

@@ -1,0 +1,426 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Personal Hospitalario</title>
+            <h:body>
+                <center>
+                    <h2>Administraci&oacute;n de personal hospitalario</h2>
+                        <p:dialog id="dlgPersonalHosp" widgetVar="dlgPH"  
+                                  position="center" closable="false" 
+                                  dynamic="true" resizable="false"
+                                  appendTo="@(body)" modal="true">
+                            <center>
+                                <h3>Administraci&oacute;n de #{oPersonalHosp.nomCatalogo}</h3>
+                                <h:form id="form2">
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Folio:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oPersonalHosp.currentPersonalHosp.folioPers}" disabled="true">
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Cedula profesional:"/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputText id="txtCedProf"
+                                                             value="#{oPersonalHosp.currentPersonalHosp.cedProf}">
+                                                    <f:validateLength maximum="7"></f:validateLength>
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Nombre*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtNombre"
+                                                             value="#{oPersonalHosp.currentPersonalHosp.nombre}"
+                                                             required="true">
+                                                    <f:validateLength maximum="50"></f:validateLength>
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Apellido Paterno*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtApPaterno"
+                                                             value="#{oPersonalHosp.currentPersonalHosp.apellidoPaterno}"
+                                                             required="true">
+                                                    <f:validateLength maximum="50"></f:validateLength>
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Apellido materno:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtApMaterno"
+                                                                value="#{oPersonalHosp.currentPersonalHosp.apellidoMaterno}">
+                                                    <f:validateLength maximum="50"></f:validateLength>
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Fecha de nacimiento*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:calendar id="txtFechaNac"
+                                                            value="#{oPersonalHosp.currentPersonalHosp.nac}"
+                                                            pattern="dd-MM-yyyy"
+                                                            yearRange="c-100:c+0" 
+                                                            navigator="true"
+                                                            required="true">
+                                                    <p:ajax></p:ajax>
+                                                </p:calendar>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Estado Civil:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu id="cmbEdoCiv"
+                                                                 value="#{oPersonalHosp.currentPersonalHosp.edoCiv.cve}">
+                                                    <p:ajax></p:ajax>
+                                                    <f:selectItem itemValue=""
+                                                                  itemLabel="Seleccione">
+                                                    </f:selectItem>
+                                                    <f:selectItems value="#{oEdoCivil.listaEdoCivil}" var="oEdoCiv"
+                                                                   itemLabel="#{oEdoCiv.descrip}"
+                                                                   itemValue="#{oEdoCiv.cve}" >   
+                                                    </f:selectItems>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Sexo*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneRadio id="txtSexo"
+                                                                  value="#{oPersonalHosp.currentPersonalHosp.genero}"
+                                                                  required="true">
+                                                    <p:ajax></p:ajax>
+                                                    <f:selectItem itemValue="M" itemLabel="Masculino"></f:selectItem>
+                                                    <f:selectItem itemValue="F" itemLabel="Femenino"></f:selectItem>
+                                                </p:selectOneRadio>
+                                            </p:column>  
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="RFC*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtRFC"
+                                                             value="#{oPersonalHosp.currentPersonalHosp.RFC}" required="true">
+                                                    <f:validateRegex pattern="([A-Z]{4}\d{6}[\dA-Z]{3})|([A-Z]{3}\d{6}[\dA-Z]{3})"></f:validateRegex>
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="CURP*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtCURP"
+                                                             value="#{oPersonalHosp.currentPersonalHosp.CURP}" required="true">
+                                                    <f:validateRegex pattern="[A-Z]{4}\d{6}[HM][A-Z]{5}[\dA-Z]\d"></f:validateRegex>
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Activo:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectBooleanButton 
+                                                    id="txtActivo"
+                                                    value="#{oPersonalHosp.currentPersonalHosp.activo}"
+                                                    label="Activo" offLabel="NO" onLabel="SI">
+                                                    <p:ajax></p:ajax>
+                                                </p:selectBooleanButton>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row rendered="#{oPersonalHosp.renDatPershosp}">
+                                            <p:column>
+                                                <p:outputLabel value="Turno*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu 
+                                                    id="cmbTurno"
+                                                    value="#{oPersonalHosp.currentPersonalHosp.turno.cve}"
+                                                    required="true">
+                                                    <p:ajax></p:ajax>
+                                                    <f:selectItem itemValue=""
+                                                                  itemLabel="Seleccione">
+                                                    </f:selectItem>
+                                                    <f:selectItems value="#{oTurno.listaTurnos}" var="oTu"
+                                                               itemLabel="#{oTu.desc}"
+                                                               itemValue="#{oTu.cve}"> 
+                                                    </f:selectItems> 
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Puesto*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu 
+                                                    id="cmbPuesto"
+                                                    value="#{oPersonalHosp.currentPersonalHosp.puesto.cve}"
+                                                    required="true">
+                                                    <p:ajax listener="#{oPersonalHosp.campos()}" 
+                                                            update=":form2:cmbEspecialidades :form2:txtCedEsp :form2:txtSSA :form2:txtHorarioEsp">
+                                                    </p:ajax>
+                                                    <f:selectItem itemValue=""
+                                                                  itemLabel="Seleccione">
+                                                    </f:selectItem>
+                                                    <f:selectItems value="#{oPuesto.listaPuestos}" var="oPu"
+                                                                   itemLabel="#{oPu.descrip}"
+                                                                   itemValue="#{oPu.cve}"> 
+                                                    </f:selectItems>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Salario*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oPersonalHosp.currentPersonalHosp.salario}"
+                                                             required="true">
+                                                    <f:validateDoubleRange maximum="999999999.99" minimum="00.00"></f:validateDoubleRange>
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row rendered="#{oPersonalHosp.renDatPershosp}">
+                                            <p:column>
+                                                <p:outputLabel value="&Aacute;rea Funcional:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oPersonalHosp.currentPersonalHosp.areaFunc.cveAreaFun}">
+                                                    <p:ajax></p:ajax>
+                                                    <f:selectItem itemValue=""
+                                                                  itemLabel="Seleccione">
+                                                    </f:selectItem>
+                                                    <f:selectItems value="#{oAreaFunc.listaAreasFunc}" var="oAF" 
+                                                                   itemLabel="#{oAF.descripcion}" 
+                                                                   itemValue="#{oAF.cveAreaFun}" >
+                                                    </f:selectItems>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Servicios que atiende:"/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:pickList id="pickList" value="#{oPersonalHosp.areas}" var="oas"
+                                                            itemLabel="#{oas.descrip}"
+                                                            itemValue="#{oas.cve}"  >
+                                                    
+                                                </p:pickList>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row rendered="#{oPersonalHosp.renDatPershosp}">
+                                            <p:column>
+                                                <p:outputLabel value="Especialidad*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu id="cmbEspecialidades"
+                                                                 value="#{oPersonalHosp.currentPersonalHosp.esp.cve}"
+                                                                 disabled="#{oPersonalHosp.disDatosMed}" required="true">
+                                                    <p:ajax></p:ajax>
+                                                    <f:selectItem itemValue=""
+                                                                  itemLabel="Seleccione">
+                                                    </f:selectItem>
+                                                    <f:selectItems value="#{oEspecialidad.listaEspecialidades}" var="oEsp"
+                                                                   itemLabel="#{oEsp.descrip}"
+                                                                   itemValue="#{oEsp.cve}"> 
+                                                    </f:selectItems>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Cedula de especialidad:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtCedEsp" 
+                                                             value="#{oPersonalHosp.currentPersonalHosp.cedEsp}"
+                                                             disabled="#{oPersonalHosp.disDatosMed}">
+                                                    <f:validateLength maximum="7"></f:validateLength>
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Reg SSA:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtSSA"
+                                                             value="#{oPersonalHosp.currentPersonalHosp.regSSA}"
+                                                             disabled="#{oPersonalHosp.disDatosMed}">
+                                                    <f:validateLength maximum="5"></f:validateLength>
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row rendered="#{oPersonalHosp.renDatPershosp}">
+                                            <p:column>
+                                                <p:outputLabel value="Horario especial:"/>
+                                            </p:column>
+                                            <p:column colspan="5">
+                                                <p:inputText id="txtHorarioEsp" maxlength="50" size="50"
+                                                             value="#{oPersonalHosp.currentPersonalHosp.horarioEsp}"
+                                                             disabled="#{oPersonalHosp.disDatosMed}">
+                                                    <p:ajax></p:ajax>
+                                                    <f:validateRegex pattern="(((((Lu|Ma|Mi|Ju|Vi|Sa|Do)-(Lu|Ma|Mi|Ju|Vi|Sa|Do))|(Lu|Ma|Mi|Ju|Vi|Sa|Do)),(((0[0-9])|(1[0-9])|(2[0-3])):[0-5][0-9])-(((0[0-9])|(1[0-9])|(2[0-3])):[0-5][0-9]))(,((((Lu|Ma|Mi|Ju|Vi|Sa|Do)-(Lu|Ma|Mi|Ju|Vi|Sa|Do))|(Lu|Ma|Mi|Ju|Vi|Sa|Do)),(((0[0-9])|(1[0-9])|(2[0-3])):[0-5][0-9])-(((0[0-9])|(1[0-9])|(2[0-3])):[0-5][0-9]))){0,2})?">
+                                                    </f:validateRegex>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row rendered="#{oPersonalHosp.renDatMedExt}">
+                                            <p:column>
+                                                <p:outputLabel value="Turno*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu id="cmbTurnoExt"
+                                                                 value="#{oPersonalHosp.currentPersonalHosp.turno.cve}"
+                                                                 required="true">
+                                                    <p:ajax></p:ajax>
+                                                    <f:selectItem itemValue=""
+                                                                  itemLabel="Seleccione">
+                                                    </f:selectItem>
+                                                    <f:selectItems value="#{oTurno.listaTurnos}" var="oTu"
+                                                               itemLabel="#{oTu.desc}"
+                                                               itemValue="#{oTu.cve}"> 
+                                                    </f:selectItems> 
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Especialidad*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu id="cmbEspecialidadesEXT"
+                                                                 value="#{oPersonalHosp.currentPersonalHosp.esp.cve}"
+                                                                 required="true">
+                                                    <p:ajax></p:ajax>
+                                                    <f:selectItem itemValue=""
+                                                                  itemLabel="Seleccione">
+                                                    </f:selectItem>
+                                                    <f:selectItems value="#{oEspecialidad.listaEspecialidades}" var="oEsp"
+                                                                   itemLabel="#{oEsp.descrip}"
+                                                                   itemValue="#{oEsp.cve}"> 
+                                                    </f:selectItems>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Cedula de especialidad:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtCedEspEXT" 
+                                                             value="#{oPersonalHosp.currentPersonalHosp.cedEsp}">
+                                                    <f:validateLength maximum="7"></f:validateLength>
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row rendered="#{oPersonalHosp.renDatMedExt}">
+                                        <p:column>
+                                                <p:outputLabel value="Reg SSA:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText id="txtRegSSAEXT"
+                                                         value="#{oPersonalHosp.currentPersonalHosp.regSSA}">
+                                                <f:validateLength maximum="5"></f:validateLength>
+                                                <p:ajax></p:ajax>
+                                            </p:inputText>
+                                        </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Convenio:"/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:selectBooleanButton value="#{oPersonalHosp.currentPersonalHosp.convenio}"
+                                                                       label="Convenio:" offLabel="NO" onLabel="SI">
+                                                    <p:ajax></p:ajax>
+                                                </p:selectBooleanButton>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                    <br/><br/>
+                                    <p:commandButton value="Guardar"
+                                                     update=":formulario:msg :formulario:dtPersonalHosp"
+                                                     actionListener="#{oPersonalHosp.preGuarda}">
+                                    </p:commandButton>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <p:commandButton value="Regresar" 
+                                                     oncomplete="PF('dlgPH').hide()">
+                                    </p:commandButton>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                    <h:form>
+                        <p:selectOneRadio value="#{oPersonalHosp.tipPer}">
+                            <p:ajax update=":formulario:dtPersonalHosp" listener="#{oPersonalHosp.mostrarPersonal()}"/>
+                            <f:selectItem itemLabel="Personal hospitalario" itemValue="1"></f:selectItem>
+                            <f:selectItem itemLabel="M&eacute;dico Externo" itemValue="2"></f:selectItem>
+                        </p:selectOneRadio>   
+                    </h:form>
+                    <br></br>
+                    <br></br>
+                    <h:form id="formulario"> 
+                        <p:growl id="msg" sticky="true" showDetail="true"/> 
+                        <p:dataTable id="dtPersonalHosp" value="#{oPersonalHosp.listaPersonal}" rows="7" editable="true" paginator="true" 
+                                     paginatorPosition="bottom" var="oPH"
+                                     filteredValue="#{oPersonalHosp.persFiltrado}"
+                                     style="width: 900px" selection="#{oPersonalHosp.selectedPersonalHosp}" rowKey="#{oPH.folioPers}">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single" width="25"/>
+                            <p:column headerText="Apellido Paterno" 
+                                    filterBy="#{oPH.apellidoPaterno}"
+                                    filterMatchMode="startsWith">
+                                <h:outputText value="#{oPH.apellidoPaterno}"/>
+                            </p:column>
+                            <p:column headerText="Apellido Materno"
+                                    filterBy="#{oPH.apellidoMaterno}"
+                                    filterMatchMode="startsWith" >
+                                <h:outputText value="#{oPH.apellidoMaterno}"/>
+                            </p:column>
+                            <p:column headerText="Nombre" 
+                                    filterBy="#{oPH.nombre}"
+                                    filterMatchMode="startsWith">
+                                <h:outputText value="#{oPH.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Puesto" >
+                                <h:outputText value="#{oPH.puesto.descrip}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Modificar #{oPersonalHosp.nomCatalogo}" 
+                                                 disabled="#{oPersonalHosp.disBoton}"
+                                                 icon="ui-icon-pencil"
+                                                 action="#{oPersonalHosp.llenaPick(oPersonalHosp.currentPersonalHosp.folioPers)}"
+                                                 update=":form2:pickList"
+                                >
+                                    <p:ajax update=":formulario:msg :dlgPersonalHosp" 
+                                            listener="#{oPersonalHosp.confModificar()}"/>
+                                </p:commandButton>
+                                
+                                <p:commandButton disabled="#{oPersonalHosp.disBoton}"
+                                                 value="Agregar #{oPersonalHosp.nomCatalogo}" 
+                                                 icon="ui-icon-pencil" oncomplete="dlgPH.show()"
+                                                 action="#{oPersonalHosp.llenaPick(0)}"
+                                                 update=":form2:pickList"
+                                                 >
+                                    <p:ajax update=":formulario:msg :dlgPersonalHosp" 
+                                            listener="#{oPersonalHosp.confInsertar()}"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable> 
+                    </h:form>
+                </center> 
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

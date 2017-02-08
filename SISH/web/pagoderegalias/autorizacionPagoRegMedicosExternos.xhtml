@@ -1,0 +1,223 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+<ui:define name="cuerpo">
+<title>Autorización de pago de regalías a medicos externos</title>
+<h:body>
+    
+    #{oRegMed.limpiar()}
+       <h:form id="form">  
+        
+       <p:growl id="msgs" showDetail="true"/>
+       <p:panel header="Autorización de pago de regalías a Médicos Externos" style="margin-bottom:10px;">  
+           
+           <h:panelGrid columns="5"  style="width: 50%;">
+                <h:outputText value="Fecha inicial: " style="font-weight: bold"/>
+                <p:calendar value="#{oRegMed.fechaInicio}" 
+                            showOn="button" locale="es">
+                    <p:ajax event="dateSelect" 
+                            listener="#{oRegMed.validaFecha}" 
+                            update="msgs" />
+                </p:calendar>
+                <h:outputText value="  Fecha final: " style="font-weight: bold"/>
+                <p:calendar value="#{oRegMed.fechaFin}" 
+                            showOn="button" locale="es">
+                    <p:ajax event="dateSelect" 
+                            listener="#{oRegMed.validaFecha}" 
+                            update="msgs" />
+                </p:calendar>
+                <p:commandButton actionListener="#{oRegMed.obtieneMedicos()}" value="Buscar" update=":form:regaliasDT :form:msgs" />  
+           </h:panelGrid>
+            <br/>
+           <p:dataTable id="regaliasDT" var="cReg" value="#{oRegMed.regaliasPorMedico}" rows="7" paginator="true" 
+                        paginatorPosition="bottom" selection="#{oRegMed.selectedPagoRegalias}" >
+                <f:facet name="header"> Regalías a médicos externos </f:facet>
+                <p:column headerText="Médico">
+                    <h:outputText value="#{cReg.personalHospitalario.nombreCompleto}" />
+                </p:column>
+                <p:column headerText="Total de Regalías Por Autorizar">
+                    <center><h:outputText value="#{cReg.montoTotal}">
+                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                        </h:outputText></center>
+                </p:column>
+                <p:column style="width:32px;text-align: center">
+                    <p:commandButton update=":form:regaliasDetail" 
+                                     rendered="#{cReg.montoTotal>0}"
+                                     oncomplete="PF('regaliasDialog').show()" 
+                                     icon="ui-icon-search" title="View">
+                        <f:setPropertyActionListener value="#{cReg}" target="#{oRegMed.selectedPagoRegalias}" />
+                    </p:commandButton>
+                </p:column>
+           </p:dataTable>
+       </p:panel>
+       
+       <p:dialog header="Regalías del médico externo"  appendTo="@(body)" 
+                 widgetVar="regaliasDialog" modal="true" closable="false" 
+                 showEffect="fade" hideEffect="fade" resizable="true" >
+           <h:panelGrid id="regaliasDetail">
+               <p:scrollPanel mode="native" style="height:450px;">
+             
+               #{oRegMed.llena()}
+               <p:panel id="rptVista">
+                    <p:panel id="datosMed">
+                        <h:outputText value="Médico:" />
+                        <h:outputText value="#{oRegMed.selectedPagoRegalias.personalHospitalario.nombreCompleto}" style="font-weight: bold"/><br/>
+                        <h:outputText value="Periodo:"/>
+                        <h:outputText value="#{oRegMed.selectedPagoRegalias.fechaInicio}" style="font-weight: bold; text-transform: capitalize;">
+                            <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                        </h:outputText>
+                        <h:outputText value=" al "/>
+                        <h:outputText value="#{oRegMed.selectedPagoRegalias.fechaFin}" style="font-weight: bold; text-transform: capitalize;">
+                            <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                        </h:outputText>
+                    </p:panel>
+                   
+                    <h:form>
+                    <h:outputText value="SELECCIONE LOS SERVICIOS PARA REGALÍAS:"/>
+                    <p:dataTable  id="dtRegalias2" value="#{oRegMed.serviciosDelMedico}" paginator="true" paginatorPosition="bottom" var="oRM"
+                                  rowKey="#{oRM.idFolio}"  selection="#{oRegMed.selectedServiciosReg}"  rows="10">
+                        <p:ajax event="rowSelectCheckbox" listener="#{oRegMed.obtieneConceptos()}" update=":form:dtTotalRegalias"/>
+                        <p:ajax event="rowUnselectCheckbox" listener="#{oRegMed.obtieneConceptos()}" update=":form:dtTotalRegalias"/>
+                        <p:column selectionMode="multiple"/>
+                        <p:column headerText="Fecha">
+                            <h:outputText value="#{oRM.realizado}" 
+                                          style=" text-transform: capitalize;">
+                                 <f:convertDateTime type="date" 
+                                                    pattern="dd-MMMM-yyyy"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Folio del servicio">
+                            <h:outputText value="#{oRM.idFolio}"/>
+                        </p:column>
+                        <p:column headerText="Concepto">
+                            <h:outputText value="#{oRM.concepPrestado.descripConcep}"/>
+                        </p:column>
+                        <p:column headerText="Cantidad">
+                            <h:outputText value="#{oRM.cantidad}"/>
+                        </p:column>
+                        <p:column headerText="Cobrado">
+                            <h:outputText value="#{oRM.costoCobrado*oRM.cantidad}" style="float: right;"> 
+                                <f:convertNumber type="currency" 
+                                                 locale="es_MX"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Regalía" >
+                            <h:outputText style="float: right;"
+                                value="#{oRM.costoCobrado*oRM.cantidad*(oRM.concepPrestado.pctRegalMed/100)}" >
+                                 <f:convertNumber type="currency" locale="es_MX"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:columnGroup type="footer">
+                        <p:row>
+                             <p:column colspan="5" footerText="Total:" 
+                                       style="text-align:right" />
+                             <p:column>
+                                 <f:facet name="footer">
+                                     <h:outputText value ="#{oRegMed.totalImporte}">
+                                         <f:convertNumber type="currency" 
+                                                          locale="es_MX"/>
+                                     </h:outputText>
+                                 </f:facet>
+                             </p:column>
+                             <p:column>
+                                 <f:facet name="footer">
+                                     <h:outputText value ="#{oRegMed.totalRegalias}">
+                                         <f:convertNumber type="currency" 
+                                                          locale="es_MX"/>
+                                     </h:outputText>
+                                 </f:facet>
+                             </p:column>
+                         </p:row>
+                        </p:columnGroup>
+                    </p:dataTable>
+               </h:form>
+                    <br/>
+                    <br/>
+                    <h:outputText value="SERVICIOS SELECCIONADOS PARA REGALÍAS:"/>
+                    <p:dataTable id="dtTotalRegalias" 
+                                 value="#{oRegMed.distribucion}" var="dReg" >
+                        <p:column headerText="Servicio">
+                            <h:outputText value="#{dReg.conceptos[0].descripConcep}"/>
+                        </p:column>
+                        <p:column headerText="Hospital">
+                            <h:outputText value="#{dReg.numConceptos[0]}" style="float: right;">
+                                <f:convertNumber type="currency" locale="es_MX"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Externo">
+                            <h:outputText value="#{dReg.numConceptos[1]}" style="float: right;">
+                                <f:convertNumber type="currency" locale="es_MX"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Monto a Pagar">
+                           <h:outputText value="#{dReg.importeRegalia}" style="float: right;">
+                               <f:convertNumber type="currency" locale="es_MX"/>
+                           </h:outputText>
+                        </p:column>
+                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column colspan="1" footerText="Total:" 
+                                          style="text-align:right"/>
+                                <p:column>
+                                    <f:facet name="footer">
+                                        <h:outputText 
+                                            value ="#{oRegMed.totalHospital}" 
+                                            style="text-align:right">
+                                            <f:convertNumber type="currency"
+                                                             locale="es_MX"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="footer">
+                                        <h:outputText 
+                                            value ="#{oRegMed.totalExterno}">
+                                            <f:convertNumber type="currency" 
+                                                             locale="es_MX"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="footer">
+                                        <h:outputText 
+                                            value ="#{oRegMed.totalTotales}">
+                                            <f:convertNumber type="currency" 
+                                                             locale="es_MX"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+                    </p:dataTable>
+               </p:panel>
+               <br/>
+               <br/>
+               <center>
+                   <h:panelGrid columns="3" style=" float: right;">
+                       <p:button outcome="autorizacionPagoRegMedicosExternos.xhtml?faces-redirect=true" value="Regresar"  />  
+                       <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" >  
+                            <p:printer target="rptVista" />  
+                        </p:commandButton>
+                       <p:commandButton value="Autorizar">
+                           <p:ajax listener="#{oRegMed.autorizacionPago()}" update=":form:msgs"/>
+                       </p:commandButton> 
+                       
+                   </h:panelGrid>
+               </center>
+               <br/><br/>
+               
+               </p:scrollPanel>
+           </h:panelGrid>
+        </p:dialog>
+       
+       </h:form>     
+</h:body>
+</ui:define> 
+</ui:composition> 
+</html>

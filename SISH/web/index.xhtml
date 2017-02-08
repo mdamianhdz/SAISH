@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantillaSM.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inicio</title>
+            <h:body >
+                 
+                
+                <br/>
+                <h:form>
+                    
+                  
+                    
+                <p:growl id="grow1" sticky="true" />
+                <center>                
+                <p:panel id="panel" style="width:250px" >
+                
+                            <h:panelGrid columns="2">
+
+                                        <p:column>
+                                            Usuario
+                                        </p:column>    
+                                        <p:column>
+                                            <p:inputText value="#{oUsuario.usuario.usuario}" required="true" label="Usuario"/>
+                                        </p:column>
+                                    
+                                        <p:column>
+                                            Constraseña
+                                        </p:column>
+                                        <p:column>
+                                            <p:password value="#{oUsuario.usuario.contraseña}" required="true" label="Contraseña"/>
+                                        </p:column>
+                                    
+                                       
+                            </h:panelGrid>
+                 </p:panel>
+                 <br/>   
+                 <p:commandButton update="grow1"  value="Ingresar" action="#{oUsuario.buscaUsuario()}"/> 
+                   
+                </center>    
+                </h:form>
+          <br/><br/>
+    </h:body>
+    </ui:define> 
+    </ui:composition>    
+</html>

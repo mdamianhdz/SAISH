@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Concepto de movimiento de cuenta</title>
+            <h:body>
+                <center>
+                    <h2>Administraci&oacute;n de concepto de movimiento de cuenta</h2>
+                    <h:form id="formulario">
+                        <p:growl id="msg" sticky="true" showDetail="true"/>
+                        <p:dialog id="dlgCMCB" widgetVar="dlgCMCB"  position="center" closable="false" dynamic="true" resizable="false"
+                                  appendTo="@(body)" modal="true">
+                            <center>
+                                <h3>Administraci&oacute;n de concepto de movimiento de cuenta</h3>
+                                <h:form>
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Clave:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtClave" value="#{ConceptMCB.currentConceptoMovCtaBan.concepMovCta}" disabled="true">
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Descripci&oacute;n:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtDescrip" value="#{ConceptMCB.currentConceptoMovCtaBan.descripcion}">
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Tipo de movimiento:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneRadio value="#{ConceptMCB.currentConceptoMovCtaBan.tipoMovCta}">
+                                                    <p:ajax></p:ajax>
+                                                <f:selectItem itemLabel="Entrada" itemValue="E" ></f:selectItem>
+                                            <f:selectItem itemLabel="Salida" itemValue="S"></f:selectItem>
+                                            </p:selectOneRadio>
+                                                
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                    <br/><br/><p:commandButton value="#{ConceptMCB.nomButton}">
+                                        <p:ajax listener="#{ConceptMCB.guarda()}" update=":formulario:msg :formulario:dtCMCB"/>
+                                    </p:commandButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <p:commandButton value="Regresar" oncomplete="PF('dlgCMCB').hide()"/>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        
+                        <p:selectOneRadio value="#{ConceptMCB.tipoMovCtaBan}">
+                            <p:ajax update=":formulario:dtCMCB" listener="#{ConceptMCB.mostrarConceptos()}"/>
+                            <f:selectItem itemLabel="Entrada" itemValue="E" ></f:selectItem>
+                            <f:selectItem itemLabel="Salida" itemValue="S"></f:selectItem>
+                        </p:selectOneRadio>    
+                        
+                        <br/><br/>
+                        <p:dataTable id="dtCMCB" value="#{ConceptMCB.listaConceptMCB}" rows="5" editable="true" paginator="true" 
+                                                 paginatorPosition="bottom" var="oCMCB" emptyMessage="Selecciona un tipo de concepto."
+                                                 style="width: 900px" rowKey="#{oCMCB.descripcion}" selection="#{ConceptMCB.selectedConceptoMovCtaBan}">
+                                        <p:ajax event="rowSelectRadio"/>
+                                        <p:column selectionMode="single" width="25"/>
+                                        <p:column headerText="Clave:" width="25" >
+                                            <h:outputText value="#{oCMCB.concepMovCta}"/>
+                                        </p:column>
+                                        <p:column headerText="Descripci&oacute;n:" >
+                                            <h:outputText value="#{oCMCB.descripcion}"/>
+                                        </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Modificar concepto" icon="ui-icon-pencil">
+                                    <p:ajax update=":formulario:msg :formulario:dlgCMCB" listener="#{ConceptMCB.confModConceptoMovCtaBan()}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Eliminar concepto" icon="ui-icon-pencil">
+                                    <p:ajax update=":formulario:msg :formulario:dlgCMCB" listener="#{ConceptMCB.confDelConceptoMovCtaBan()}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Agregar concepto" icon="ui-icon-pencil" oncomplete="dlgCMCB.show()">
+                                    <p:ajax update=":formulario:msg :formulario:dlgCMCB" listener="#{ConceptMCB.confNuevoConceptoMovCtaBan()}"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>     
+                    </h:form>
+                </center>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>
+

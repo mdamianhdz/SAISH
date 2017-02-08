@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Actualizaci&oacute;n de Tabuladores</title>
+            <h:body>
+                <center><h2>Actualizaci&oacute;n de Tabuladores</h2>
+                    <h:form id="formulario"> 
+                        <p:growl id="msgs" showDetail="true" />
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Compa&ntilde;&iacute;a:" 
+                                                   style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu id="selComp" filter="true"
+                                                     value="#{oArchXlsxJB.idEmpSelec}">
+                                        <p:ajax/>
+                                        <f:selectItem itemLabel="Selecciona" 
+                                                      itemValue="0"/>
+                                        <f:selectItem itemLabel="SH" 
+                                                      itemValue="1"/>
+                                        <f:selectItems value="#{oArchXlsxJB.listaCiaCred}"
+                                                       var ="oCiaCred"
+                                                       itemValue="#{oCiaCred.idEmp}"
+                                                       itemLabel="#{oCiaCred.nombreCorto}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Archivo:" 
+                                                   style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column>
+                                    <p:fileUpload 
+                                        fileUploadListener="#{oArchXlsxJB.cargaTabulador}" 
+                                      allowTypes="/(\.|\/)(xlsx)$/" 
+                                      mode="advanced"
+                                      sizeLimit="2048000" update="msgs"/>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid>                        
+                    </h:form>
+                </center> 
+                <p:ajaxStatus 
+                    style="width:64px;height:64px;position:fixed;right:5px;bottom:5px">  
+                    <f:facet name="start">  
+                        <p:graphicImage value="/imgs/ajax-loader.gif" />  
+                    </f:facet>  
+                    <f:facet name="complete">  
+                        <h:outputText value="" />  
+                    </f:facet>  
+                </p:ajaxStatus>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

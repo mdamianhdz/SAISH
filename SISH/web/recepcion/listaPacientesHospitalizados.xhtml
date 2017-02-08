@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Pacientes hospitalizados</title>
+            
+            <h:body>
+        <h:form id="form">  
+                    #{oPacHosp.limpiarPacientesHosp()}
+                    <p:growl id="msg" showDetail="true"/>
+                    <p:panel header="Consultar pacientes hospitalizados">
+                        <p:panelGrid id="datos" columns="6">
+                            <h:outputText value="Rango de fechas:  "/>
+                            <h:outputText value="Fecha inicial: " style="font-weight: bold"/>
+                            <p:calendar value="#{oPacHosp.fechaInicio}" 
+                                        showOn="button"
+                                        navigator="true"
+                                        locale="es">
+                                <p:ajax update="msg" />
+                            </p:calendar>
+                            <h:outputText value="  Fecha final: " style="font-weight: bold"/>
+                            <p:calendar value="#{oPacHosp.fechaFin}" 
+                                        showOn="button" 
+                                        navigator="true"
+                                        locale="es">
+                                <p:ajax update="msg" />
+                            </p:calendar>
+                            <p:commandButton update=":form:rpt :form:msg :form:tableXP" actionListener="#{oPacHosp.datosPacientesHospitalizados()}" value="Reporte" icon="ui-icon-print" process="@parent" >
+                            </p:commandButton>
+
+                            
+                        </p:panelGrid>
+                        
+                    </p:panel>
+                        <p:scrollPanel mode="native" style="width:100%;height:500px">
+                            <p:panel id="rpt">
+                                <h:panelGrid id="rptVista" width="100%">
+                                    <p:separator />
+                                    <h:panelGrid columns="4" width="80%">
+                                        <h:outputText value="Reporte del:  "/>
+                                        <h:outputText value="#{oPacHosp.fechaInicio}" style="font-weight: bold; text-transform: capitalize;">
+                                            <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                                        </h:outputText>
+                                        <h:outputText value="Al: "/>
+                                        <h:outputText value="#{oPacHosp.fechaFin}" style="font-weight: bold; text-transform: capitalize;">
+                                            <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                                        </h:outputText>
+                                        
+                                    </h:panelGrid>
+                                    <br/>
+                                    <p:dataTable value="#{oPacHosp.datosHospitalizacion}" var="rptPacHosp" id="tableXP" >
+                                        <p:columnGroup type="header">
+                                            <p:row>
+                                                <p:column rowspan="2" headerText="Fecha de ingreso" />
+                                                <p:column rowspan="2" headerText="Paciente" />
+                                                <p:column rowspan="2" headerText="Habitaci&oacute;n" />
+                                                <p:column rowspan="2" headerText="M&eacute;dico" />
+                                                <p:column rowspan="2" headerText="Diagn&oacute;stico de ingreso"/>
+                                                <p:column rowspan="2" headerText="Fecha de alta" />
+                                            </p:row>
+                                        </p:columnGroup>
+                                        
+                                        
+                                        <p:column>
+                                            <h:outputText value="#{rptPacHosp.epMed.inicio}" style=" text-transform: capitalize;">
+                                                <f:convertDateTime pattern="dd-MMMM-yyyy" timeZone="EST"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        
+                                        <p:column>
+                                            <h:outputText value="#{rptPacHosp.paciente.nombreCompleto}"/>
+                                        </p:column>
+                                        
+                                        <p:column>
+                                            <h:outputText value="#{rptPacHosp.epMed.hab.hab}"/>
+                                        </p:column>
+                                        
+                                        <p:column>
+                                            <h:outputText value="#{rptPacHosp.epMed.medTratante.nombreCompleto}"/>
+                                        </p:column>
+                                        
+                                        <p:column>
+                                            <h:outputText value="#{rptPacHosp.epMed.dxIngreso.descrip}"/>
+                                        </p:column>
+                                        
+                                        <p:column>
+                                            <h:outputText value="#{rptPacHosp.epMed.alta}" style=" text-transform: capitalize;">
+                                                <f:convertDateTime pattern="dd-MMMM-yyyy" timeZone="EST"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        
+                                    </p:dataTable>
+                                </h:panelGrid>
+                            </p:panel>
+                        </p:scrollPanel>
+                </h:form>
+    </h:body>
+        </ui:define> 
+    </ui:composition> 
+    
+</html>
+

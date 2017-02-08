@@ -1,0 +1,1500 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo"> 
+            <title>Datos Paciente</title>
+            <h:body onload="dlgCompBusqVar.show();" >
+                <p:dialog closable="false" dynamic="true"  appendTo="@(body)" 
+                          modal="true" id="dlgCompBusq" 
+                            header="Búsqueda de paciente"  
+                            widgetVar="dlgCompBusqVar" style="font-size:12px" 
+                            styleClass="text-align: center;"  position="center" 
+                            showEffect="clip" hideEffect="fold" >  
+                      <h:form id="formDlg">
+                          <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"/> 
+                          <p:separator/>
+                          <p:commandButton value="Seleccionar" oncomplete="dlgCompBusqVar.hide()" 
+                                           update=":formulario:panelHC" 
+                                           icon="ui-icon-search">
+                              <p:ajax listener="#{oDatosHC.llena()}" />
+                          </p:commandButton>
+                          <p:commandButton value="Cancelar" update=":formulario:panelHC">
+                              <p:ajax listener="#{oDatosHC.cancela()}" />
+                          </p:commandButton>
+                          <p:commandButton value="Nuevo Paciente" 
+                                           oncomplete="dlgCompBusqVar.hide()" 
+                                           update=":formulario:panelHC">
+                              <p:ajax listener="#{oDatosHC.nuevoPac()}" />
+                          </p:commandButton>
+                      </h:form> 
+                </p:dialog> 
+                <h:form id="formulario">
+                    <p:growl id="msgs" showDetail="true"/> 
+                    <p:panel id="panelHC">
+                        <p:tabView id="tabView" dynamic="true">
+                            <p:tab title="Datos Generales">
+                                <p:panelGrid id="pgDatosGenerales">
+                                    <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Folio Paciente: "/>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.folioPac}" size="6" /> 
+                                        </p:column> 
+                                        <p:column colspan="2">
+                                            <h:outputText value="Fecha y Hora de Registro: "/>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.reg}" />
+                                        </p:column> 
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <h:outputText value="Apellido Paterno:"/> 
+                                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText  id="ApellidoPaterno" 
+                                                label="Apellido Paterno" 
+                                                maxlength="50"
+                                                size="52"
+                                                style="text-transform: uppercase"
+                                                required="true"  
+                                                value="#{oDatosHC.historiaClinica.paciente.apellidoPaterno}">
+                                                <p:ajax/>
+                                            </p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Apellido Materno:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText id="ApellidoMaterno"
+                                                maxlength="50"
+                                                size="52"
+                                                style="text-transform: uppercase"
+                                                value="#{oDatosHC.historiaClinica.paciente.apellidoMaterno}">
+                                                <p:ajax/>
+                                            </p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Nombre(s):"/><h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText id="Nombre" label="Nombre"
+                                                maxlength="50"
+                                                size="52"
+                                                style="text-transform: uppercase"
+                                                required="true" 
+                                                value="#{oDatosHC.historiaClinica.paciente.nombre}">
+                                                <p:ajax/>
+                                            </p:inputText>
+                                        </p:column>
+                                    </p:row>  
+                                    <p:row>
+                                        <p:column>
+                                            <p:outputLabel value="Fecha de Nacimiento:"/>
+                                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                        </p:column> 
+                                        <p:column>
+                                            <p:calendar label="FechaNacimiento"  required="true" id="cal" navigator="true"  yearRange="c-100:c+0" showOn="button" value="#{oDatosHC.historiaClinica.paciente.nac}" locale="es">
+                                                <p:ajax event="dateSelect" update="txtEdad" listener="#{oDatosHC.calculaEdad()}"/>
+                                            </p:calendar>  
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Edad: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText id="txtEdad" readonly="true" size="4"  value="#{oDatosHC.edad}" />&nbsp;&nbsp;
+                                            <p:outputLabel value=" años"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Lugar de Nacimiento: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText  style="text-transform: uppercase"
+                                                value="#{oDatosHC.historiaClinica.paciente.lugarNac}">
+                                                <p:ajax/>
+                                            </p:inputText>
+                                        </p:column>
+                                    </p:row> 
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="RFC: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText style="text-transform: uppercase"
+                                                value="#{oDatosHC.historiaClinica.paciente.RFC}">
+                                                <p:ajax/>
+                                            </p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="CURP:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText style="text-transform: uppercase"
+                                                value="#{oDatosHC.historiaClinica.paciente.CURP}">
+                                                <p:ajax/>
+                                            </p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Estado Civil:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu id="selEC" value="#{oDatosHC.historiaClinica.paciente.edoCiv.cve}">  
+                                                <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                                <f:selectItems value="#{oDatosHC.edoCivil}" var="ec" itemLabel="#{ec.descrip}" itemValue="#{ec.cve}"/>
+                                                <p:ajax/>
+                                            </p:selectOneMenu> 
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Sexo: "/>
+                                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu required="true" id="selGenero" value="#{oDatosHC.historiaClinica.paciente.genero}"> 
+                                                <f:selectItem itemLabel="Seleccione" itemValue="X" />
+                                                <f:selectItem itemLabel="Femenino" itemValue="F" /> 
+                                                <f:selectItem itemLabel="Masculino" itemValue="M" />  
+                                                <p:ajax/>
+                                            </p:selectOneMenu> 
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Familiar:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText style="text-transform: uppercase"
+                                                value="#{oDatosHC.historiaClinica.paciente.familiarCercano}" size="20"><p:ajax/></p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Ocupación:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText style="text-transform: uppercase"
+                                                value="#{oDatosHC.historiaClinica.paciente.ocupacion}" size="20"><p:ajax/></p:inputText>
+                                        </p:column>
+                                    </p:row> 
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="¿Cómo se enteró del SH?"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText style="text-transform: uppercase"
+                                                value="#{oDatosHC.historiaClinica.paciente.seEntero}"><p:ajax/></p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="¿Quién lo recomienda?"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText style="text-transform: uppercase"
+                                                         value="#{oDatosHC.historiaClinica.recomendadoPor}"><p:ajax/></p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Médico que envía:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu 
+                                                label="Médico que envía" style="width: 150px"  
+                                                id="selMedRec" filter="true"
+                                                filterMatchMode="startsWith"
+                                                value="#{oDatosHC.historiaClinica.episodioMedico.medRecom.folioPers}"> 
+                                                <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                                <f:selectItems value="#{oDatosHC.medicos}" 
+                                                               var="med3" itemLabel="#{med3.nombreCompleto}" 
+                                                               itemValue="#{med3.folioPers}"/>
+                                                <p:ajax/>
+                                            </p:selectOneMenu> 
+                                        </p:column>
+                                    </p:row> 
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Médico tratante:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu style="width: 150px" 
+                                                             id="selMed"
+                                                             filter="true"
+                                                filterMatchMode="startsWith"
+                                                              value="#{oDatosHC.historiaClinica.episodioMedico.medTratante.folioPers}"> 
+                                                <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                                <f:selectItems value="#{oDatosHC.medicos}" var="med1" itemLabel="#{med1.nombreCompleto}" itemValue="#{med1.folioPers}"/>
+                                                <p:ajax/>
+                                            </p:selectOneMenu> 
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Médico que lo recibe:"/>
+                                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu style="width: 150px" 
+                                                             id="selMedRecibe" 
+                                                             filter="true"
+                                                filterMatchMode="startsWith"
+                                                              value="#{oDatosHC.historiaClinica.episodioMedico.medRecibe.folioPers}"> 
+                                                <f:selectItem itemLabel="Seleccione" itemValue="" noSelectionOption="true"/>
+                                                <f:selectItems value="#{oDatosHC.medicos}" 
+                                                               var="med2" itemLabel="#{med2.nombreCompleto}" 
+                                                               itemValue="#{med2.folioPers}"/>
+                                                <p:ajax/>
+                                            </p:selectOneMenu> 
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Identificación de Paciente:"/>
+                                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneRadio required="true" 
+                                                label="Identificación de Paciente" 
+                                                id="radioTipoPac" 
+                                                value="#{oDatosHC.historiaClinica.paciente.tipo}">
+                                                <f:selectItem itemLabel="PSH" itemValue="PSH "/>
+                                                <f:selectItem itemLabel="PNSH" itemValue="PNSH"/>
+                                                <p:ajax/>
+                                            </p:selectOneRadio> 
+                                        </p:column>
+                                    </p:row>  
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Tipo de Paciente:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu value="#{oDatosHC.formaPago}">
+                                                <f:selectItem itemLabel="Seleccione" itemValue="S"/>
+                                                <f:selectItem itemLabel="Crédito" itemValue="CRED"/>
+                                                <f:selectItem itemLabel="Contado" itemValue="CONT"/>
+                                                <p:ajax listener="#{oDatosHC.validaFormaPago()}" update="selComp selDoctos dtDoctos btnAgregar btnEliminar"/>
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Compañía:"/>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:selectOneMenu id="selComp" disabled="#{oDatosHC.disCompania}" value="#{oDatosHC.historiaClinica.episodioCC.compCred.idEmp}">
+                                                <f:selectItem itemLabel="Seleccione" itemValue="S"/>
+                                                <f:selectItems value="#{oDatosHC.listCompanias}" var="comp" itemLabel="#{comp.nombreCorto}" itemValue="#{comp.idEmp}"/>
+                                                <p:ajax listener="#{oDatosHC.validaCompania()}" update="selDoctos"/>
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Documento:"/>
+                                        </p:column>
+                                        <p:column colspan="2">
+                                            <p:selectOneMenu id="selDoctos" value="#{oDatosHC.selSelectedFmt}" disabled="#{oDatosHC.disCompania}" converter="#{oConverterFmtCiaCred}">
+                                                <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                                <f:selectItems value="#{oDatosHC.listFormatos}" var="form" itemLabel="#{form.nomFmt}" itemValue="#{form}"/>
+                                                <p:ajax update="selDoctos"/>
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                        <p:column>
+                                            <p:commandButton id="btnAgregar" value="Agregar" disabled="#{oDatosHC.disCompania}">
+                                                <p:ajax update="dtDoctos selDoctos :formulario:msgs" listener="#{oDatosHC.agregarDocto()}"/>
+                                            </p:commandButton><br/>
+                                            <p:commandButton id="btnEliminar" value="Eliminar" disabled="#{oDatosHC.disCompania}">
+                                                <p:ajax update="dtDoctos selDoctos :formulario:msgs" listener="#{oDatosHC.eliminarDocto()}"/>
+                                            </p:commandButton>
+                                        </p:column>
+                                        <p:column colspan="2">
+                                            <p:dataTable id="dtDoctos" emptyMessage="No hay documentos" value="#{oDatosHC.historiaClinica.episodioCC.formatos}" var="fmt"
+                                                         selection="#{oDatosHC.dtSelectedFmt}" rowKey="#{fmt.idFmt}" disabledSelection="#{oDatosHC.disCompania}">
+                                                <p:ajax event="rowSelectRadio"/>
+                                                <p:column selectionMode="single"/>
+                                                <p:column headerText="Documento">
+                                                    <p:outputLabel value="#{fmt.nomFmt}"/>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="6">
+                                            <h:outputText value="Domicilio" style="font-weight:bold"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Calle y Número:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText style="text-transform: uppercase"
+                                                         value="#{oDatosHC.historiaClinica.paciente.calleYNum}"><p:ajax/></p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Colonia:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText style="text-transform: uppercase"
+                                                         value="#{oDatosHC.historiaClinica.paciente.colonia}"><p:ajax/></p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="C.P."/>
+                                        </p:column>
+                                        <p:column colspan="5">
+                                            <p:inputText value="#{oDatosHC.historiaClinica.paciente.CP}">
+                                                <p:ajax event="change" 
+                                                        listener="#{oDatosHC.buscaCD}" 
+                                                        update="itCiudad itMpio itEdo"/>
+                                            </p:inputText>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Ciudad:"/>
+                                        </p:column>
+                                        <p:column >
+                                            <p:inputText readonly="true" 
+                                                         id="itCiudad"  
+                                                         value="#{oDatosHC.historiaClinica.paciente.ciudad.descrip}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Municipio:"/>
+                                        </p:column>
+                                        <p:column >
+                                            <p:inputText readonly="true" id="itMpio"  value="#{oDatosHC.historiaClinica.paciente.mpio.descrip}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Estado:"/>
+                                        </p:column>
+                                        <p:column >
+                                            <p:inputText readonly="true" id="itEdo"  value="#{oDatosHC.historiaClinica.paciente.edo.descrip}"/>
+                                        </p:column>
+                                    </p:row>
+                                     <p:row>
+                                        <p:column>
+                                            <h:outputText value="Otra Ciudad:"/>
+                                        </p:column>
+                                         <p:column colspan="5">
+                                            <p:inputText value="#{oDatosHC.historiaClinica.paciente.ciudadPoblacion}"
+                                                         size="160"
+                                                         style="text-transform: uppercase"
+                                                         maxlength="150">
+                                                <p:ajax/>
+                                            </p:inputText>
+                                        </p:column>
+                                     </p:row>
+                                    <p:row>
+                                        <p:column colspan="6">
+                                            <h:outputText value="Teléfonos"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Casa:"/>
+                                        </p:column>
+                                        <p:column >
+                                            <p:inputText  value="#{oDatosHC.historiaClinica.paciente.telCasa}"><p:ajax/></p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Celular"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText  value="#{oDatosHC.historiaClinica.paciente.telCelular}" ><p:ajax/></p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Correo Electrónico"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText size="40" 
+                                                         value="#{oDatosHC.historiaClinica.paciente.correoElectronico}">
+                                                <p:ajax/>
+                                            </p:inputText>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Alergias:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText style="text-transform: uppercase"
+                                                         value="#{oDatosHC.historiaClinica.alergias}"><p:ajax/></p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Padecimiento actual/"/><br/>
+                                            <h:outputText value="motivo consulta"/>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputText style="text-transform: uppercase"
+                                                         size="80"
+                                                value="#{oDatosHC.historiaClinica.motivoConsEnfAct}"><p:ajax/></p:inputText>
+                                        </p:column>
+                                    </p:row>
+                                     
+                                <p:row>
+                                    <p:column colspan="6">
+                                        <h:outputText style="font-weight: bold"
+                                            value="Datos del Familiar que Acompa&ntilde;a"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText 
+                                            value="Domicilio"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText size="40" 
+                                                     style="text-transform: uppercase"
+                                                     value="#{oDatosHC.historiaClinica.episodioMedico.domicilioFamiliar}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText 
+                                            value="Tel&eacute;fono"/>
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:inputText size="40" 
+                                                     value="#{oDatosHC.historiaClinica.episodioMedico.telefonoFamiliar}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row>  
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText 
+                                            value="Empresa donde trabaja"/>
+                                    </p:column>
+                                    <p:column colspan="5">
+                                        <p:inputText size="60" 
+                                                     style="text-transform: uppercase"
+                                                     value="#{oDatosHC.historiaClinica.episodioMedico.empresaFamiliar}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText 
+                                            value="Domicilio Empresa"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText size="40" 
+                                                     style="text-transform: uppercase"
+                                                     value="#{oDatosHC.historiaClinica.episodioMedico.domicilioEmpresaFamiliar}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText 
+                                            value="Tel&eacute;fono Empresa"/>
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:inputText size="40" 
+                                                     value="#{oDatosHC.historiaClinica.episodioMedico.telefonoEmpresaFamiliar}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row>
+                                    <p:row>
+                                        <p:column colspan="6">
+                                            <h:outputText value="Exploración Física Inicial" style="font-weight: bold"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Estatura:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText  value="#{oDatosHC.historiaClinica.examenFisico.talla}" size="8"><p:ajax/></p:inputText> mts.
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Peso:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText  value="#{oDatosHC.historiaClinica.examenFisico.peso}" size="8"><p:ajax/></p:inputText> Kg.
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="FC:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText  value="#{oDatosHC.historiaClinica.examenFisico.frecCard}" size="8"><p:ajax/></p:inputText> lat x min.
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="FR:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText  value="#{oDatosHC.historiaClinica.examenFisico.frecResp}" size="8"><p:ajax/></p:inputText> resp x min.
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="TA:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText  value="#{oDatosHC.historiaClinica.examenFisico.TAA}" size="3"><p:ajax/></p:inputText> /
+                                            <p:inputText  value="#{oDatosHC.historiaClinica.examenFisico.TAB}" size="3"><p:ajax/></p:inputText> mmHg
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Temperatura:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText  value="#{oDatosHC.historiaClinica.examenFisico.temp}" size="8"><p:ajax/></p:inputText>°C
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="6">
+                                            <p:commandButton value="Guardar">
+                                                <p:ajax update=":formulario:msgs :formulario:panelHC" listener="#{oDatosHC.guardaDatosGrales()}" />
+                                            </p:commandButton> 
+                                            <p:commandButton value="Regresar">
+                                                <p:ajax listener="#{oDatosHC.regresa()}"/>
+                                            </p:commandButton>
+                                            <p:commandButton value="Imprimir">
+                                                <p:ajax />
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid> 
+                            </p:tab>
+                            <p:tab title="Datos Laborales" rendered="#{oDatosHC.renderLaborales}">
+                                <p:panelGrid id="pgDatosLaborales">
+                                     <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Folio Paciente: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.folioPac}" size="6" /> 
+                                        </p:column> 
+                                        <p:column>
+                                            <h:outputText value="Nombre: "/>
+                                        </p:column> 
+                                        <p:column>
+                                                <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.nombreCompleto}" size="30"/>
+                                        </p:column> 
+                                    </p:row>
+                                    <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Empresa: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu style="width:160px" value="#{oDatosHC.historiaClinica.paciente.datosLaborales.empresa.idEmp}"
+                                                             disabled="#{oDatosHC.DLEmpesa}" id="selEmpresa">
+                                                <p:ajax/>
+                                                <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                                <f:selectItems value="#{oDatosHC.listEmpresas}" var="oEmp" itemLabel="#{oEmp.nombreCorto}" itemValue="#{oEmp.idEmp}"/>
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Otra: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText size="30"
+                                                         style="text-transform: uppercase"
+                                                         value="#{oDatosHC.historiaClinica.paciente.datosLaborales.otraEmpresa}">
+                                                <p:ajax event="change" update="selEmpresa" listener="#{oDatosHC.cambiaEmpresa()}"/>
+                                            </p:inputText>
+                                        </p:column>
+                                    </p:row>
+                                     <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Sucursal: "/>
+                                        </p:column>
+                                         <p:column colspan="3">
+                                             <p:inputText size="85"
+                                                          style="text-transform: uppercase"
+                                                          value="#{oDatosHC.historiaClinica.paciente.datosLaborales.sucursal}"><p:ajax/></p:inputText>
+                                        </p:column>
+                                    </p:row>
+                                     <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Núm. Empleado "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText value="#{oDatosHC.historiaClinica.paciente.datosLaborales.numEmpleado}"><p:ajax/></p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Ocupación:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText style="text-transform: uppercase"
+                                                         size="30" 
+                                                         value="#{oDatosHC.historiaClinica.paciente.datosLaborales.ocupacion}"><p:ajax/></p:inputText>
+                                        </p:column>
+                                    </p:row>
+                                     <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Jefe inmediato: "/>
+                                        </p:column>
+                                         <p:column colspan="3">
+                                             <p:inputText style="text-transform: uppercase"
+                                                          size="85" value="#{oDatosHC.historiaClinica.paciente.datosLaborales.jefeInmediato}"><p:ajax/></p:inputText>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>  
+                                        <p:column colspan="2">
+                                            <p:selectBooleanCheckbox 
+                                                itemLabel="&nbsp;&nbsp;&nbsp;Es&nbsp;Beneficiario" value="#{oDatosHC.DLBenef}">
+                                                <p:ajax update="txtEmpleado"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Titular: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText id="txtEmpleado" 
+                                                         disabled="#{!oDatosHC.DLBenef}" 
+                                                         size="30" 
+                                                         value="#{oDatosHC.historiaClinica.paciente.datosLaborales.nomEmpleado}"><p:ajax/></p:inputText>
+                                        </p:column>
+                                    </p:row>
+                                     <p:row>
+                                        <p:column colspan="4">
+                                            <p:commandButton value="Guardar" update=":formulario:msgs :formulario:panelHC"><p:ajax listener="#{oDatosHC.guardaDatosLaborales()}" /></p:commandButton>
+                                            <p:commandButton value="Regresar">
+                                                <p:ajax listener="#{oDatosHC.regresa()}"/>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:row>
+                                 </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="Antecendentes Familiares" rendered="#{oDatosHC.renderAF}">
+                                <p:panelGrid id="panelAntFam">
+                                    <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Folio Paciente: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.folioPac}" size="6" /> 
+                                        </p:column> 
+                                        <p:column>
+                                            <h:outputText value="Nombre: "/>
+                                        </p:column> 
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.nombreCompleto}" size="55"/>
+                                        </p:column> 
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column colspan="4">
+                                            <br/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox itemLabel="&nbsp;&nbsp;&nbsp;Cardiopatías" value="#{oDatosHC.AFCard}">
+                                                <p:ajax update="taCard" listener="#{oDatosHC.validaAntFam()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taCard" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.AFCard}" value="#{oDatosHC.historiaClinica.antecedentesHeredoFamiliares.famCardiopatias}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox itemLabel="&nbsp;&nbsp;&nbsp;Cáncer" value="#{oDatosHC.AFCancer}">
+                                                <p:ajax update="taCancer" listener="#{oDatosHC.validaAntFam()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taCancer" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.AFCancer}" value="#{oDatosHC.historiaClinica.antecedentesHeredoFamiliares.cancer}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox itemLabel="&nbsp;&nbsp;&nbsp;IAM" value="#{oDatosHC.AFIAM}">
+                                                <p:ajax update="taIAM" listener="#{oDatosHC.validaAntFam()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taIAM" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.AFIAM}" value="#{oDatosHC.historiaClinica.antecedentesHeredoFamiliares.IAM}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.AFEnf}" itemLabel="&nbsp;&nbsp;&nbsp;Enfisema">
+                                                <p:ajax update="taEnf" listener="#{oDatosHC.validaAntFam()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taEnf" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.AFEnf}" 
+                                                             value="#{oDatosHC.historiaClinica.antecedentesHeredoFamiliares.enfisema}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.AFLiti}" itemLabel="&nbsp;&nbsp;&nbsp;Litiasis">
+                                                <p:ajax update="taLiti" listener="#{oDatosHC.validaAntFam()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taLiti"
+                                                             style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.AFLiti}" value="#{oDatosHC.historiaClinica.antecedentesHeredoFamiliares.litiasis}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.AFAsma}" itemLabel="&nbsp;&nbsp;&nbsp;Asma">
+                                                <p:ajax update="taAsma" listener="#{oDatosHC.validaAntFam()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taAsma" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.AFAsma}" value="#{oDatosHC.historiaClinica.antecedentesHeredoFamiliares.asma}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.AFDiab}" itemLabel="&nbsp;&nbsp;&nbsp;Diabetes">
+                                                <p:ajax update="taDiab" listener="#{oDatosHC.validaAntFam()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taDiab" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.AFDiab}" value="#{oDatosHC.historiaClinica.antecedentesHeredoFamiliares.diabetes}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.AFHAS}" itemLabel="&nbsp;&nbsp;&nbsp;H.A.S.">
+                                                <p:ajax update="taHAS" listener="#{oDatosHC.validaAntFam()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taHAS" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.AFHAS}" value="#{oDatosHC.historiaClinica.antecedentesHeredoFamiliares.HAS}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.AFConv}" itemLabel="&nbsp;&nbsp;&nbsp;Convulsiones">
+                                                <p:ajax update="taConv" listener="#{oDatosHC.validaAntFam()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taConv" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.AFConv}" value="#{oDatosHC.historiaClinica.antecedentesHeredoFamiliares.convulsiones}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.AFAltM}" itemLabel="&nbsp;&nbsp;&nbsp;Alteraciones Mentales">
+                                                <p:ajax update="taAltM" listener="#{oDatosHC.validaAntFam()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taAltM" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.AFAltM}" value="#{oDatosHC.historiaClinica.antecedentesHeredoFamiliares.altMentales}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="4">
+                                            <p:commandButton value="Guardar" update=":formulario:msgs panelAntFam" action="#{oDatosHC.guardaAntFam()}"/>
+                                            <p:commandButton value="Regresar">
+                                                <p:ajax listener="#{oDatosHC.regresa()}"/>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="Antecedentes Patológicos" rendered="#{oDatosHC.renderAP}">
+                                <p:panelGrid id="panelAntPato">
+                                    <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Folio Paciente: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.folioPac}" size="6" /> 
+                                        </p:column> 
+                                        <p:column>
+                                            <h:outputText value="Nombre: "/>
+                                        </p:column> 
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.nombreCompleto}" size="55"/>
+                                        </p:column> 
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column colspan="4">
+                                            <br/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.APQuir}" itemLabel="&nbsp;&nbsp;&nbsp;Quirúrgico">
+                                                <p:ajax update="taQuir" listener="#{oDatosHC.validaAntPato()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taQuir" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.APQuir}" value="#{oDatosHC.historiaClinica.antecedPersPatol.qx}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.APHosp}" itemLabel="&nbsp;&nbsp;&nbsp;Hospitalarios">
+                                                <p:ajax update="taHosp" listener="#{oDatosHC.validaAntPato()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taHosp" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.APHosp}" value="#{oDatosHC.historiaClinica.antecedPersPatol.hosp}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.APTransf}" itemLabel="&nbsp;&nbsp;&nbsp;Transfusiones">
+                                                <p:ajax update="taTransf" listener="#{oDatosHC.validaAntPato()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taTransf" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.APTransf}"  value="#{oDatosHC.historiaClinica.antecedPersPatol.transf}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.APAler}" itemLabel="&nbsp;&nbsp;&nbsp;Alérgicos">
+                                                <p:ajax update="taAler" listener="#{oDatosHC.validaAntPato()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taAler" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.APAler}"  value="#{oDatosHC.historiaClinica.antecedPersPatol.alergicos}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.APTraum}" itemLabel="&nbsp;&nbsp;&nbsp;Traumáticos">
+                                                <p:ajax update="taTraum" listener="#{oDatosHC.validaAntPato()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taTraum" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.APTraum}" value="#{oDatosHC.historiaClinica.antecedPersPatol.traumat}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.APHTA}" itemLabel="&nbsp;&nbsp;&nbsp;HTA">
+                                                <p:ajax update="taHTA" listener="#{oDatosHC.validaAntPato()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taHTA" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.APHTA}" value="#{oDatosHC.historiaClinica.antecedPersPatol.HTA}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.APDiab}" itemLabel="&nbsp;&nbsp;&nbsp;Diabetes">
+                                                <p:ajax update="taDiab2" listener="#{oDatosHC.validaAntPato()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taDiab2" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.APDiab}" value="#{oDatosHC.historiaClinica.antecedPersPatol.diabetes}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.APCard}" itemLabel="&nbsp;&nbsp;&nbsp;Cardiopatías">
+                                                <p:ajax update="taCard2" listener="#{oDatosHC.validaAntPato()}"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taCard2" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.APCard}" value="#{oDatosHC.historiaClinica.antecedPersPatol.cardiopatias}" rows="2" cols="80" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="4">
+                                            <p:commandButton value="Guardar" update=":formulario:msgs panelAntPato" action="#{oDatosHC.guardaAntPatol()}"/>
+                                            <p:commandButton value="Regresar">
+                                                <p:ajax listener="#{oDatosHC.regresa()}"/>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="Antecedentes No Patológicos" rendered="#{oDatosHC.renderANP}">
+                                <p:panelGrid id="panelAntNoPato">
+                                    <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Folio Paciente: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.folioPac}" size="6" /> 
+                                        </p:column> 
+                                        <p:column>
+                                            <h:outputText value="Nombre: "/>
+                                        </p:column> 
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.nombreCompleto}" size="55"/>
+                                        </p:column> 
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column colspan="4">
+                                            <br/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:outputLabel value="Casa-habitación:"/>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:selectOneRadio id="radioCasa" value="#{oDatosHC.historiaClinica.antecedentesNoPatol.tipoCasaHab}">
+                                                <f:selectItem itemLabel="Urbana" itemValue="U"/>
+                                                <f:selectItem itemLabel="Rural" itemValue="R"/>
+                                            </p:selectOneRadio> 
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column/>
+                                        <p:column colspan="3">
+                                            &nbsp;&nbsp;
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.historiaClinica.antecedentesNoPatol.electricidad}" itemLabel="&nbsp;Electricidad"/>&nbsp;&nbsp;&nbsp;
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.historiaClinica.antecedentesNoPatol.aguaPot}" itemLabel="&nbsp;Agua Potable"/>&nbsp;&nbsp;&nbsp;
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.historiaClinica.antecedentesNoPatol.drenaje}" itemLabel="&nbsp;Drenaje"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.historiaClinica.antecedentesNoPatol.servSanit}" itemLabel="&nbsp;Servicios Sanitarios"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <p:outputLabel value="Dieta:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu value="#{oDatosHC.historiaClinica.antecedentesNoPatol.dieta}">
+                                                <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                                <f:selectItem itemLabel="Buena" itemValue="B"/>
+                                                <f:selectItem itemLabel="Regular" itemValue="R"/>
+                                                <f:selectItem itemLabel="Mala" itemValue="M"/>
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                        <p:column>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;<p:selectBooleanCheckbox value="#{oDatosHC.historiaClinica.antecedentesNoPatol.tabaquismo}" itemLabel="&nbsp;Tabaquismo"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.historiaClinica.antecedentesNoPatol.alcoholismo}" itemLabel="&nbsp;Alcoholismo"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                         <p:column>
+                                            <p:selectBooleanCheckbox value="#{oDatosHC.ANPAnimales}" itemLabel="&nbsp;&nbsp;&nbsp;Animales">
+                                                <p:ajax update="taAnimales"/>
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea id="taAnimales" style="text-transform: uppercase"
+                                                             disabled="#{!oDatosHC.ANPAnimales}" value="#{oDatosHC.historiaClinica.antecedentesNoPatol.animales}" rows="2" cols="65" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row> 
+                                        <p:column>
+                                            <p:outputLabel value="Vacunación:"/>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:selectOneRadio id="radioVacuna" value="#{oDatosHC.historiaClinica.antecedentesNoPatol.cuadroVac}">
+                                                <f:selectItem itemLabel="Completo" itemValue="C"/>
+                                                <f:selectItem itemLabel="Incompleto" itemValue="I"/>
+                                                <f:selectItem itemLabel="Nulo" itemValue="N"/>
+                                            </p:selectOneRadio> 
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="4">
+                                            <p:commandButton value="Guardar" update=":formulario:msgs panelAntNoPato" action="#{oDatosHC.guardaAntNoPatol()}"/>
+                                            <p:commandButton value="Regresar">
+                                                <p:ajax listener="#{oDatosHC.regresa()}"/>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid> 
+                            </p:tab>
+                            <p:tab title="Antecedentes GinecoObstétricos" rendered="#{oDatosHC.renderGineco}">
+                                <p:panelGrid id="panelGineco">
+                                    <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Folio Paciente: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.folioPac}" size="6" /> 
+                                        </p:column> 
+                                        <p:column>
+                                            <h:outputText value="Nombre: "/>
+                                        </p:column> 
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.nombreCompleto}" size="30"/>
+                                        </p:column> 
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Menarquía: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText size="5" value="#{oDatosHC.historiaClinica.antecedentesGinecoObs.menarquia}" />&nbsp;&nbsp;
+                                            <h:outputText value="años"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="IVSA: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText size="5" value="#{oDatosHC.historiaClinica.antecedentesGinecoObs.IVSA}"/>&nbsp;&nbsp;
+                                            <h:outputText value="años"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Fecha último Papanicolau "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:calendar showOn="button" value="#{oDatosHC.historiaClinica.antecedentesGinecoObs.ultPapanicolau}" locale="es"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Resultado: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputTextarea autoResize="false"  rows="3" cols="28" value="#{oDatosHC.historiaClinica.antecedentesGinecoObs.resultadoPap}"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Fecha último parto o cesárea: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:calendar showOn="button" value="#{oDatosHC.historiaClinica.antecedentesGinecoObs.fecUltNac}" locale="es"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Peso del producto: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText size="5" value="#{oDatosHC.historiaClinica.antecedentesGinecoObs.pesoProd}"/>&nbsp;&nbsp;
+                                            <h:outputText value="Kg."/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="FUR (fecha última regla): "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:calendar showOn="button" value="#{oDatosHC.historiaClinica.antecedentesGinecoObs.FUR}" locale="es"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Ritmo: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText size="5" value="#{oDatosHC.historiaClinica.antecedentesGinecoObs.ritmoDias}" />&nbsp;&nbsp;
+                                            <h:outputText value=" X "/>&nbsp;&nbsp;
+                                            <p:inputText size="5" value="#{oDatosHC.historiaClinica.antecedentesGinecoObs.ritmoFrec}"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Método Anticonceptivo: "/>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:selectManyCheckbox layout="pageDirection" value="#{oDatosHC.selectedMA}">
+                                                <f:selectItems value="#{oDatosHC.metodos}" var="ma" itemLabel="#{ma.descip}" itemValue="#{ma.cve}" />
+                                            </p:selectManyCheckbox>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="4">
+                                            <p:commandButton value="Guardar" update=":formulario:msgs panelGineco" action="#{oDatosHC.guardaAntGineco()}"/>
+                                            <p:commandButton value="Regresar">
+                                                <p:ajax listener="#{oDatosHC.regresa()}"/>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="Antecedentes Perinatales" rendered="#{oDatosHC.renderPerinat}">
+                                <p:panelGrid id="panelAntPeri">
+                                    <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Folio Paciente: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.folioPac}" size="6" /> 
+                                        </p:column> 
+                                        <p:column>
+                                            <h:outputText value="Nombre: "/>
+                                        </p:column> 
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.nombreCompleto}" size="30"/>
+                                        </p:column> 
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Embarazo Controlado: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu disabled="#{oDatosHC.disMenorEdad}" id="selEmbarazoC" value="#{oDatosHC.historiaClinica.antecedPerinatales.embControlado}">  
+                                                <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                                <f:selectItem itemLabel="Si" itemValue="S" />  
+                                                <f:selectItem itemLabel="No" itemValue="N" />  
+                                                <f:selectItem itemLabel="No se sabe" itemValue="X" />  
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Embarazo Normal: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu disabled="#{oDatosHC.disMenorEdad}" id="selEmbarazoN" value="#{oDatosHC.historiaClinica.antecedPerinatales.embNormal}">  
+                                                <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                                <f:selectItem itemLabel="Si" itemValue="S" />  
+                                                <f:selectItem itemLabel="No" itemValue="N" />  
+                                                <f:selectItem itemLabel="No se sabe" itemValue="X" />  
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Parto Normal: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu disabled="#{oDatosHC.disMenorEdad}" id="selPartoN" value="#{oDatosHC.historiaClinica.antecedPerinatales.partoNormal}">  
+                                                <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                                <f:selectItem itemLabel="Si" itemValue="S" />  
+                                                <f:selectItem itemLabel="No" itemValue="N" />  
+                                                <f:selectItem itemLabel="No se sabe" itemValue="X" />  
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Tipo de Parto: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu disabled="#{oDatosHC.disMenorEdad}" id="selTipoParto" value="#{oDatosHC.historiaClinica.antecedPerinatales.tipoparto}">  
+                                                <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                                <f:selectItem itemLabel="Pélvico" itemValue="P" />  
+                                                <f:selectItem itemLabel="Cesarea" itemValue="C" />  
+                                                <f:selectItem itemLabel="Distócico" itemValue="D" />  
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Neonato Sano: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu disabled="#{oDatosHC.disMenorEdad}" id="selNeonatoSano" value="#{oDatosHC.historiaClinica.antecedPerinatales.neonatoSano}">  
+                                                <p:ajax update="selDiag"/>
+                                                <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                                <f:selectItem itemLabel="Si" itemValue="S" />  
+                                                <f:selectItem itemLabel="No" itemValue="N" />  
+                                                <f:selectItem itemLabel="No se sabe" itemValue="X" />  
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Diagnóstico: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:autoComplete id="selDiag" minQueryLength="4" disabled="#{oDatosHC.selDiag(oDatosHC.historiaClinica.antecedPerinatales.neonatoSano)}"
+                                                            var="diag" itemLabel="#{diag.descrip}" itemValue="#{diag}" converter="#{oConverterDiagnostico}" forceSelection="true" size="40"
+                                                            value="#{oDatosHC.historiaClinica.antecedPerinatales.diag}" completeMethod="#{oDatosHC.completeDiagnostico}"><p:ajax/></p:autoComplete>
+                                           
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Apgar: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText disabled="#{oDatosHC.disMenorEdad}" size="5" value="#{oDatosHC.historiaClinica.antecedPerinatales.apgar}"/>&nbsp;&nbsp;
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Perímetro Cefálico: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText disabled="#{oDatosHC.disMenorEdad}" size="5" value="#{oDatosHC.historiaClinica.antecedPerinatales.perimcefal}"/>&nbsp;&nbsp;
+                                            <h:outputText value="cms."/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Peso al nacer: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText disabled="#{oDatosHC.disMenorEdad}" size="5" value="#{oDatosHC.historiaClinica.antecedPerinatales.peso}"/>&nbsp;&nbsp;
+                                            <h:outputText value="grs."/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Talla al nacer: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText disabled="#{oDatosHC.disMenorEdad}" size="5" value="#{oDatosHC.historiaClinica.antecedPerinatales.talla}"/>&nbsp;&nbsp;
+                                            <h:outputText value="cms."/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Observaciones: "/>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea style="text-transform: uppercase"
+                                                             disabled="#{oDatosHC.disMenorEdad}" autoResize="false"  rows="3" cols="65" value="#{oDatosHC.historiaClinica.antecedPerinatales.obs}"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="4">
+                                            <p:commandButton value="Guardar" action="#{oDatosHC.guardaAntPerinat()}" update=":formulario:msgs panelAntPeri"/>
+                                            <p:commandButton value="Regresar">
+                                                <p:ajax listener="#{oDatosHC.regresa()}"/>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="Antecedentes Nutricionales" rendered="#{oDatosHC.renderNutricio}">
+                                <p:panelGrid id="panelNutri">
+                                    <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Folio Paciente: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.folioPac}" size="6" /> 
+                                        </p:column> 
+                                        <p:column>
+                                            <h:outputText value="Nombre: "/>
+                                        </p:column> 
+                                        <p:column colspan="3">
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.nombreCompleto}" size="30"/>
+                                        </p:column> 
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Lactancia Materna: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu disabled="#{oDatosHC.disMenorEdad}" id="selLactanciaM" value="#{oDatosHC.historiaClinica.antecedNutricio.lactanciaMaterna}">  
+                                                <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                                <f:selectItem itemLabel="Si" itemValue="S" />  
+                                                <f:selectItem itemLabel="No" itemValue="N" />  
+                                                <f:selectItem itemLabel="No se sabe" itemValue="X" />  
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Duración: "/>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputText disabled="#{oDatosHC.disMenorEdad}" size="5" value="#{oDatosHC.historiaClinica.antecedNutricio.duracionLact}"/>&nbsp;&nbsp;
+                                            <h:outputText value="meses"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Biberón Actualmente: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu disabled="#{oDatosHC.disMenorEdad}" id="selBiberonAct" value="#{oDatosHC.historiaClinica.antecedNutricio.biberonActual}">  
+                                                <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                                <f:selectItem itemLabel="Si" itemValue="S" />  
+                                                <f:selectItem itemLabel="No" itemValue="N" />  
+                                                <f:selectItem itemLabel="No se sabe" itemValue="X" />  
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Fórmula Actualmente: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneMenu disabled="#{oDatosHC.disMenorEdad}" id="selFormulaAct" value="#{oDatosHC.historiaClinica.antecedNutricio.formActual}">
+                                                <p:ajax update="itFormula" listener="#{oDatosHC.validaFormula()}"/>
+                                                <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                                <f:selectItem itemLabel="Si" itemValue="S" />  
+                                                <f:selectItem itemLabel="No" itemValue="N" />  
+                                                <f:selectItem itemLabel="No se sabe" itemValue="X"/>  
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Cuál: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText id="itFormula"
+                                                         style="text-transform: uppercase"
+                                                         disabled="#{oDatosHC.selFormula(oDatosHC.historiaClinica.antecedNutricio.formActual)}" size="12" value="#{oDatosHC.historiaClinica.antecedNutricio.nomFormula}"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Edad de ablactación: "/>
+                                        </p:column>
+                                        <p:column colspan="5">
+                                            <p:inputText disabled="#{oDatosHC.disMenorEdad}" size="5" value="#{oDatosHC.historiaClinica.antecedNutricio.ablactacion}"/>&nbsp;&nbsp;
+                                            <h:outputText value="meses"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="6">
+                                            <p:commandButton value="Guardar" action="#{oDatosHC.guardaAntNutri()}" update=":formulario:msgs panelNutri"/>
+                                            <p:commandButton value="Regresar">
+                                                <p:ajax listener="#{oDatosHC.regresa()}"/>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="Desarrollo" rendered="#{oDatosHC.renderDesarrollo}">
+                                <p:panelGrid id="panelDes">
+                                    <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Folio Paciente: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.folioPac}" size="6" /> 
+                                        </p:column> 
+                                        <p:column>
+                                            <h:outputText value="Nombre: "/>
+                                        </p:column> 
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.nombreCompleto}" size="25"/>
+                                        </p:column> 
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Control Cefálico: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText disabled="#{oDatosHC.disMenorEdad}" size="5" value="#{oDatosHC.historiaClinica.desarrollo.controlCefalico}"/>&nbsp;&nbsp;
+                                            <h:outputText value="meses"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Primeros Dientes: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText disabled="#{oDatosHC.disMenorEdad}" size="5" value="#{oDatosHC.historiaClinica.desarrollo.primerDiente}"/>&nbsp;&nbsp;
+                                            <h:outputText value="meses"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Sentarse Solo: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText disabled="#{oDatosHC.disMenorEdad}" size="5" value="#{oDatosHC.historiaClinica.desarrollo.sentarse}"/>&nbsp;&nbsp;
+                                            <h:outputText value="meses"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Gateo: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText disabled="#{oDatosHC.disMenorEdad}" size="5" value="#{oDatosHC.historiaClinica.desarrollo.gateo}"/>&nbsp;&nbsp;
+                                            <h:outputText value="meses"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Disilabas: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText disabled="#{oDatosHC.disMenorEdad}" size="5" value="#{oDatosHC.historiaClinica.desarrollo.disilabos}"/>&nbsp;&nbsp;
+                                            <h:outputText value="meses"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Marcha sin Apoyo: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText disabled="#{oDatosHC.disMenorEdad}" size="5" value="#{oDatosHC.historiaClinica.desarrollo.marcha}"/>&nbsp;&nbsp;
+                                            <h:outputText value="meses"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Control de Esfínteres: "/>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputText disabled="#{oDatosHC.disMenorEdad}" size="5" value="#{oDatosHC.historiaClinica.desarrollo.ctrlEsfinteres}"/>&nbsp;&nbsp;
+                                            <h:outputText value="meses"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Comportamiento: "/>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea disabled="#{oDatosHC.disMenorEdad}" 
+                                                             style="text-transform: uppercase"
+                                                             rows="2" cols="60" autoResize="false" value="#{oDatosHC.historiaClinica.desarrollo.comportamiento}"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Escolaridad/Rendimiento: "/>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:inputTextarea style="text-transform: uppercase"
+                                                disabled="#{oDatosHC.disMenorEdad}" value="#{oDatosHC.historiaClinica.desarrollo.escolaridadRend}" rows="2" cols="60" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="4">
+                                            <p:commandButton value="Guardar" update="panelDes :formulario:msgs" action="#{oDatosHC.guardaDesarrollo()}"/>
+                                            <p:commandButton value="Regresar">
+                                                <p:ajax listener="#{oDatosHC.regresa()}"/>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="Diagnóstico de Ingreso" rendered="#{oDatosHC.renderID}">
+                                <p:panelGrid id="panelDiag">
+                                    <p:row>  
+                                        <p:column>
+                                            <h:outputText value="Folio Paciente: "/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.folioPac}" size="6" /> 
+                                        </p:column> 
+                                        <p:column>
+                                            <h:outputText value="Nombre: "/>
+                                        </p:column> 
+                                        <p:column>
+                                            <p:inputText readonly="true" value="#{oDatosHC.historiaClinica.paciente.nombreCompleto}" size="25"/>
+                                        </p:column> 
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Diagnóstico"/>
+                                        </p:column>
+                                        <p:column>
+                                             <p:autoComplete disabled="#{oDatosHC.disID}" id="selDiag2" minQueryLength="4"
+                                                             size="80"
+                                                            var="diag" itemLabel="#{diag.descrip}" itemValue="#{diag}" converter="#{oConverterDiagnostico}" forceSelection="true"
+                                                            value="#{oDatosHC.historiaClinica.episodioMedico.dxIngreso}" completeMethod="#{oDatosHC.completeDiagnostico}"><p:ajax/>
+                                             </p:autoComplete>
+                                           
+                                        </p:column>
+                                        <p:column colspan="2">
+                                            <p:selectBooleanCheckbox disabled="#{oDatosHC.disID}" itemLabel="Requiere Nuevas Consultas/Procedimientos" value="#{oDatosHC.historiaClinica.episodioMedico.reqCons}"/><br/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="4">
+                                            <h:outputText value="Diagnóstico de Ingreso"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="4">
+                                            <p:inputTextarea disabled="#{oDatosHC.disID}" 
+                                                             style="text-transform: uppercase"
+                                                             value="#{oDatosHC.historiaClinica.episodioMedico.servicioPrestado.obs}" rows="6" cols="90" autoResize="false"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="3"/>
+                                        <p:column>
+                                            <h:outputText value="Receta Núm."/>&nbsp;&nbsp;
+                                            <p:inputText disabled="#{oDatosHC.disID}" size="9" value="#{oDatosHC.historiaClinica.episodioMedico.servicioPrestado.receta}"/>
+                                        </p:column>
+                                    </p:row>    
+                                    <p:row>
+                                        <p:column colspan="4">
+                                            <p:commandButton update=":formulario:msgs" value="Guardar" action="#{oDatosHC.guardaImpDiag()}"/>
+                                            <p:commandButton value="Regresar">
+                                                <p:ajax listener="#{oDatosHC.regresa()}"/>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:tab>
+                        </p:tabView> 
+                    </p:panel>
+                </h:form> 
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

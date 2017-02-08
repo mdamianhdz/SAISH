@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inicio</title>
+            <h:body>
+                #{oRegEgrePagHon.limpiaPagina()}
+                <p:growl id="msgs2" showDetail="true"/>
+                <h:form id="formP">
+                    <p:panel header="Registrar Egreso por Pago de Honorarios" id="panelP">    
+                        <p:dataTable id="tablaHonorarios" 
+                                     selection="#{oRegEgrePagHon.selectedPH}" 
+                                     rowKey="#{oTH.idPagoHonorarios}" 
+                                     selectionMode="single" var="oTH" 
+                                     value="#{oRegEgrePagHon.listPH}" 
+                                     emptyMessage="No hay pagos pendientes." 
+                                     paginator="true" rows="6" 
+                                     paginatorPosition="bottom" 
+                                     style="margin-bottom: 0px">
+                            <f:facet name="header">
+                                Pagos de Honorarios Pendientes
+                            </f:facet>
+                            <p:column headerText="Clave">
+                                <h:outputText value="#{oTH.idPagoHonorarios}"/>
+                            </p:column>
+                            <p:column headerText="Apellido Paterno">
+                                <h:outputText value="#{oTH.personalHospitalario.apellidoPaterno}"/>
+                            </p:column>
+                            <p:column headerText="Apellido Materno">
+                                <h:outputText value="#{oTH.personalHospitalario.apellidoMaterno}"/>
+                            </p:column>
+                            <p:column headerText="Nombre">
+                                <h:outputText value="#{oTH.personalHospitalario.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Monto">
+                                <h:outputText value="#{oTH.monto}">
+                                    <f:convertNumber pattern="#.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:ajax process="@formP" />
+                        </p:dataTable>
+
+
+                        <h:panelGrid columns="4" cellpadding="5">
+                            <p:column>
+                                <h:outputText style="font-weight: bold;" value="Forma de Pago: " />
+                                <p:selectOneMenu required="true" requiredMessage="Se requiere una Forma de Pago" id="SL" value="#{oRegEgrePagHon.forma}">
+                                    <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                    <f:selectItems value="#{oFormaDePago.formasDePago}" var="oLP1"  
+                                                   itemLabel="#{oLP1.descripcion}" 
+                                                   itemValue="#{oLP1.cveFrmPago}"/>
+                                    <p:ajax update="pg1" listener="#{oRegEgrePagHon.validaForma()}"/>
+                                </p:selectOneMenu>
+                            </p:column>
+                            <p:column>
+                                <h:outputText style="font-weight: bold;" value="Banco : " />
+                                <p:selectOneMenu requiredMessage="Seleccione un banco" id="SB" value="" required="true">
+                                    <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                    <f:selectItems value="#{oFormaDePago.bancos}" />
+                                </p:selectOneMenu>
+                            </p:column>
+                        </h:panelGrid> 
+                        <h:panelGrid id="pg1">
+                            <p:column><h:outputText    rendered="#{oRegEgrePagHon.cheque}" style="font-weight: bold;" value="N&uacute;mero de cheque" /> </p:column> 
+<!--                                    <p:column><p:inputText  rendered="#{oRegEgrePagHon.cheque}" value="#{oRegEgrePagHon.datosPago}"  label="N&uacute;mero de cheque"></p:inputText> </p:column>-->
+                            <p:column><p:inputText rendered="#{oRegEgrePagHon.cheque}" value="#{oRegEgrePagHon.datosPago}"></p:inputText></p:column>
+                            <p:column><h:outputText  rendered="#{oRegEgrePagHon.transferencia}" style="font-weight: bold;" value="N&uacute;mero de transferencia" /> </p:column> 
+<!--                                    <p:column><p:inputText  rendered="#{oRegEgrePagHon.transferencia}" value="#{oRegEgrePagHon.datosPago}" label="N&uacute;mero de transferencia" > </p:inputText> </p:column>-->
+                            <p:column><p:inputText rendered="#{oRegEgrePagHon.transferencia}" value="#{oRegEgrePagHon.datosPago}"></p:inputText></p:column>
+                        </h:panelGrid>
+                    </p:panel>
+
+                    <center>
+                        <p:commandButton value="Guardar">
+                            <p:ajax process="panelP" update="dialogE" listener="#{oRegEgrePagHon.validaPago()}"></p:ajax>
+                        </p:commandButton>
+                    </center>
+
+                    <p:dialog id="dialogE" resizable="false" header="Operacion Exitosa" widgetVar="diaE" modal="true" appendTo="@(body)" closable="false">
+                        <p:panel id="display">
+                            <h:panelGrid>
+                                <p:row>
+                                    Se ha registrado un egreso por pago de honorarios <br></br>
+                                    por la cantidad de:  <p:outputLabel style="font-weight: bold" value="#{oRegEgrePagHon.selectedPH.monto}"> <f:convertNumber pattern="#0.00"/></p:outputLabel><br></br>
+                                    A nombre de: <p:outputLabel style="font-weight: bold" value="#{oRegEgrePagHon.selectedPH.personalHospitalario.nombreCompleto}"/>
+                                </p:row>
+                                <br></br>
+                                <p:row>
+                                    Se ha generado el Folio de caja:  <p:outputLabel style="font-weight: bold" value="#{oRegEgrePagHon.folioRet}"/>
+                                </p:row>
+                                <p:row>
+                                    <br></br>
+                                    <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" onclick="printTicket();
+                                        return false;"/>
+                                    <p:commandButton label="Regresar" value="Regresar">
+                                        <p:ajax listener="#{oRegEgrePagHon.regresar()}" />
+                                    </p:commandButton>
+                                </p:row>
+                            </h:panelGrid>
+                        </p:panel>  
+                    </p:dialog>
+                </h:form>
+
+                <h:form>
+                    <p:dialog id="dialogNS" resizable="false" widgetVar="diaNS" modal="true" appendTo="@(body)">
+                        <p:outputLabel value="No hay servicios seleccionados" />
+                    </p:dialog>
+                </h:form>
+
+                <h:form>
+                    <p:dialog id="dialogE" resizable="false" widgetVar="diaE" modal="true" appendTo="@(body)">
+                        <p:outputLabel value="Faltan Datos" />
+                    </p:dialog>
+                </h:form>
+
+                <h:form>
+                    <p:dialog id="dialogFP" resizable="false" widgetVar="diaFP" modal="true" appendTo="@(body)">
+                        <p:outputLabel value="La forma de pago debe ser en Efectivo" />
+                    </p:dialog>
+                </h:form>
+                <h:form id="dialogs">
+                    <p:dialog id="dialogE" resizable="false" header="Operacion Exitosa" widgetVar="diaE" modal="true" appendTo="@(body)" closable="false">
+                        <p:panel id="display">
+                            <h:panelGrid>
+                                <p:row>
+                                    Se ha resgistrado el egreso por pago de honorarios <br></br>
+                                    por la cantidad de:  <p:outputLabel style="font-weight: bold" value="#{oRegEgrePagHon.selectedPH.monto}"> <f:convertNumber pattern="#0.00"/></p:outputLabel><br></br>
+                                    A nombre de: <p:outputLabel style="font-weight: bold" value="#{oRegEgrePagHon.selectedPH.personalHospitalario.nombreCompleto}"/>
+                                </p:row>
+                                <br></br>
+                                <p:row>
+                                    Se ha generado el Folio de caja:  <p:outputLabel style="font-weight: bold" value="#{oRegEgrePagHon.folioRet}"/>
+                                </p:row>
+                                <p:row>
+                                    <br></br>
+                                    <p:commandButton label="Imprimir" value="Imprimir"></p:commandButton>
+                                    <p:commandButton label="Regresar" value="Regresar">
+                                        <p:ajax listener="#{oRegEgrePagHon.regresar()}" />
+                                    </p:commandButton>
+                                </p:row>
+                            </h:panelGrid>
+                        </p:panel>  
+                    </p:dialog>
+                </h:form>
+                
+                 <script>
+                                    var ticket;
+                                    function printTicket() {
+                                        ticket = {
+                                            "reimpresion": false,
+                                            "title": 1,
+                                            "fecha": "03-MAR-14",
+                                            "hora": "10:34",
+                                            "folioope": #{oRegEgrePagHon.folioRet},
+                                            "doctor": "Dr. Miguel Ángel Dámian Hernández",
+                                            "recfiscal": "",
+                                            "mes": "SEPTIEMBRE",
+                                            "anio": "2013",
+                                            "usuario": "Fernando Cabrera Brenis",
+                                            "servicios": [
+                                                {
+                                                    "cantidad": 1,
+                                                    "descripcion": "PAGO DE RENTA",
+                                                    "precio": 1000
+                                                }
+                                            ]
+                                        };
+                                        print(ticket);
+                                    }
+                </script>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

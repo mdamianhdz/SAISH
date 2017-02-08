@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Proveedor</title>
+            <h:body>
+                <center><h2>Administración de Proveedores</h2>
+                    <h:form id="formulario"> 
+                        <p:growl id="msg" sticky="true" showDetail="true"/> 
+                        <p:dialog id="dlgProveedor" widgetVar="dlgProv"  position="center" closable="false" dynamic="true" resizable="false"
+                                  appendTo="@(body)" modal="true">
+                            <center>
+                                <h3>Administración de Proveedores</h3>
+                                <h:form>
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column rendered="#{oProveedor.disDatos}">
+                                                <p:outputLabel value="Clave:"/>
+                                            </p:column>
+                                            <p:column rendered="#{oProveedor.disDatos}">
+                                                <p:inputText id="txtClave" 
+                                                             value="#{oProveedor.currentProveedor.idProv}" 
+                                                             size="6" disabled="true">
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Nombre o Razón Social:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id ="txtNombreRS"
+                                                             value="#{oProveedor.currentProveedor.nombreRazSoc}"
+                                                             disabled="#{oProveedor.disDatosDescrip}">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                    <br/><br/><p:commandButton value="Guardar">
+                                        <p:ajax listener="#{oProveedor.guarda()}" update=":formulario:msg :formulario:dtProveedor"/>
+                                    </p:commandButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <p:commandButton value="Regresar" oncomplete="PF('dlgProv').hide()"/>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        <p:dataTable id="dtProveedor" value="#{oProveedor.listaProveedor}" rows="5" editable="true" paginator="true" paginatorPosition="bottom" var="oP"
+                                     style="width: 900px" selection="#{oProveedor.selectedProveedor}" rowKey="#{oP.idProv}">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Clave">
+                                <h:outputText value="#{oP.idProv}" />
+                            </p:column>
+                            <p:column headerText="Nombre o Razón Social">
+                                <h:outputText value="#{oP.nombreRazSoc}" />
+                            </p:column>
+                            
+                            <f:facet name="footer">
+                                <p:commandButton value="Elimina Proveedor" icon="ui-icon-pencil">
+                                    <p:ajax update=":formulario:msg :formulario:dlgProveedor" listener="#{oProveedor.confProveedor(1)}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Modificar Proveedor" icon="ui-icon-pencil">
+                                    <p:ajax update=":formulario:msg :formulario:dlgProveedor" listener="#{oProveedor.confProveedor(2)}"  />
+                                </p:commandButton>
+                                <p:commandButton value="Agregar Proveedor" icon="ui-icon-pencil" oncomplete="dlgProv.show()">
+                                    <p:ajax update=":formulario:msg :formulario:dlgProveedor" listener="#{oProveedor.confNuevo()}"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable> 
+                    </h:form></center> 
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

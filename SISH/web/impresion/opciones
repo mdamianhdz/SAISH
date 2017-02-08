@@ -1,0 +1,40 @@
+DISTINTOS VALORES DE PROPIEDADES DE OBJETO JSON PARA IMPRESION DE TICKETS
+
+"TITLE":
+VALOR  |  TIPO TICKET                                             |  IMPRIME EN TICKET
+----------------------------------------------------------------------------------
+===================== IMPRESIONES DE SISTEMA ACTUAL "INGRESOS" ===================
+  1    |  SERVICIO EXTERNO                                        |  "EXTERNO"
+  2    |  CARGO A CUENTA                                          |  "CARGOS"
+  3    |  PAGO Ó ANTICIPO A CUENTA                                |  "PAGO A CUENTA DE HOSPITALIZACION"
+  4    |  CIERRE DE CUENTA                                        |  "CIERRE DE CUENTA"
+  5    |  PAGO DE RENTA                                           |  "PAGO DE RENTA"
+  6    |  CONTRATO DE PAQUETE                                     |  "CONTRATO PAQUETE"
+  7    |  OTORGAR SERVICIO DE PAQUETE                             |  "SERVICIO PAQUETE"
+  8    |  REGISTRO DE R/A(RECUPERACION/ADEUDO) "PAGO DE FACTURAS" |  "PAGO CREDITO"
+  9    |  PAGO Ó ANTICIPO A PAQUETE                               |  "PAGO PAQUETES"
+  10   |  PAGO DE PRESTAMO DE PERSONAL                            |  "PAGO DE PRESTAMO"
+===================== IMPRESIONES DE SISTEMA ACTUAL "EGRESOS" ===================
+  11   |  PRESTAMO A PERSONAL                                     |  "PRESTAMO A PERSONAL"
+
+===================== IMPRESIONES ADICIONALES "INGRESOS" =========================
+  12   |  DEVOLUCION DE HONORARIOS/REGALIAS                       |  "DEVOLUCION HONORARIOS/REGALIAS"
+===================== IMPRESIONES ADICIONALES "EGRESOS" ==========================
+  13   |  PAGO DE COMPRAS/GASTOS                                  |  "PAGO DE COMPRAS/GASTOS"
+  14   |  DEVOLUCION DE DEPOSITO DE RENTA                         |  "DEVOLUCION DEPOSITO"
+  15   |  DEVOLUCION DE DEPOSITO DE CONTROL                       |  "DEVOLUCION DEPOSITO"
+  16   |  PAGO DE HONORARIOS                                      |  "PAGO DE HONORARIOS"
+  17   |  PAGO DE REGALIAS                                        |  "PAGO DE REGALIAS"
+                                                                      12345789_123456789_12346789_123456789_
+
+
+
+
+Para entradas de dinero son:
+- Venta de servicio,  pago de préstamo, abono a paquete o cuenta, pago de anticipo (hospitalización o paquete), devolución de honorarios/regalías, 
+pago de facturas.
+Hay una línea distinta si es contado, paquete o a crédito.
+
+Para salidas de dinero son:
+- Préstamo a personal, devolución de depósito de renta, devolución de depósito de control, pago de honorarios, pago de regalías,
+ pago de compras/gastos

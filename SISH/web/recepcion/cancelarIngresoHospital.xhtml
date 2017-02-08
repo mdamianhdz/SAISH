@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Cancelar Ingreso Hospital</title>
+            #{oCancelarHospJB.limpiar()}
+            <h:body>
+                <center>
+                    <h2>Cancelar Ingreso a Hospital</h2>
+                </center>
+                <p:dialog closable="false" dynamic="true"  appendTo="@(body)" modal="true" id="dlgCompBusq" 
+                            header="Busqueda de paciente"  widgetVar="dlgCompBusqVar" style="font-size:12px" 
+                            styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >
+                    <h:form id="formDlg">
+                        #{oCancelarHospJB.limpiar()}
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"/> 
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar" 
+                                         oncomplete="dlgCompBusqVar.hide()" 
+                                         update=":form:panelCancelarIngresoHosp :form:msgs" 
+                                         action="#{oCancelarHospJB.buscarPacienteIngresado()}" icon="ui-icon-search"/>
+                        <p:commandButton value="Cancelar" update=":form:panelCancelarIngresoHosp"
+                                         oncomplete="dlgCompBusqVar.hide()" 
+                                         action="#{oCancelarHospJB.limpiar()}"/>
+                    </h:form> 
+                </p:dialog>
+                <h:form>
+                    <center>
+                        <p:commandButton value="Seleccionar paciente" update=":dlgCompBusq" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+                    </center>
+                </h:form>
+                <h:form id="form">
+                    <p:growl id="msgs" showDetail="true"/>
+                    <p:panel id="panelCancelarIngresoHosp" visible="#{oCancelarHospJB.mostrarPanel}">
+                        <p:dataTable  id="dtServicios" value="#{oCancelarHospJB.arrEpisodioMedico}" paginator="true" paginatorPosition="bottom" var="oEpsMeds">
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column rowspan="2" headerText="Folio" />
+                                    <p:column rowspan="2" headerText="Paciente" />
+                                    <p:column rowspan="2" headerText="Fecha de Nacimiento" />
+                                    <p:column rowspan="2" headerText="G&eacute;nero" />
+                                    <p:column rowspan="2" headerText="Diagn&oacute;stico de Ingreso" />
+                                    <p:column rowspan="2" headerText="Habitaci&oacute;n" />
+                                    <p:column rowspan="2" headerText="M&eacute;dico Tratante" />
+                                    <p:column rowspan="2" headerText="Fecha y Hora de Ingreso" />
+                                    <p:column rowspan="2" />
+                                </p:row>
+                            </p:columnGroup>
+                            <p:column>
+                                <h:outputText value="#{oCancelarHospJB.paciente.folioPac}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{oCancelarHospJB.paciente.nombreCompleto}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{oCancelarHospJB.paciente.nac}" style=" text-transform: capitalize;">
+                                    <f:convertDateTime pattern="dd-MMMM-yyyy" timeZone="EST" locale="es-MX"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{oCancelarHospJB.paciente.genero}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{oEpsMeds.dxIngreso.descrip}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{oEpsMeds.hab.hab}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{oEpsMeds.medTratante.nombreCompleto}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{oEpsMeds.inicio}" style=" text-transform: capitalize;">
+                                    <f:convertDateTime pattern="dd-MMMM-yyyy HH:mm" timeZone="EST" locale="es-MX"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column>
+                                <p:commandButton value="Cancelar Ingreso" action="#{oCancelarHospJB.cancelarIngresoHospital()}" update=":form:msgs :form:panelCancelarIngresoHosp" >
+                                    <f:setPropertyActionListener target="#{oCancelarHospJB.episodioMedico.cveepisodio}" value="#{oEpsMeds.cveepisodio}" />
+                                    <f:setPropertyActionListener target="#{oCancelarHospJB.episodioMedico.hab.hab}" value="#{oEpsMeds.hab.hab}" />
+                                    <f:setPropertyActionListener target="#{oCancelarHospJB.episodioMedico.tipoPrincipal}" value="#{oEpsMeds.tipoPrincipal}" />
+                                    <p:confirm
+                                        header="Confirmar Cancelaci&oacute;n de Ingreso"
+                                        message="¿Seguro que desea cancelar el ingreso al hospital del paciente?"
+                                        icon="ui-icon-alert" />
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                    <p:confirmDialog styleClass="text-align: center;" global="true" showEffect="clip" hideEffect="fold">
+                            <p:commandButton value="Sí" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+                    </p:confirmDialog>
+                </h:form>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+    
+</html>

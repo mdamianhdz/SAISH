@@ -1,0 +1,218 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Administrar Rentas</title>
+            <h:body> 
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    <center>
+                        <h2>Administrar Catálogo de Espacios Rentables</h2>
+                        <p:dialog id="dlgAdmEspacios" widgetVar="dlgEspacios" appendTo="@(body)" closable="false" resizable="false"  
+                                  dynamic="true" modal="false" >
+                            <center>
+                                <h3>Administrar Espacio Rentable</h3>
+                                <h:form id="formDlg">
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Tipo de Espacio: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oAdmEsp.currentEspacio.tipoEspacio.idTipoEsp}" 
+                                                                 disabled="#{oAdmEsp.consulta}"
+                                                                 required="true">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" noSelectionOption="true"/>
+                                                    <f:selectItems value="#{oAdmRentas.tiposEspacio}" var="oTE" itemValue="#{oTE.idTipoEsp}" itemLabel="#{oTE.descripcion}"/>
+                                                    <p:ajax/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Descripción: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oAdmEsp.currentEspacio.descripcion}" 
+                                                             disabled="#{oAdmEsp.consulta}"
+                                                             required="true">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="2">
+                                                <p:outputLabel value="Ubicación(para el contrato): " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column colspan="2">
+                                                <p:inputTextarea value="#{oAdmEsp.currentEspacio.ubicacion}" 
+                                                                 disabled="#{oAdmEsp.consulta}" 
+                                                                 required="true"
+                                                                 cols="60" rows="3">
+                                                    <p:ajax/>
+                                                </p:inputTextarea>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Renta Anual: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oAdmEsp.currentEspacio.rentaAnual}" 
+                                                             required="true"
+                                                             disabled="#{oAdmEsp.consulta}">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Renta Mensual: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oAdmEsp.currentEspacio.rentaMensual}" 
+                                                             required="true"
+                                                             disabled="#{oAdmEsp.consulta}">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Depósito: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oAdmEsp.currentEspacio.deposito}" 
+                                                             required="true"
+                                                             disabled="#{oAdmEsp.consulta}">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Arrendador: " style=" font-weight:bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oAdmEsp.currentEspacio.arrendador.rfc}" disabled="#{oAdmEsp.consulta}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                                    <f:selectItems value="#{oAdmEsp.arrendadores}" var="oArr" itemValue="#{oArr.rfc}" itemLabel="#{oArr.rfc} - #{oArr.nombre}"/>
+                                                    <p:ajax/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="4">
+                                                <p:outputLabel value="Condiciones de Renta para el Contrato" style="font-weight: bold"/>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="2" style=" text-align:center">
+                                                <p:inputText value="#{oAdmEsp.condicion}" size="50" disabled="#{oAdmEsp.consulta}">
+                                                    <p:ajax/>
+                                                </p:inputText><br/><br/>
+                                                <p:commandButton value="Agregar" disabled="#{oAdmEsp.consulta}">
+                                                    <p:ajax update="dtCondiciones" listener="#{oAdmEsp.agregarCondicion()}"/>
+                                                </p:commandButton> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <p:commandButton value="Eliminar" disabled="#{oAdmEsp.consulta}">
+                                                    <p:ajax update="dtCondiciones" listener="#{oAdmEsp.eliminarCondicion()}"/>
+                                                </p:commandButton>
+                                            </p:column>
+                                            <p:column colspan="2">
+                                                <p:dataTable id="dtCondiciones" value="#{oAdmEsp.currentEspacio.listCondiciones}" var="cond" selection="#{oAdmEsp.selectedCondRenta}" 
+                                                             rowKey="#{cond.sec}" paginator="true" paginatorPosition="bottom" rows="3" emptyMessage="No hay condiciones">
+                                                    <p:ajax event="rowSelectRadio"/>
+                                                    <p:column selectionMode="single" disabledSelection="#{oAdmEsp.consulta}"/>
+                                                    <p:column>
+                                                        <p:outputLabel value="#{cond.descripcion}"/>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="4">
+                                                <p:commandButton value="#{oAdmEsp.valueBoton}" oncomplete="PF('dlgEspacios').hide()" rendered="#{oAdmRentas.valueBoton!='Consultar'}">
+                                                    <p:ajax listener="#{oAdmEsp.guardar()}" update=":form:msg :form:dtEspacios"/>
+                                                </p:commandButton>
+                                                <p:commandButton value="Regresar" oncomplete="PF('dlgEspacios').hide()" >
+                                                    <p:ajax listener="#{oAdmEsp.buscaEspacios()}" update=":form:dtEspacios"/>
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Tipo de Espacio: " style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu value="#{oAdmEsp.tipoEspacio}">
+                                        <f:selectItem itemValue="0" itemLabel="Seleccione"/>
+                                        <f:selectItems value="#{oAdmEsp.tiposEspacio}" var="oTE" itemValue="#{oTE.idTipoEsp}" itemLabel="#{oTE.descripcion}"/>
+                                        <p:ajax/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Buscar">
+                                        <p:ajax update="dtEspacios" listener="#{oAdmEsp.buscaEspacios()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/>
+                        <p:dataTable id="dtEspacios" var="oEsp" value="#{oAdmEsp.listEspacios}" paginator="true" paginatorPosition="bottom" rows="6" 
+                                     emptyMessage="No hay registros" selection="#{oAdmEsp.selectedEspacio}" rowKey="#{oEsp.idEspacio}" style="width:900px">
+                            <p:ajax event="rowSelectRadio" update="dtEspacios"/>
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Tipo Espacio">
+                                <p:outputLabel value="#{oEsp.tipoEspacio.descripcion}"/>
+                            </p:column>
+                            <p:column headerText="Descripción">
+                                <p:outputLabel value="#{oEsp.descripcion}"/>
+                            </p:column>
+                            <p:column headerText="Renta Anual">
+                                <p:outputLabel value="$ #{oEsp.rentaAnual}"/>
+                            </p:column>
+                            <p:column headerText="Rentado">
+                                <p:outputLabel rendered="#{oEsp.rentado}" value="Sí"/>
+                                <p:outputLabel rendered="#{!oEsp.rentado}" value="No"/>
+                            </p:column>
+                            <p:column headerText="Activo">
+                                <p:outputLabel rendered="#{oEsp.activo}" value="Sí"/>
+                                <p:outputLabel rendered="#{!oEsp.activo}" value="No"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Nuevo Espacio">
+                                    <p:ajax update=":form:msg :form:dlgAdmEspacios" listener="#{oAdmEsp.confOpe(1)}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Modificar">
+                                    <p:ajax update=":form:msg :form:dlgAdmEspacios" listener="#{oAdmEsp.confOpe(2)}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Activar" rendered="#{!oAdmEsp.selectedEspacio.activo}">
+                                    <p:ajax update=":form:msg :form:dtEspacios"  listener="#{oAdmEsp.confOpe(3)}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Inactivar" rendered="#{oAdmEsp.selectedEspacio.activo}" >
+                                    <p:ajax update=":form:msg :form:dtEspacios" listener="#{oAdmEsp.confOpe(4)}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Consultar">
+                                    <p:ajax update=":form:msg :form:dlgAdmEspacios" listener="#{oAdmEsp.confOpe(5)}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Ver Contrato">
+                                    <p:ajax update=":form:msg :form:dlgAdmEspacios" listener="#{oAdmEsp.confOpe(6)}"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                    </center>
+                </h:form>                     
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>
+

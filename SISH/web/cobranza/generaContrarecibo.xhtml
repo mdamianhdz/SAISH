@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Generar Contrarecibo</title>
+            <h:body> 
+                <p:dialog closable="false"  appendTo="@(body)" modal="true"  id="dialog" header="Generar Contra Recibo" widgetVar="singleCRDialog" resizable="false" dynamic="true"><br/>
+                    <h:form id="formDialog">  
+                        <p:panel id="panelCR">
+                            <h:outputText value="Se generó correctamente el Contra Recibo No. "/>
+                            <h:outputText value=" #{oContraRec.selectedCR.numContraRecibo}" style="font-weight:bold"/><br/>
+                            <h:outputText value="Fecha de vencimiento: "/>
+                            <h:outputText value="#{oContraRec.selectedCR.fecVencimiento}" style="font-weight:bold">
+                                 <f:convertDateTime type="date" pattern="dd-MMMM-yyyy"/>
+                             </h:outputText>
+                        </p:panel><br/>
+                        <p:dataList id="displayMulti" value="#{oContraRec.selectedFac}" var="selectedFac">  
+                            Folio: #{selectedFac.folio}, Importe: #{selectedFac.importeTotal}  
+                        </p:dataList><br/>
+                        <p:commandButton value="Imprimir" update=":form:msgs" action="#{oContraRec.imprime()}"/>&nbsp;&nbsp;&nbsp;
+                        <p:commandButton value="Regresar" action="#{oContraRec.regresa()}"/>
+                    </h:form>
+                </p:dialog>
+                <h:form id="form">
+                    <p:growl id="msgs" showDetail="true"/> 
+                    <p:selectOneRadio  id="customRadio" layout="custom" value="#{oContraRec.tipoCia}">
+                        <p:ajax event="valueChange" listener="#{oContraRec.habilitaBuscar()}" update="btnBuscar txtEmp txtAseg txtBanco"/>
+                        <f:selectItem itemValue="1" />
+                        <f:selectItem itemValue="2" />
+                        <f:selectItem itemValue="3" />
+                        <f:selectItem itemValue="4" />
+                    </p:selectOneRadio>
+                    <h:panelGrid columns="3">
+                        <p:radioButton id="opt1" for="customRadio" itemIndex="0"/>
+                        <h:outputLabel for="opt1" value="Banco" />
+                        <p:inputText id="txtBanco" value="#{oContraRec.nomEmpresa}" disabled="#{oContraRec.disBanco}"/>
+                        <p:radioButton id="opt2" for="customRadio" itemIndex="1"/>
+                        <h:outputLabel for="opt2" value="Aseguradora" />
+                        <p:inputText id="txtAseg" value="#{oContraRec.nomAseguradora}" disabled="#{oContraRec.disAseg}"/>
+                        <p:radioButton id="opt3" for="customRadio" itemIndex="2"/>
+                        <h:outputLabel for="opt3" value="Empresa" />
+                        <p:inputText id="txtEmp" value="#{oContraRec.nomBanco}" disabled="#{oContraRec.disEmp}"/>
+                        <p:radioButton id="opt4" for="customRadio" itemIndex="3"/>
+                        <h:outputLabel for="opt3" value="Todas las facturas pendientes de cobro" />
+                     </h:panelGrid>
+                    <br/>
+                    <p:commandButton id="btnBuscar" disabled="#{oContraRec.disBuscar}" value="Buscar" action="#{oContraRec.llenaLista()}"  update=":form:dtFacturas"/>&nbsp;&nbsp;&nbsp;
+                    <p:commandButton value="Nueva Búsqueda" update=":form:dtFacturas btnBuscar txtEmp txtAseg txtBanco btnGuardar" action="#{oContraRec.nuevaBusqueda()}"/><br/><br/><br/>
+                    
+                    <p:dataTable  id="dtFacturas" value="#{oContraRec.facturas}" 
+                                  paginator="true" paginatorPosition="bottom" 
+                                  var="oFac"
+                                  selection="#{oContraRec.selectedFac}" 
+                                  rowKey="#{oFac.folio}" rows="5">
+                        <p:ajax event="rowSelectCheckbox"   update=":form:btnGuardar"/>
+                        <p:ajax event="rowUnselectCheckbox" update=":form:btnGuardar"/>
+                        <p:column selectionMode="multiple"/>
+                        <p:column headerText="Serie">
+                            <h:outputText value="#{oFac.nombreSerie}"/>
+                        </p:column>
+                        <p:column headerText="Folio">
+                            <h:outputText value="#{oFac.folio}"/>
+                        </p:column>
+                        <p:column headerText="Generado Por">
+                            <h:outputText value="#{oFac.emisor.nombre}"/>
+                        </p:column>
+                        <p:column headerText="Fecha de Expedición">
+                            <h:outputText value="#{oFac.expedicion}">
+                                <f:convertDateTime type="date" pattern="dd-MMMM-YYYY"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Paciente">
+                            <h:outputText value="#{oFac.paciente.folioPac}-#{oFac.paciente.nombreCompleto}"/>
+                        </p:column>
+                        <p:column headerText="Importe">
+                            <h:outputText value="#{oFac.importeTotal}"/>
+                        </p:column>
+                        <p:column headerText="Núm. Poliza">
+                            <h:inputText size="10" value="#{oFac.epCiaCred.numPoliza}"/>
+                        </p:column>
+                        <p:column headerText="Núm. Siniestro">
+                            <h:inputText size="10" value="#{oFac.epCiaCred.numSiniestro}"/>
+                        </p:column>
+                    </p:dataTable><br/>
+                    <p:commandButton disabled="#{oContraRec.disGuardar}" id="btnGuardar" value="Guardar" update=":formDialog:displayMulti :formDialog:panelCR" oncomplete="PF('singleCRDialog').show()" action="#{oContraRec.guarda()}"/>
+                </h:form> 
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

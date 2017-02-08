@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Funciones</title>
+            <h:body> 
+                <h:form id="formulario"> 
+                    <p:growl id="msgs" showDetail="true"/> 
+                    <p:dataTable  id="tb2" value="#{oFnc.funciones}" rows="7" 
+                                  editable="true" paginator="true"
+                                  filteredValue="#{oFnc.filtradas}"
+                                  paginatorPosition="bottom" var="oF">
+                        <p:ajax event="rowEdit" listener="#{oFnc.onEdit}" update=":formulario:msgs"/>
+                        <f:facet name="header">
+                            <h:outputText value="Funciones del Sistema"/>
+                        </f:facet>
+                        <p:column headerText="Función" filterBy="#{oF.funcion}"
+                                  filterMatchMode="startsWith">
+                            <h:outputText value="#{oF.funcion}" />
+                        </p:column>
+                        <p:column filterBy="#{oF.descripcion}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header">
+                                Descripción
+                            </f:facet> 
+                            <p:cellEditor>
+                                <f:facet name="output" >
+                                    <h:outputText value="#{oF.descripcion}" />  
+                                </f:facet>  
+                                <f:facet name="input">  
+                                    <p:inputText value="#{oF.descripcion}" style="width:100%"/>  
+                                </f:facet>  
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header"> 
+                                Url
+                            </f:facet>
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{oF.url}" />  
+                                </f:facet>  
+                                <f:facet name="input">  
+                                    <p:inputText value="#{oF.url}" style="width:100%"/>  
+                                </f:facet>  
+                            </p:cellEditor> 
+                        </p:column>
+                        <p:column headerText="Padre">
+                            <p:cellEditor> 
+                                <f:facet name="output">
+                                    <h:outputText value="#{oF.padre.menu}" />  
+                                </f:facet>  
+                                <f:facet name="input"> 
+                                    <p:selectOneMenu value="#{oF.padre.menu}" style="width: 100%">
+                                        <f:selectItems value="#{oFnc.menus}" 
+                                                       var="oF2" 
+                                                       itemLabel="#{oF2.menu}" 
+                                                       itemValue="#{oF2.menu}" /> 
+                                    </p:selectOneMenu>
+                                </f:facet>  
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column style="width:6%">  
+                            <p:rowEditor />
+                        </p:column> 
+                    </p:dataTable> 
+                    <br/><br/>
+                     <center>
+                         <p:commandButton value="Agregar Función" 
+                                          icon="ui-icon-search" 
+                                          update=":formulario:basicDialog" 
+                                          oncomplete="dlg1.show()" />
+                    </center>  
+                    <p:dialog id="basicDialog" header="Nueva Función"  widgetVar="dlg1" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >
+                        <h:panelGrid columns="2" cellpadding="5">  
+                            Nombre:<p:inputText label="Nombre" value="#{oFnc.funcion}" required="true" /><br/>
+                            Descripción<p:inputText label="Descripción" value="#{oFnc.descripcion}" required="true" /><br/>
+                            Url:<p:inputText label="Nombre" value="#{oFnc.url}" required="true" /><br/>
+                            Padre:<p:selectOneMenu label="Padre" required="true" value="#{oFnc.nomPadre}"> 
+                                <f:selectItem itemLabel="Select Padre" itemValue="" /> 
+                                <f:selectItems value="#{oFnc.menus}" var="oF2" itemLabel="#{oF2.menu}" itemValue="#{oF2.menu}"/>  
+                            </p:selectOneMenu> 
+                        </h:panelGrid>  
+                        <p:separator /> 
+                        <p:commandButton value="Agregar" update="msgs" action="#{oFnc.inserta()}" id="btnSubmit"/>
+                    </p:dialog>
+                </h:form> 
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

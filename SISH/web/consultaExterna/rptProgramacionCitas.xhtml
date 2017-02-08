@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Reporte de programaci&oacute;n de citas</title>
+            <h:body>
+
+                <h:form id="form">  
+                    #{rptProgCitas.limpiar()}
+                    <p:growl id="msgsPC" showDetail="true"/>
+                    <p:panel header="Reporte de programaci&oacute;n de citas" 
+                             id="AgendaProC" style="margin-bottom:10px;">  
+                        <p:panel menuTitle="Reporte de programaci&oacute;n de citas">
+                            <p:panelGrid columns="7" style=" width:95%;">
+                                <h:outputText value="Fecha:  "/>
+                                <h:outputText value="#{rptProgCitas.fecha}"  style="font-weight: bold; text-transform: capitalize;">
+                                    <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                                </h:outputText>
+                                <h:outputText value="Especialidad: "/>
+                                <p:selectOneMenu id="txtEspecialidad" value="#{rptProgCitas.medico.esp.descrip}" >  
+                                    <f:selectItem itemLabel="Selecciona" itemValue="" />  
+                                    <f:selectItem itemLabel="Todos" itemValue="*" />  
+                                    <f:selectItems value="#{rptProgCitas.especialidades}" />  
+                                    <p:ajax update="txtMedico" listener="#{rptProgCitas.cargaMedicosEsp()}" /> 
+                                </p:selectOneMenu> 
+                                <h:outputText value="Médico: "/>
+                                <p:selectOneMenu id="txtMedico" 
+                                                 filter="true"
+                                                 value="#{rptProgCitas.doctor}" >  
+                                    <f:selectItem itemLabel="Selecciona" itemValue="" /> 
+                                    <f:selectItem itemLabel="Todos" itemValue="*" /> 
+                                    <f:selectItems value="#{rptProgCitas.medicos}" />  
+                                </p:selectOneMenu>  
+                                <p:commandButton update=":form:rpt :form:msgsPC :form:tableXP" actionListener="#{rptProgCitas.datosAgenda()}" value="Reporte" icon="ui-icon-print" oncomplete="PF('rptDialog').show()" process="@parent" >
+                                </p:commandButton>
+                            </p:panelGrid>
+
+                        </p:panel>
+                    </p:panel>  
+
+
+                    <p:dialog header="Reporte de programación de citas" appendTo="@(body)" widgetVar="rptDialog" modal="true" showEffect="fade" hideEffect="fade" resizable="false" closable="true">
+                        <p:scrollPanel mode="native" style="width:100%;height:500px">
+                            <p:panel id="rpt" style="width:90%;">
+                                <h:panelGrid id="rptVista" width="100%">
+                                    <p:panel>
+                                        <center>
+                                            <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                        </center>
+                                    </p:panel>
+                                    <div align="center"><h:outputText value="REPORTE DE PROGRAMACIÓN DE CITAS" style="font-weight: bold;"/></div>
+                                    <p:separator />
+                                    <h:panelGrid columns="4" width="80%">
+                                        <h:outputText value="Fecha:  "/>
+                                        <h:outputText value="#{rptProgCitas.fecha}"  style="font-weight: bold">
+                                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                                        </h:outputText>
+                                        <h:outputText value="Especialidad: "/>
+                                        <h:outputText value="#{rptProgCitas.medico.esp.descrip}" style="font-weight: bold"/>  
+                                        <h:outputText value="Médico: "/>
+                                        <h:outputText value="#{rptProgCitas.doctor}" style="font-weight: bold"/>
+                                    </h:panelGrid>
+                                    <br/>
+                                    <p:dataTable value="#{rptProgCitas.citas}" var="rptPC" id="tableXP" >
+                                        <p:column headerText="Fecha">
+                                            <h:outputText value="#{rptPC.fecCita}">
+                                                <f:convertDateTime pattern="dd/MM/yyyy" timeZone="EST"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Hora">
+                                            <h:outputText value="#{rptPC.fecCita}">
+                                                <f:convertDateTime pattern="hh:mm" timeZone="EST"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Paciente">
+                                            <h:outputText value=" #{rptPC.paciente.nombre}"/>
+                                            <h:outputText value=" #{rptPC.paciente.apellidoPaterno}"/>
+                                            <h:outputText value=" #{rptPC.paciente.apellidoMaterno}"/>
+                                        </p:column>
+                                        <p:column headerText="Tipo de paciente">
+                                            <h:outputText value="Contado" rendered="#{rptPC.tipoPrincipal==0}"/>
+                                            <h:outputText value="Credito" rendered="#{rptPC.tipoPrincipal==1}"/>
+                                            <h:outputText value="Paquete" rendered="#{rptPC.tipoPrincipal==2}"/>
+                                        </p:column>
+                                        <p:column headerText="Cirugía">
+                                            <h:outputText value="#{rptPC.cirugia ? 'Si' : 'No'}" />
+                                        </p:column>
+                                        <p:column headerText="Observaciones">
+                                            <h:outputText value="#{rptPC.obs}"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                </h:panelGrid>
+                                <h:panelGrid columns="2" style=" float: right;">
+                                    <p:button outcome="rptProgramacionCitas.xhtml?faces-redirect=true" value="Regresar"  />  
+                                    <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" >  
+                                        <p:printer target="rptVista" />  
+                                    </p:commandButton>
+                                </h:panelGrid>
+                            </p:panel>
+                        </p:scrollPanel>
+                    </p:dialog>
+
+                </h:form>     
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

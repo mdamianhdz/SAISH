@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inicio</title>
+            <h:body>
+             
+                <h:form id="formulario"> 
+  
+                        <p:growl id="msgs" showDetail="true"/> 
+                        
+                        <p:dataTable  id="tb2" value="#{oMenu.opcionesMenu}" rows="6" editable="true" paginator="true" paginatorPosition="bottom" var="oU">
+                              
+                            <p:ajax event="rowEdit" listener="#{oMenu.actualiza}" update=":formulario:msgs" />
+                           
+                              <f:facet name="header">
+                                  <h:outputText value="Reporte"/>
+                              </f:facet>
+                                                           
+                              <p:column >
+                                  <f:facet name="header"> 
+                                      Menú
+                                  </f:facet>   
+                                  <h:outputText value="#{oU.menu}" />     
+                              </p:column>
+                            <p:column>
+                                <f:facet name="header"> 
+                                      Descripcion
+                                  </f:facet> 
+                                <p:cellEditor>
+                                    <f:facet name="output">  
+                                        <h:outputText value="#{oU.descripcionMenu}" />  
+                                    </f:facet>  
+                                    <f:facet name="input">  
+                                        <p:inputText value="#{oU.descripcionMenu}" style="width:100%"/>  
+                                    </f:facet>  
+                                </p:cellEditor>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header"> 
+                                      Pertenece
+                                  </f:facet>
+                                <p:cellEditor>
+                                   
+                                    <f:facet name="output">  
+                                        <h:outputText value="#{oU.padreMenuSelect}" />  
+                                    </f:facet>  
+                                    <f:facet name="input">  
+                                        
+                                        <p:selectOneMenu label="Padre" style="width:100%" required="true" id="padre2" value="#{oU.padreMenuSelect}">
+                                            <f:selectItems value="#{oMenu.opcionesMenu2}" /> 
+                                        </p:selectOneMenu>
+                                        
+                                        
+                                    </f:facet>  
+                                </p:cellEditor>
+                            </p:column>
+                            
+                    
+                            <p:column style="width:6%">  
+                                <p:rowEditor />  
+                            </p:column> 
+                            
+                            <p:column style="width:6%">  
+                                
+                                <p:commandButton value=" " icon="ui-icon-trash" style=" height: 25px; width: 25px" actionListener="#{oMenu.elimina(oU.menu)}" update=":formulario:msgs">  
+                                    <p:confirm header="Confirmación de eliminado" message="¿Estás seguro?" icon="ui-icon-alert" />  
+                                </p:commandButton>  
+  
+                            </p:column> 
+
+                        </p:dataTable>
+                        
+                        <p:confirmDialog styleClass="text-align: center;" global="true" showEffect="clip" hideEffect="fold">  
+                            <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+                        </p:confirmDialog> 
+                </h:form>
+                        <br/><br/>
+                <h:form id="form2">
+                    
+                            <center>
+                                <p:commandButton value="Agregar nuevo elemento" icon="ui-icon-search" actionListener="#{oMenu.limpia()}"  update=":form3:panelDialog" oncomplete="dlg1.show()" />
+                            </center>
+                    
+                </h:form>       
+                
+                  
+                    <p:dialog id="basicDialog" dynamic="true"  modal="true" appendTo="@(body)" header="Nuevo elemento de menú"  widgetVar="dlg1" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                            <h:form id="form3">   
+                            <p:growl id="msgs3" showDetail="true"/>
+                            <p:panel id="panelDialog" >  
+                                
+                                <h:panelGrid columns="2" cellpadding="5">  
+                                    
+                                    <p:selectOneMenu label="Padre" required="true" id="city" value="#{oMenu.padre}">  
+                                        <f:selectItem itemLabel="Selecciona tipo" itemValue="" />  
+                                        <f:selectItems value="#{oMenu.optiones}" />  
+                                        <p:ajax update="suburbs"  
+                                                listener="#{oMenu.valida()}" /> 
+                                    </p:selectOneMenu>
+                                    <p:selectOneMenu disabled="#{oMenu.desactivado}" label="Hijo" required="true" id="suburbs" value="#{oMenu.utilidades.padreMenu}">  
+                                        <f:selectItem itemLabel="Select Submenu" itemValue="" />  
+                                        <f:selectItems value="#{oMenu.lista}" />  
+                                    </p:selectOneMenu>
+                                    Nombre:<p:inputText label="Nombre" value="#{oMenu.utilidades.menu}" required="true" /><br/>
+                                    Descripción<p:inputText label="Descripción" value="#{oMenu.utilidades.descripcionMenu}" required="true" />
+
+                                </h:panelGrid>  
+
+                                <p:separator />
+                                
+                                <p:commandButton value="Agregar" update=":form3:msgs3" actionListener="#{oMenu.insertar()}" id="btnSubmit"/>  
+
+                            </p:panel>
+                            </h:form>
+                    </p:dialog>
+                  
+
+                    
+    </h:body>
+    </ui:define> 
+    </ui:composition> 
+</html>

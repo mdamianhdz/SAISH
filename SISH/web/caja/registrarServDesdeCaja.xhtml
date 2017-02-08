@@ -1,0 +1,350 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            
+            <title>Registrar Servicio Directo o Cobro de Honorarios Externos</title>
+            <h:body>
+                <center><h3> Registrar Servicio Directo o Cobro de Honorarios Externos</h3></center>
+                    #{oRegServCaja.limpiaPagina()}
+
+                <p:dialog closable="false" dynamic="true" appendTo="@(body)" 
+                    modal="true" id="dlgCompBusq" header="Búsqueda de paciente" 
+                    widgetVar="dlgCompBusqVar" style="font-size: 12px" 
+                    styleClass="text-align: center;" position="center" 
+                    showEffect="clip" hideEffect="fold">
+                    <h:form id="form">
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include>
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar" 
+                                update=":formp:panelP " 
+                                actionListener="#{oRegServCaja.seleccionPaciente}" 
+                                oncomplete="dlgCompBusqVar.hide()" icon="ui-icon-search"/>
+                        <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" />
+                    </h:form>
+                </p:dialog>
+                <br/>
+                <h:form>
+                    <center>
+                        <p:commandButton value="Seleccionar paciente" 
+                              update=":dlgCompBusq :formp:panelP  " 
+                              actionListener="#{oRegServCaja.reiniciar}"
+                              oncomplete="dlgCompBusqVar.show()" 
+                              icon="ui-icon-search"/>
+                    </center>
+                </h:form>
+                <h:form id="formp">
+                    <p:growl id="msgs" showDetail="true" sticky="true"/>
+                    <p:panel header="Datos del pago" id="panelP"
+                             visible="#{oRegServCaja.validaPaciente()}">
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    Paciente: 
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel 
+                                        rendered="#{oRegServCaja.validaPaciente()}" 
+                                        style="font-weight: bold" 
+                                        value="#{oRegServCaja.paciente.nombreCompleto}"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    Línea ingreso:
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu id="lineas" 
+                                        label="Línea ingreso " 
+                                        value="#{oRegServCaja.lineaIngreso.cveLin}">
+                                        <f:selectItem itemLabel="Selecciona" itemValue="0" />
+                                        <f:selectItems value="#{oRegServCaja.lineasIngreso}" var="oLinea" 
+                                                       itemLabel="#{oLinea.descrip}" 
+                                                       itemValue="#{oLinea.cveLin}"/>
+                                        <p:ajax update="servicios medicos" 
+                                                listener="#{oRegServCaja.actualizaListaServiciosOrdServ}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    Servicio:
+                                </p:column>
+                                <p:column>
+                                    <p:autoComplete id="servicios" size="50" 
+                                                        scrollHeight="300" 
+                                                        minQueryLength="4" 
+                                                        itemtipMyPosition="left center" 
+                                                        itemtipAtPosition="right center" 
+                                                        label="Servicio" 
+                                                        converter="ConverterServicio" 
+                                                        forceSelection="true"
+                                                        style="text-transform: uppercase"
+                                                        value="#{oRegServCaja.servicioSeleccionado}" 
+                                                        completeMethod="#{oRegServCaja.obtenerServicios}" 
+                                                        var="oServ" itemLabel="#{oServ.descripcion}" 
+                                                        itemValue="#{oServ}" >
+                                        </p:autoComplete>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    M&eacute;dico que realiza:
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu label="Médico que realiza" 
+                                                filter="true" id="medicos"
+                                                value="#{oRegServCaja.idMed}" >
+                                        <f:selectItem itemLabel="Selecciona" 
+                                                      itemValue="0"/>
+                                        <f:selectItems value="#{oRegServCaja.medicos}"  
+                                                  var="oMed" 
+                                                  itemLabel="#{oMed.nombreCompleto}" 
+                                                  itemValue="#{oMed.folioPers}" /> 
+                                    </p:selectOneMenu>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2">
+                                    <p:commandButton value="Pagar" widgetVar="btnCapturaPago"
+                                             id="btnCapturaPago">
+                                        <p:ajax listener="#{oRegServCaja.seleccion()}"
+                                             disabled="#{oRegServCaja.botonPagar}"
+                                             process="@form"
+                                             update=":formp:msgs :dialogs:display 
+                                             :dialogsop:dialogOP" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid>
+                    </p:panel> 
+                </h:form> 
+                
+                <p:dialog id="dialog" header="Registrar Pago" 
+                          widgetVar="selDialog" showEffect="clip" 
+                          appendTo="@(body)" modal="true" closable="false">
+                    <h:form id="dialogs">
+                        <p:panel id="display">
+                            <h:panelGrid columns="4" cellpadding="7">
+                                <p:column>
+                                    <h:outputText style="font-weight: bold;" 
+                                                  value="Folio Paciente"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText 
+                                        value="#{oRegServCaja.selectedServ.paciente.folioPac}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText style="font-weight: bold;" 
+                                                  value="Nombre"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText 
+                                        value="#{oRegServCaja.selectedServ.paciente.nombreCompleto}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText style="font-weight: bold;" 
+                                                   value="Concepto"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText 
+                                        value="#{oRegServCaja.selectedServ.concepPrestado.descripConcep}"/>
+                                </p:column>
+                            </h:panelGrid>
+                            <h:panelGrid columns="6" cellpadding="8">
+                                <p:column>
+                                    <h:outputText style="font-weight: bold;" 
+                                                  value="Monto"/> 
+                                </p:column>
+                                <p:column>
+                                    <h:outputText 
+                                        value="#{oRegServCaja.selectedServ.costoCobrado}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText style="font-weight: bold;" 
+                                                  value="Quién Paga"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText 
+                                        value="#{oRegServCaja.selectedServ.convQuienPaga}"/>
+                                </p:column>
+                            </h:panelGrid>
+
+                            <p:panel>
+                                <h:panelGrid columns="4">
+                                    <p:column>
+                                        <h:outputText style="font-weight: bold;" 
+                                                      value="Monto Real a Pagar"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText 
+                                            value="#{oRegServCaja.selectedServ.costoCobrado}"
+                                            required="true">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText style="font-weight: bold;"
+                                                      value="Forma de Pago: " />
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu required="true" 
+                                                         requiredMessage="Se requiere una Forma de Pago" 
+                                                         id="SL" 
+                                                         value="#{oPagoAboJB.forma}">
+                                            <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                            <f:selectItems value="#{oFormaDePago.formasDePago}" 
+                                                           var="oLP1"  itemLabel="#{oLP1.descripcion}" 
+                                                           itemValue="#{oLP1.cveFrmPago}"/>
+                                            <p:ajax update="pg1" listener="#{oRegServCaja.validaForma()}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </h:panelGrid>
+                                <h:panelGrid id="pg1" columns="9">
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegServCaja.verBanco}"
+                                            style="font-weight: bold;" value="Banco : " />
+                                        <p:selectOneMenu rendered="#{oRegServCaja.verBanco}"
+                                            id="SB" value="#{oRegServCaja.opeCaja.datosPago}">
+                                            <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                            <f:selectItems value="#{oFormaDePago.bancos}" />
+                                            <p:ajax/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegServCaja.verCtaBanco}"
+                                                      style="font-weight: bold;" 
+                                                      value="Cuenta"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu rendered="#{oRegServCaja.verCtaBanco}"
+                                                         id="cbanco" 
+                                                         value="#{oRegServCaja.opeCaja.ctaBcoRecep}">
+                                            <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                            <f:selectItem itemLabel="BcmerSanatorio" itemValue="BcmerSanatorio" />
+                                            <f:selectItem itemLabel="BcmerDHR" itemValue="BcmerDHR" />
+                                            <p:ajax/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegServCaja.verFecRecep}"
+                                                      style="font-weight: bold;" 
+                                                      value="Fecha de recepción"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oRegServCaja.verFecRecep}"
+                                                     value="#{oRegServCaja.opeCaja.fecIngRecep}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegServCaja.verNumDcto}"
+                                                      style="font-weight: bold;" 
+                                                      value="Cheque/Transferencia/Tarjeta"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oRegServCaja.verNumDcto}"
+                                                     value="#{oRegServCaja.opeCaja.numDcto}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegServCaja.verTitularTarjeta}"
+                                                      style="font-weight: bold;" 
+                                                      value="Titular"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oRegServCaja.verTitularTarjeta}"
+                                                     value="#{oRegServCaja.opeCaja.nomTit}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                </h:panelGrid>
+                            </p:panel>
+                            <p:commandButton value="Guardar" type="button"
+                                             widgetVar="btnGuardar">
+                                <p:ajax update=":dialogsop:dialogOP :ticketInfo " 
+                                        listener="#{oRegServCaja.registraPago()}" />
+                            </p:commandButton>
+                            <p:commandButton value="Regresar">
+                                <p:ajax listener="#{oRegServCaja.regresar}"/>
+                            </p:commandButton>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>                
+                
+                <p:dialog id="dlgOP" resizable="false" 
+                          header="Operación Exitosa" widgetVar="diaE" 
+                          modal="true" appendTo="@(body)" closable="false">
+                    <h:form id="dialogsop">
+                        <p:panel id="dialogOP">
+                            <h:panelGrid>
+                                <p:row>
+                                    El pago de servicio se ha registrado de manera exitosa.
+                                </p:row>
+                                <br></br>
+                                <p:row>
+                                    Se ha generado el Folio de caja:  
+                                    <p:outputLabel style="font-weight: bold" 
+                                                   value="#{oRegServCaja.opeCaja.folioRet}"/>
+                                </p:row>
+                            </h:panelGrid>
+                            <br></br>
+                            <h:panelGrid columns="2"> 
+                                <p:commandButton value="Imprimir" type="button" 
+                                                 icon="ui-icon-print" 
+                                                 onclick="printTicket();
+                                        return false;"/>
+                                <p:commandButton label="Regresar" 
+                                                 value="Regresar">
+                                    <p:ajax listener="#{oRegServCaja.regresar()}"/>
+                                </p:commandButton>
+                            </h:panelGrid>     
+                        </p:panel>  
+                    </h:form>
+               </p:dialog>
+
+                <h:panelGroup id="ticketInfo">
+                    <h:outputScript>
+                        var ticket;
+                        function printTicket() {
+                        ticket = {
+                        "reimpresion": false,
+                        "title": 1,
+                        "fecha": ""+getFecha(true)+"",
+                        "hora": ""+getHora(true)+"",
+                        "folioope": "#{oRegServCaja.opeCaja.folioRet}",
+                        "paciente": {
+                        "folio": "#{oRegServCaja.selectedServ.paciente.folioPac}",
+                        "nombre": "#{oRegServCaja.selectedServ.paciente.nombreCompleto}"
+                        },
+                        "empresa": "#{oRegServCaja.descripcionEmpresa}",
+                        "doctor": "#{oRegServCaja.selectedServ.medico.nombreCompleto}",
+                        "fmapago": "#{oRegServCaja.descripcionForma}",
+                        "usuario": "#{oUsuario.sesionUsuario.usuario}",
+                        "servicios": [
+                        {
+                        "cantidad": "#{oRegServCaja.selectedServ.cantidad}",
+                        "descripcion": "#{oRegServCaja.selectedServ.concepPrestado.descripConcep}",
+                        "precio": "#{oRegServCaja.selectedServ.costoCobrado}"
+                        }
+                        ],
+                        "subtotal": "#{oRegServCaja.obtenerCifra('subtotal')}",
+                        "iva": "#{oRegServCaja.obtenerCifra('iva')}",
+                        "desc": "0",
+                        "total": "#{oRegServCaja.selectedServ.costoCobrado}"
+
+                        };
+                        print(ticket);
+                        }
+                    </h:outputScript>
+                </h:panelGroup>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

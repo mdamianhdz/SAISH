@@ -1,0 +1,754 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui" 
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inicio</title>
+            <h:body>
+                <center>
+                    <h2>Administrar Compa&ntilde;&iacute;as a Cr&eacute;dito</h2>
+                    <h:form id="form">
+                        <p:growl id="msg" showDetail="true" sticky="true"/>
+                        <p:dataTable style="width: 718px" id="dtCompC" 
+                                     value="#{oCompC.listCompC}" var="oCC1" 
+                                     paginator="true" paginatorPosition="bottom" 
+                                     rows="6" selectionMode="single" 
+                                     filteredValue="#{oCompC.listaCompCFiltrado}"
+                                     rowKey="#{oCC1.idEmp}"
+                                     selection="#{oCompC.selectedCompC}"
+                                     emptyMessage="No hay registros">
+                            <p:column headerText="Nombre Corto"
+                                    filterBy="#{oCC1.nombreCorto}"
+                                    filterMatchMode="startsWith">
+                                <p:outputLabel value="#{oCC1.nombreCorto}"/>
+                            </p:column>
+                            <p:column headerText="RFC">
+                                <p:outputLabel value="#{oCC1.RFC}"/>
+                            </p:column>
+                            <p:column headerText="Tipo C&iacute;a." 
+                                      style=" text-align:  center">
+                                <p:outputLabel value="#{oCompC.cambiaTipo(oCC1.tipoCia)}"/>
+                            </p:column>
+                            <p:column headerText="Tipo Convenio" style=" text-align:  center">
+                                <p:outputLabel value="#{oCompC.cambiaTipoConv(oCC1.tipoConvenio)}"/>
+                            </p:column>
+                            <p:column headerText="Operaci&oacute;n" 
+                                      style=" text-align:  center">
+                                <p:commandButton value=" M "  
+                                                 oncomplete="PF('dlgMod').show()">
+                                    <p:ajax listener="#{oCompC.confModifica(oCC1)}" 
+                                            update=":dlgModifica"/>
+                                </p:commandButton>
+                                <p:commandButton rendered="#{oCompC.renderEstado(oCC1.activa)}" 
+                                                 value=" I " 
+                                                 action="#{oCompC.cambiaEstado(oCC1.idEmp, oCC1.activa)}"
+                                                 update="dtCompC :form:msg"/>
+                                <p:commandButton 
+                                    rendered="#{!oCompC.renderEstado(oCC1.activa)}" 
+                                    value=" A " 
+                                    action="#{oCompC.cambiaEstado(oCC1.idEmp, oCC1.activa)}"
+                                                 update="dtCompC :form:msg"/>
+                                <p:commandButton value=" F " oncomplete="PF('dlgForm').show()" >
+                                    <p:ajax 
+                                        listener="#{oCompC.buscaFormatos(oCC1)}" 
+                                        update=":dlgFormatos"/>
+                                </p:commandButton>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton 
+                                    value="Registrar Compa&ntilde;&iacute;a" 
+                                    oncomplete="PF('dlgN').show()"  
+                                    icon="ui-icon-pencil">
+                                    <p:ajax listener="#{oCompC.confNuevo()}" 
+                                            update=":dlgNuevo"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                    </h:form>
+                     
+                        <p:dialog id="dlgNuevo" widgetVar="dlgN" appendTo="@(body)" closable="false" resizable="false" dynamic="true">
+                            <center>
+                                <h3>Registrar Compa&ntilde;&iacute;a a Cr&eacute;dito</h3>
+                                <h:form id="formNuevo">
+                                    <p:panelGrid>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Nombre Corto: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText  value="#{oCompC.nuevoCompC.nombreCorto}" 
+                                                              style="text-transform: uppercase"
+                                                              size="26">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="RFC: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtRFC" 
+                                                             style="text-transform: uppercase"
+                                                             value="#{oCompC.nuevoCompC.RFC}" 
+                                                             size="20"> 
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Raz&oacute;n Social: "/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputText value="#{oCompC.nuevoCompC.nomRazSoc}" 
+                                                             style="text-transform: uppercase"
+                                                             size="75">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Pol&iacute;ticas de Pago: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oCompC.nuevoCompC.politicasPago}" 
+                                                             style="text-transform: uppercase"
+                                                             size="26">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Tipo de Compa&ntilde;&iacute;a: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu style="width: 160px" value="#{oCompC.nuevoCompC.tipoCia}">
+                                                    <p:ajax/>
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" noSelectionOption="true"/>
+                                                    <f:selectItems value="#{oCompC.listaTiposEmpresas}"
+                                                                   var="oTipEmp1"
+                                                                   itemLabel="#{oTipEmp1.descripcion}"
+                                                                   itemValue="#{oTipEmp1.tipo}"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Plazo de Pago: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oCompC.nuevoCompC.plazoPago}" size="4">
+                                                    <p:ajax/>
+                                                </p:inputText>&nbsp;&nbsp;
+                                                <p:outputLabel value=" d&iacute;as "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Tel&eacute;fono: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oCompC.nuevoCompC.telLocal}" size="27"><p:ajax/></p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Tipo de Convenio"/>
+                                            </p:column>
+                                            <p:column colspan="7">
+                                                <p:selectOneMenu style="width: 160px" 
+                                                                 value="#{oCompC.nuevoCompC.tipoConvenio}">
+                                                    <p:ajax/>
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" noSelectionOption="true"/>
+                                                    <f:selectItems value="#{oCompC.listaTiposConv}"
+                                                                   var="oTipConv1"
+                                                                   itemLabel="#{oTipConv1.descripcion}"
+                                                                   itemValue="#{oTipConv1.tipo}"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="8" >
+                                                <h:outputText value="Domicilio" style="font-weight:bold"/>
+                                            </p:column>
+                                       </p:row>
+                                       <p:row>
+                                           <p:column>
+                                               <h:outputText value="Código Postal:"/>
+                                               <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                           </p:column>
+                                           <p:column>
+                                               <p:inputText size="6" value="#{oCompC.nuevoCompC.domicilioLocal.codigoPostal}">
+                                                   <p:ajax event="change" listener="#{oCompC.buscaDomPorCP()}" update="selEdo selMun selLoc txtPais"/>
+                                               </p:inputText>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="Estado:"/>
+                                               <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                           </p:column>
+                                           <p:column>
+                                               <p:selectOneMenu id="selEdo" value="#{oCompC.nuevoCompC.domicilioLocal.edo}"  converter="#{oConverterEstadoDF}"> 
+                                                   <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                   <f:selectItems value="#{oCompC.listEdoDF}" var="oEdo" itemLabel="#{oEdo.descrip}" itemValue="#{oEdo}" />  
+                                                   <p:ajax update="selMun selLoc" listener="#{oCompC.buscarDomPorEdo()}"/> 
+                                               </p:selectOneMenu>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="Municipio: "/>
+                                               <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                           </p:column>
+                                           <p:column>
+                                               <p:selectOneMenu id="selMun" value="#{oCompC.nuevoCompC.domicilioLocal.mun}"  converter="#{oConverterMunicipioDF}">  
+                                                   <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                   <f:selectItems value="#{oCompC.listMunDF}" var="oMun" itemLabel="#{oMun.descrip}" itemValue="#{oMun}" />  
+                                                   <p:ajax update="selLoc" listener="#{oCompC.buscarDomPorMun()}" /> 
+                                               </p:selectOneMenu>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="Localidad:"/>
+                                           </p:column>
+                                           <p:column>
+                                               <p:selectOneMenu id="selLoc" value="#{oCompC.nuevoCompC.domicilioLocal.cd}" converter="#{oConverterCiudadDF}">
+                                                   <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                   <f:selectItems value="#{oCompC.listCdDF}" var="oLoc" itemLabel="#{oLoc.descrip}" itemValue="#{oLoc}"/>
+                                                   <p:ajax/> 
+                                               </p:selectOneMenu>
+                                           </p:column>
+                                       </p:row>
+                                       <p:row>
+                                           <p:column>
+                                               <h:outputText value="Colonia:"/>  
+                                           </p:column>
+                                           <p:column>
+                                               <p:inputText size="15" 
+                                                            style="text-transform: uppercase"
+                                                            value="#{oCompC.nuevoCompC.domicilioLocal.colonia}">
+                                                   <p:ajax/>
+                                               </p:inputText>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="Calle"/>
+                                               <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                           </p:column>
+                                           <p:column>
+                                               <p:inputText size="20" 
+                                                            style="text-transform: uppercase"
+                                                            value="#{oCompC.nuevoCompC.domicilioLocal.calle}">
+                                                   <p:ajax />
+                                               </p:inputText>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="Número Exterior:" />  
+                                           </p:column>
+                                           <p:column>
+                                               <p:inputText size="5" value="#{oCompC.nuevoCompC.domicilioLocal.noExterior}">
+                                                   <p:ajax/>
+                                               </p:inputText>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="Número Interior:"/>  
+                                           </p:column>
+                                           <p:column>
+                                               <p:inputText size="5" value="#{oCompC.nuevoCompC.domicilioLocal.noInterior}">
+                                                   <p:ajax/>
+                                               </p:inputText>
+                                           </p:column>
+                                       </p:row>
+                                        <p:row>
+                                           <p:column>
+                                               <h:outputText value="Referencia:"/>  
+                                           </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputTextarea rows="2" 
+                                                                 cols="51" 
+                                                                 style="text-transform: uppercase"
+                                                                 value="#{oCompC.nuevoCompC.domicilioLocal.referencia}">
+                                                   <p:ajax />
+                                               </p:inputTextarea>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="País:"/>  
+                                               <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                           </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputText readonly="true" id="txtPais" size="15" value="#{oCompC.nuevoCompC.domicilioLocal.objPais.descrip}">
+                                                   <p:ajax/>
+                                               </p:inputText>
+                                           </p:column>
+                                       </p:row>
+                                        <p:row>
+                                            <p:column colspan="8" >
+                                                <h:outputText value="Contactos" style="font-weight:bold"/>
+                                            </p:column>
+                                       </p:row>
+                                        <p:row>
+                                           <p:column colspan="4">
+                                               <p:panelGrid id="panelContactos">
+                                                   <p:row>
+                                                       <p:column>
+                                                           <h:outputText value="Nombre:"/>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <p:inputText size="27" 
+                                                                        style="text-transform: uppercase"
+                                                                        value="#{oCompC.tempContacto.nombre}">
+                                                               <p:ajax/>
+                                                           </p:inputText>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <h:outputText value="Apellido Paterno:"/>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <p:inputText size="27" 
+                                                                        style="text-transform: uppercase"
+                                                                        value="#{oCompC.tempContacto.apPaterno}">
+                                                               <p:ajax/>
+                                                           </p:inputText>
+                                                       </p:column>
+                                                   </p:row>
+                                                   <p:row>
+                                                       <p:column>
+                                                           <h:outputText value="Apellido Materno:"/>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <p:inputText size="27" 
+                                                                        style="text-transform: uppercase"
+                                                                        value="#{oCompC.tempContacto.apMaterno}">
+                                                               <p:ajax/>
+                                                           </p:inputText>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <h:outputText value="Teléfono:"/>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <p:inputText size="27" value="#{oCompC.tempContacto.telefono}"><p:ajax/></p:inputText>
+                                                       </p:column>
+                                                   </p:row>
+                                                   <p:row>
+                                                       <p:column>
+                                                           <h:outputText value="Correo:"/>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <p:inputText size="27" value="#{oCompC.tempContacto.correo}"><p:ajax/></p:inputText>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <h:outputText value="Tipo Contacto:"/>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <p:selectOneMenu value="#{oCompC.tempContacto.tipo}">
+                                                               <p:ajax/>
+                                                                <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                                                <f:selectItem itemLabel="Coordinador Médico" itemValue="M"/>
+                                                                <f:selectItem itemLabel="Contacto" itemValue="C"/>
+                                                            </p:selectOneMenu>
+                                                       </p:column>
+                                                   </p:row>
+                                                   <p:row>
+                                                       <p:column colspan="4">
+                                                           <p:commandButton value="Agregar Contacto">
+                                                               <p:ajax update="dtContactos panelContactos :form:msg" listener="#{oCompC.agregaContacto('nuevo')}"/></p:commandButton> 
+                                                       </p:column>
+                                                   </p:row>
+                                               </p:panelGrid> 
+                                           </p:column>
+                                           <p:column colspan="4">
+                                               <p:dataTable id="dtContactos" value="#{oCompC.nuevoCompC.listContactos}" var="cont" rows="2" paginator="true" paginatorPosition="bottom">
+                                                    <p:column headerText="Nombre">
+                                                        <p:outputLabel value="#{cont.nombreCompleto}"/>
+                                                    </p:column>
+                                                    <p:column headerText="Teléfono">
+                                                        <p:outputLabel value="#{cont.telefono}"/>
+                                                    </p:column>
+                                                    <p:column headerText="Correo">
+                                                        <p:outputLabel value="#{cont.correo}"/>
+                                                    </p:column>
+                                                    <p:column headerText="Tipo">
+                                                        <p:outputLabel value="#{cont.tipo}"/>
+                                                    </p:column>
+                                                    <p:column headerText="Eliminar">
+                                                        <p:commandButton value=" " icon="ui-icon-trash" style=" height: 25px; width: 25px"> 
+                                                            <p:ajax listener="#{oCompC.eliminaContacto(cont, 'nuevo')}" update="dtContactos"/>
+                                                        </p:commandButton>
+                                                    </p:column> 
+                                                </p:dataTable>
+                                           </p:column>
+                                       </p:row>
+                                    </p:panelGrid>
+                                    <br/>
+                                    <p:commandButton value="&nbsp;Registrar Compañía&nbsp;" oncomplete="PF('dlgN').hide()" >
+                                        <p:ajax listener="#{oCompC.guardaNuevo()}" update=":form:msg :form:dtCompC"/>
+                                    </p:commandButton> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <p:commandButton value="&nbsp;&nbsp;Regresar&nbsp;&nbsp;" oncomplete="PF('dlgN').hide()" action="#{oCompC.confNuevo()}"/><br/><br/>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        <p:dialog id="dlgModifica" widgetVar="dlgMod" appendTo="@(body)" closable="false" resizable="false" dynamic="true">
+                            <center>
+                                <h3>Modifica Compa&ntilde;&iacute;a a Cr&eacute;dito</h3>
+                                <h:form id="formMod">
+                                    <p:panelGrid>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Nombre Corto: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText  
+                                                    value="#{oCompC.selectedCompC.nombreCorto}"
+                                                    style="text-transform: uppercase"
+                                                    size="26">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="RFC: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText 
+                                                    value="#{oCompC.selectedCompC.RFC}" 
+                                                    style="text-transform: uppercase"
+                                                    size="20"> 
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Raz&oacute;n Social: "/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputText value="#{oCompC.selectedCompC.nomRazSoc}" 
+                                                             style="text-transform: uppercase"
+                                                             size="75">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Pol&iacute;ticas de Pago: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oCompC.selectedCompC.politicasPago}" 
+                                                             style="text-transform: uppercase"
+                                                             size="26">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Tipo de Compa&ntilde;&iacute;a: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu style="width: 160px" 
+                                                                 value="#{oCompC.selectedCompC.tipoCia}">
+                                                    <p:ajax/>
+                                                    <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                                    <f:selectItems value="#{oCompC.listaTiposEmpresas}"
+                                                                   var="oTipEmp1"
+                                                                   itemLabel="#{oTipEmp1.descripcion}"
+                                                                   itemValue="#{oTipEmp1.tipo}"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Plazo de Pago: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oCompC.selectedCompC.plazoPago}" size="4"><p:ajax/></p:inputText>&nbsp;&nbsp;
+                                                <p:outputLabel value=" d&iacute;as "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Tel&eacute;fono: "/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oCompC.selectedCompC.telLocal}" size="27">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Tipo de Convenio"/>
+                                            </p:column>
+                                            <p:column colspan="7">
+                                                <p:selectOneMenu style="width: 160px" 
+                                                                 value="#{oCompC.selectedCompC.tipoConvenio}">
+                                                    <p:ajax/>
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" noSelectionOption="true"/>
+                                                    <f:selectItems value="#{oCompC.listaTiposConv}"
+                                                                   var="oTipConv1"
+                                                                   itemLabel="#{oTipConv1.descripcion}"
+                                                                   itemValue="#{oTipConv1.tipo}"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="8" >
+                                                <h:outputText value="Domicilio" style="font-weight:bold"/>
+                                            </p:column>
+                                       </p:row>
+                                       <p:row>
+                                           <p:column>
+                                               <h:outputText value="C&oacute;digo Postal:"/>
+                                               <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                           </p:column>
+                                           <p:column>
+                                               <p:inputText size="6" value="#{oCompC.selectedCompC.domicilioLocal.codigoPostal}">
+                                                   <p:ajax event="change" listener="#{oCompC.buscaDomPorCPM()}" update="selEdoM selMunM selLocM txtPaisM"/>
+                                               </p:inputText>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="Estado:"/>
+                                               <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                           </p:column>
+                                           <p:column>
+                                               <p:selectOneMenu id="selEdoM" value="#{oCompC.selectedCompC.domicilioLocal.edo}"  converter="#{oConverterEstadoDF}"> 
+                                                   <c:choose>
+                                                       <c:when test="#{oCompC.selectedCompC.domicilioLocal.edo.descrip==''}">
+                                                            <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <f:selectItem itemLabel="#{oCompC.selectedCompC.domicilioLocal.edo.descrip}" itemValue="#{oCompC.selectedCompC.domicilioLocal.edo}" /> 
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                   <f:selectItems value="#{oCompC.listEdoDF}" var="oEdo" itemLabel="#{oEdo.descrip}" itemValue="#{oEdo}" />  
+                                                   <p:ajax update="selMunM selLocM" listener="#{oCompC.buscarDomPorEdoM()}"/> 
+                                               </p:selectOneMenu>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="Municipio: "/>
+                                               <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                           </p:column>
+                                           <p:column>
+                                               <p:selectOneMenu id="selMunM" value="#{oCompC.selectedCompC.domicilioLocal.mun}"  converter="#{oConverterMunicipioDF}">  
+                                                   <c:choose>
+                                                        <c:when test="#{oCompC.selectedCompC.domicilioLocal.mun.descrip==''}">
+                                                            <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <f:selectItem itemLabel="#{oCompC.selectedCompC.domicilioLocal.mun.descrip}" itemValue="#{oCompC.selectedCompC.domicilioLocal.mun}" /> 
+                                                        </c:otherwise>
+                                                    </c:choose> 
+                                                   <f:selectItems value="#{oCompC.listMunDF}" var="oMun" itemLabel="#{oMun.descrip}" itemValue="#{oMun}" />  
+                                                   <p:ajax update="selLocM" listener="#{oCompC.buscarDomPorMunM()}" /> 
+                                               </p:selectOneMenu>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="Localidad:"/>
+                                           </p:column>
+                                           <p:column>
+                                               <p:selectOneMenu id="selLocM" value="#{oCompC.selectedCompC.domicilioLocal.cd}" converter="#{oConverterCiudadDF}">
+                                                   <c:choose>
+                                                        <c:when test="#{oCompC.selectedCompC.domicilioLocal.cd.descrip==''}">
+                                                            <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <f:selectItem itemLabel="#{oCompC.selectedCompC.domicilioLocal.cd.descrip}" itemValue="#{oCompC.selectedCompC.domicilioLocal.cd}" /> 
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                   <f:selectItems value="#{oCompC.listCdDF}" var="oLoc" itemLabel="#{oLoc.descrip}" itemValue="#{oLoc}"/>
+                                                   <p:ajax/> 
+                                               </p:selectOneMenu>
+                                           </p:column>
+                                       </p:row>
+                                       <p:row>
+                                           <p:column>
+                                               <h:outputText value="Colonia:"/>  
+                                           </p:column>
+                                           <p:column>
+                                               <p:inputText size="15" 
+                                                            style="text-transform: uppercase"
+                                                            value="#{oCompC.selectedCompC.domicilioLocal.colonia}">
+                                                   <p:ajax/>
+                                               </p:inputText>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="Calle"/>
+                                               <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                           </p:column>
+                                           <p:column>
+                                               <p:inputText size="20" 
+                                                            style="text-transform: uppercase"
+                                                            value="#{oCompC.selectedCompC.domicilioLocal.calle}">
+                                                   <p:ajax />
+                                               </p:inputText>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="N&uacute;mero Exterior:" />  
+                                           </p:column>
+                                           <p:column>
+                                               <p:inputText size="5" value="#{oCompC.selectedCompC.domicilioLocal.noExterior}">
+                                                   <p:ajax/>
+                                               </p:inputText>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="N&uacute;mero Interior:"/>  
+                                           </p:column>
+                                           <p:column>
+                                               <p:inputText size="5" value="#{oCompC.selectedCompC.domicilioLocal.noInterior}">
+                                                   <p:ajax/>
+                                               </p:inputText>
+                                           </p:column>
+                                       </p:row>
+                                        <p:row>
+                                           <p:column>
+                                               <h:outputText value="Referencia:"/>  
+                                           </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputTextarea rows="2" 
+                                                                 cols="51" 
+                                                                 style="text-transform: uppercase"
+                                                                 value="#{oCompC.selectedCompC.domicilioLocal.referencia}">
+                                                   <p:ajax />
+                                               </p:inputTextarea>
+                                           </p:column>
+                                           <p:column>
+                                               <h:outputText value="Pa&iacute;s:"/>  
+                                               <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                           </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputText readonly="true" id="txtPaisM" size="15" value="#{oCompC.selectedCompC.domicilioLocal.objPais.descrip}">
+                                                   <p:ajax/>
+                                               </p:inputText>
+                                           </p:column>
+                                       </p:row>
+                                        <p:row>
+                                            <p:column colspan="8" >
+                                                <h:outputText value="Contactos" style="font-weight:bold"/>
+                                            </p:column>
+                                       </p:row>
+                                        <p:row>
+                                           <p:column colspan="4">
+                                               <p:panelGrid id="panelContactosM">
+                                                   <p:row>
+                                                       <p:column>
+                                                           <h:outputText value="Nombre:"/>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <p:inputText size="27" 
+                                                                        style="text-transform: uppercase"
+                                                                        value="#{oCompC.tempContacto.nombre}">
+                                                               <p:ajax/>
+                                                           </p:inputText>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <h:outputText value="Apellido Paterno:"/>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <p:inputText size="27" 
+                                                                        style="text-transform: uppercase"
+                                                                        value="#{oCompC.tempContacto.apPaterno}">
+                                                               <p:ajax/>
+                                                           </p:inputText>
+                                                       </p:column>
+                                                   </p:row>
+                                                   <p:row>
+                                                       <p:column>
+                                                           <h:outputText value="Apellido Materno:"/>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <p:inputText size="27" 
+                                                                        style="text-transform: uppercase"
+                                                                        value="#{oCompC.tempContacto.apMaterno}">
+                                                               <p:ajax/>
+                                                           </p:inputText>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <h:outputText value="Tel&eacute;fono:"/>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <p:inputText size="27" value="#{oCompC.tempContacto.telefono}"><p:ajax/></p:inputText>
+                                                       </p:column>
+                                                   </p:row>
+                                                   <p:row>
+                                                       <p:column>
+                                                           <h:outputText value="Correo:"/>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <p:inputText size="27" value="#{oCompC.tempContacto.correo}"><p:ajax/></p:inputText>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <h:outputText value="Tipo Contacto:"/>
+                                                       </p:column>
+                                                       <p:column>
+                                                           <p:selectOneMenu value="#{oCompC.tempContacto.tipo}">
+                                                               <p:ajax/>
+                                                                <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                                                <f:selectItem itemLabel="Coordinador Médico" itemValue="M"/>
+                                                                <f:selectItem itemLabel="Contacto" itemValue="C"/>
+                                                            </p:selectOneMenu>
+                                                       </p:column>
+                                                   </p:row>
+                                                   <p:row>
+                                                       <p:column colspan="4">
+                                                           <p:commandButton value="Agregar Contacto">
+                                                               <p:ajax update="dtContactosM panelContactosM :form:msg" listener="#{oCompC.agregaContacto('')}"/></p:commandButton> 
+                                                       </p:column>
+                                                   </p:row>
+                                               </p:panelGrid> 
+                                           </p:column>
+                                           <p:column colspan="4">
+                                               <p:dataTable id="dtContactosM" value="#{oCompC.selectedCompC.listContactos}" var="cont" rows="2" paginator="true" paginatorPosition="bottom">
+                                                    <p:column headerText="Nombre">
+                                                        <p:outputLabel value="#{cont.nombreCompleto}" style="text-transform: uppercase"/>
+                                                    </p:column>
+                                                    <p:column headerText="Teléfono">
+                                                        <p:outputLabel value="#{cont.telefono}"/>
+                                                    </p:column>
+                                                    <p:column headerText="Correo">
+                                                        <p:outputLabel value="#{cont.correo}"/>
+                                                    </p:column>
+                                                    <p:column headerText="Tipo">
+                                                        <p:outputLabel value="#{cont.tipo}"/>
+                                                    </p:column>
+                                                    <p:column headerText="Eliminar">
+                                                        <p:commandButton value=" " icon="ui-icon-trash" style=" height: 25px; width: 25px"> 
+                                                            <p:ajax listener="#{oCompC.eliminaContacto(cont, '')}" update="dtContactosM"/>
+                                                        </p:commandButton>
+                                                    </p:column> 
+                                                </p:dataTable>
+                                           </p:column>
+                                       </p:row>
+                                    </p:panelGrid>
+                                    <br/>
+                                    <p:commandButton value="&nbsp;Modificar Compañía&nbsp;" oncomplete="PF('dlgMod').hide()" >
+                                        <p:ajax listener="#{oCompC.modificaCC()}" update=":form:msg :form:dtCompC"/>
+                                    </p:commandButton> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <p:commandButton value="&nbsp;&nbsp;Regresar&nbsp;&nbsp;" oncomplete="PF('dlgMod').hide()" action="#{oCompC.confNuevo()}"/><br/><br/>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        <p:dialog id="dlgFormatos" widgetVar="dlgForm" appendTo="@(body)" closable="false" resizable="false" dynamic="true">
+                            <center>
+                                <h3>Administrar Formatos</h3>
+                                <h:form id="formForm">
+                                    <p:outputLabel value="Compa&ntilde;&iacute;a:&nbsp;&nbsp;&nbsp;#{oCompC.selectedCompC.nombreCorto}" style="font-weight:bold;"/>
+
+                                    <br/><br/>
+                                    <p:dataTable id="dtForm" value="#{oCompC.listForm}" var="oForm" emptyMessage="No hay formatos registrados" style="width:500px"
+                                                 paginator="true" paginatorPosition="bottom" rows="5">
+                                        <p:column headerText="Formato">
+                                            <p:outputLabel value="#{oForm.nomFmt}"/>
+                                        </p:column>
+                                        <p:column headerText="Estado" style=" text-align:  center">
+                                            <p:commandButton rendered="#{oForm.activa}" value=" I ">
+                                                <p:ajax listener="#{oCompC.cambiaEdoForm(oForm.idFmt, oForm.activa)}" update="dtForm :form:msg"/>
+                                            </p:commandButton> 
+                                            <p:commandButton rendered="#{!oForm.activa}" value=" A ">
+                                                <p:ajax listener="#{oCompC.cambiaEdoForm(oForm.idFmt, oForm.activa)}" update="dtForm :form:msg"/>
+                                            </p:commandButton> 
+                                        </p:column>
+                                    </p:dataTable><br/>
+                                    <p:panel id="panelFormato" visible="#{oCompC.renderNuevoForm}">
+                                        <p:outputLabel rendered="#{oCompC.renderNuevoForm}"  id="lblFormato" value="Nombre Formato: "/>&nbsp;
+                                         <p:inputText rendered="#{oCompC.renderNuevoForm}" id="txtFormato" value="#{oCompC.form.nomFmt}"><p:ajax/></p:inputText>&nbsp;&nbsp;&nbsp;               
+                                         <p:commandButton rendered="#{oCompC.renderNuevoForm}" value="Agregar Formato">
+                                            <p:ajax listener="#{oCompC.agregarFormato()}" update=":form:msg panelFormato dtForm"/>
+                                        </p:commandButton>
+                                    </p:panel><br/>
+                                    <p:commandButton value="Nuevo Formato">
+                                        <p:ajax listener="#{oCompC.confNuevoForm()}" update=":form:msg panelFormato"/>
+                                    </p:commandButton> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <p:commandButton value="Regresar" oncomplete="PF('dlgForm').hide()"/><br/><br/>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                </center>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

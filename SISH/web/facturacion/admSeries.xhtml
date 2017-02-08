@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Administrar series fiscales</title>
+        <h:body> 
+            #{oSerieFiscal.limpiar()}
+        <h:form id="formulario"> 
+            <p:growl id="messages" showDetail="true"/>
+            <p:dataTable id="series" value="#{oSerieFiscal.series}" var="oSerie"
+                         paginator="true" rows="5"
+                         paginatorTemplate="{FirstPageLink} {PreviousPageLink} {CurrentPageReport}  {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="2,3,4">
+                    <f:facet name="header">
+                        <h:outputText value="Series"/>
+                    </f:facet>
+                    <p:column>                            
+                        <f:facet name="header">Serie</f:facet>  
+                        <center><h:outputText value="#{oSerie.nombre}" /></center>
+                    </p:column>
+                    <p:column >
+                        <f:facet name="header">Folio actual</f:facet>  
+                        <center><h:outputText value="#{oSerie.folio}" /> </center>
+                    </p:column>
+                    <p:column >
+                        <f:facet name="header">Tipo de documento</f:facet>  
+                        <center><h:outputText value="#{oSerie.tipo.tipo}" /> </center>
+                    </p:column>
+                    <p:column>
+                        <center>
+                        <p:commandButton value="Actualizar" update=":formActualizar:actualizar :formActualizar:mensajeAct" oncomplete="dialogActualizar.show()" actionListener="#{oSerieFiscal.verificarEliminacionCancelacion(oSerie)}"> 
+                            <f:setPropertyActionListener target="#{oSerieFiscal.serieFiscal}" value="#{oSerie}" />
+                        </p:commandButton>
+                        <p:commandButton value="Eliminar" update=":formEliminar:eliminar :formEliminar:mensajeEli" oncomplete="dialogEliminar.show()" actionListener="#{oSerieFiscal.verificarEliminacionCancelacion(oSerie)}">
+                            <f:setPropertyActionListener target="#{oSerieFiscal.serieFiscal}" value="#{oSerie}" />
+                        </p:commandButton>
+                        </center>
+                    </p:column>                
+            </p:dataTable>
+            <center><table>
+                <tr>
+                    <td><p:commandButton value="Crear nueva serie" update=":formulario:messages :formNuevo:crearSerie" oncomplete="dialogNuevo.show()" actionListener="#{oSerieFiscal.crearSerie()}"></p:commandButton></td>
+                </tr>
+            </table></center>
+        </h:form>
+        <p:dialog id="idDialogActualizar" appendTo="@(body)" widgetVar="dialogActualizar" resizable="true" showEffect="fade" hideEffect="explode" modal="true"> 
+            <h:form id="formActualizar">
+                <h:panelGrid id="mensajeAct" columns="1" >
+                    <h:outputLabel value="#{oSerieFiscal.mensajeError}" rendered="#{oSerieFiscal.cancelacionEliminacion==false}"/>
+                </h:panelGrid>
+                <h:panelGrid id="actualizar" columns="2" >
+                     <h:outputLabel value="Serie" for="nombre" rendered="#{oSerieFiscal.cancelacionEliminacion==true}"/>
+                     <p:inputText id="nombre" value="#{oSerieFiscal.serieFiscal.nombre}" validator="#{oSerieFiscal.verificaNombre}" rendered="#{oSerieFiscal.cancelacionEliminacion==true}" readonly="true"/>
+                     <h:outputLabel value="Folio actual" for="txtFolio" rendered="#{oSerieFiscal.cancelacionEliminacion==true}"/>
+                     <p:inputText id="txtFolio" value="#{oSerieFiscal.serieFiscal.folio}" validator="#{oSerieFiscal.verificaFolio}" rendered="#{oSerieFiscal.cancelacionEliminacion==true}"/>
+                     <h:outputLabel value="Tipo de documento" rendered="#{oSerieFiscal.cancelacionEliminacion==true}"/>
+                     <p:selectOneMenu label="Tipo " value="#{oSerieFiscal.serieFiscal.tipo}" rendered="#{oSerieFiscal.cancelacionEliminacion==true}">
+                        <f:selectItem itemLabel="Selecciona" itemValue="" />
+                        <f:selectItems value="#{oComprobante.tiposDeDocumentos}" var="tipoDoc" itemLabel="#{tipoDoc.tipo}" itemValue="#{tipoDoc}" />
+                    </p:selectOneMenu> 
+                    <p:commandButton value="Guardar" update=":formActualizar:actualizar :formulario:messages :formulario:series" actionListener="#{oSerieFiscal.modificar}" rendered="#{oSerieFiscal.botonActivado==true}"></p:commandButton>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        <p:dialog id="idDialogEliminar" appendTo="@(body)" widgetVar="dialogEliminar" resizable="true" showEffect="fade" hideEffect="explode" modal="true"> 
+            <h:form id="formEliminar">
+                <h:panelGrid id="mensajeEli" columns="1" >
+                    <h:outputLabel value="Confirme si desea eliminar la siguiente serie:" rendered="#{oSerieFiscal.cancelacionEliminacion==true}"/>
+                    <h:outputLabel value="#{oSerieFiscal.mensajeError}" rendered="#{oSerieFiscal.cancelacionEliminacion==false}"/>
+                </h:panelGrid>
+                <h:panelGrid id="eliminar" columns="2" >
+                     <h:outputLabel value="Serie:" rendered="#{oSerieFiscal.cancelacionEliminacion==true}"/>
+                     <h:outputLabel value="#{oSerieFiscal.serieFiscal.nombre}" style="font-weight:bold;" rendered="#{oSerieFiscal.cancelacionEliminacion==true}"/>
+                     <h:outputLabel value="Folio actual:" rendered="#{oSerieFiscal.cancelacionEliminacion==true}"/>
+                     <h:outputLabel value="#{oSerieFiscal.serieFiscal.folio}" style="font-weight:bold;" rendered="#{oSerieFiscal.cancelacionEliminacion==true}"/>
+                     <h:outputLabel value="Tipo:" rendered="#{oSerieFiscal.cancelacionEliminacion==true}"/>
+                     <h:outputLabel value="#{oSerieFiscal.serieFiscal.tipo.tipo}" style="font-weight:bold;" rendered="#{oSerieFiscal.cancelacionEliminacion==true}"/>
+                     <p:commandButton value="Guardar" update=":formEliminar:eliminar :formulario:messages :formulario:series" actionListener="#{oSerieFiscal.eliminar}" 
+                                      rendered="#{oSerieFiscal.botonActivado==true}"></p:commandButton>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        <p:dialog id="idDialogNuevo" appendTo="@(body)" widgetVar="dialogNuevo" resizable="true" showEffect="fade" hideEffect="explode" modal="true"> 
+            <h:form id="formNuevo">
+                <h:panelGrid id="crearSerie" columns="2" >
+                     <h:outputLabel value="Serie" for="nombre"/>
+                     <h:inputText id="nombre" value="#{oSerieFiscal.serieFiscal.nombre}" validator="#{oSerieFiscal.verificaNombre}" required="true"/>
+                     <h:outputLabel value="Folio actual" for="txtFolio"/>
+                     <p:inputText id="txtFolio" value="#{oSerieFiscal.serieFiscal.folio}" required="true" validator="#{oSerieFiscal.verificaFolio}"/>
+                     Tipo de documento
+                     <p:selectOneMenu label="Tipo " value="#{oSerieFiscal.serieFiscal.tipo}" required="true">
+                        <f:selectItem itemLabel="Selecciona" itemValue="" />
+                        <f:selectItems value="#{oComprobante.tiposDeDocumentos}" var="tipoDoc" itemLabel="#{tipoDoc.tipo}" itemValue="#{tipoDoc}"/>
+                    </p:selectOneMenu> 
+                    <p:commandButton value="Guardar"  update=":formNuevo:crearSerie :formulario:messages :formulario:series" actionListener="#{oSerieFiscal.insertar}"
+                                     rendered="#{oSerieFiscal.botonActivado==true}"></p:commandButton>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+    </h:body>
+	</ui:define> 
+    </ui:composition>
+</html>

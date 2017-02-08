@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo"> 
+            <title>Egresar del hospital</title>
+            <h:body>      
+
+                <center><h3>Egresar del hospital</h3></center>
+                    #{oEgrHosp.limpia()}
+
+                <p:dialog closable="false" dynamic="true" height="550" width="900"  appendTo="@(body)" modal="true" id="dlgCompBusq" header="Busqueda de paciente"  widgetVar="dlgCompBusqVar" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+
+                    <h:form id="form">
+                        <p:growl id="grow3" sticky="true" /> 
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include> 
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar"  action="#{oEgrHosp.selectPacienteHospExi()}"  oncomplete="dlgCompBusqVar.hide()" update=":formulario :formulario:grow1" icon="ui-icon-search"/>               
+                        <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" action="#{oEgrHosp.limpia()}" update=":formulario" icon="ui-icon-circle-close" />
+                    </h:form> 
+                </p:dialog>  
+                <br/>
+                <h:form>
+                    <p:growl id="grow2" sticky="true" />        
+                    <center>
+                        <p:commandButton value="Seleccionar paciente"  action="#{oPacienteJB.limpiaSelectedPaciente()}" update=":formulario :form:dtPacientes" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+                    </center>
+                </h:form>
+                <br/>
+                <center>
+                    <h:form id="formulario">                     
+                        <p:growl id="grow1" sticky="true" />
+                        <p:panel id="panelPacEgre" rendered="#{oEgrHosp.panelActivo}" style="width:90%">                        
+                            <p:panelGrid columns="2">
+
+                                Folio Paciente:<h:outputText value="#{oEgrHosp.paciente.folioPac}" />
+                                Nombre del paciente:<h:outputText value="#{oEgrHosp.paciente.nombreCompleto}" />
+                                Médico tratante<h:outputText value="#{oEgrHosp.HC.episodioMedico.medTratante.nombreCompleto}" />
+                                Diagnóstico de ingreso:<h:outputText value="#{oEgrHosp.HC.episodioMedico.dxIngreso.descrip}"/>
+                                Diagnóstico de egreso<h:outputText value="#{oEgrHosp.HC.episodioMedico.dxEgreso.descrip}" />
+                                Atención posquirúrgica:<p:selectBooleanCheckbox value="#{oEgrHosp.HC.episodioMedico.reqAtnPostQx}" disabled="true"  label="Atención posquirurgica"/>
+                                Estudios y resultados<h:outputText value="#{oEgrHosp.estudiosResultados}" /> 
+                            </p:panelGrid>
+
+                            <p:separator/>
+                            <p:commandButton value="Egresar" action="#{oEgrHosp.egresarHospital()}"  icon="ui-icon-disk"  update=":dialogExito :formulario:panelPacEgre :formulario:grow1" />  
+                        </p:panel>
+                    </h:form>
+
+
+
+                    <p:dialog id="dialogExitoIngresa" closable="false" dynamic="true"  modal="true" appendTo="@(body)" header="¡Egreso de paciente exitoso!"  widgetVar="dlg" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="dialogExito"> 
+                            <p:panel styleClass="text-align: center;" style="" id="panelDialog" >  
+                                <center>
+                                    <p:panel>
+                                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                    </p:panel>
+                                </center>
+                                <p:panelGrid styleClass="text-align: center;" columns="2">
+                                    Habitación:<h:outputText value="#{oEgrHosp.egresaHospitalJB2.HC.episodioMedico.hab.hab}"/>
+                                    Folio del paciente:<h:outputText value="#{oEgrHosp.egresaHospitalJB2.paciente.folioPac}"/>
+                                    Nombre del paciente:<h:outputText value="#{oEgrHosp.egresaHospitalJB2.paciente.nombreCompleto}"/>
+                                </p:panelGrid>                                
+                            </p:panel>
+                            <p:separator/>                      
+                            <p:commandButton  value="Imprimir" type="button" icon="ui-icon-print" >
+                                <p:printer target="panelDialog" />
+                            </p:commandButton>
+                            <p:commandButton  value="Ver pase de salida" oncomplete="diagPaseSalida.show()" action="#{oEgrHosp.egresaHospitalJB2.creaPaseSalida()}" icon="ui-icon-document" />
+                            <p:commandButton value="Seleccionar documentación" oncomplete="dlg2.show()" icon="ui-icon-circle-check" /> 
+                            <p:commandButton value="Regresar" icon="ui-icon-arrowreturnthick-1-w" >
+                                <p:ajax listener="#{oEgrHosp.egresaHospitalJB2.regresarEgresar()}"/>
+                            </p:commandButton>
+                        </h:form>    
+                    </p:dialog>
+
+                    <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="diagPaseSld" header="Pase de salida"  widgetVar="diagPaseSalida" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="formDocInfoIngre">       
+                            <p:media id="contr" value="/resources/#{oEgrHosp.rutaPaseSalida}" width="800" height="500">  
+                                Tu navegador no puede abrir el PDF, <h:outputLink value="/resources/#{oEgrHosp.rutaPaseSalida}">click</h:outputLink> para descargar el PDF.  
+                            </p:media>  
+                            <p:separator />
+                            <center>                                        
+                                <p:commandButton value="Regresar"  oncomplete="diagPaseSalida.hide()" icon="ui-icon-arrowreturnthick-1-w"/>
+                            </center>
+                        </h:form> 
+                    </p:dialog>  
+
+                    <p:dialog id="dialogCheckList" closable="false" dynamic="true"  modal="true" appendTo="@(body)" header="Check list de documentación"  widgetVar="dlg2" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="formCheckList"> 
+                            <p:panel styleClass="text-align: center;" style="" id="panelDialog" >                                
+                                <p:panelGrid styleClass="text-align: center;" columns="2">
+                                    Encuesta:<p:selectBooleanCheckbox value="#{oEgrHosp.egresaHospitalJB2.encuesta}" label="Encuesta">
+                                        <p:ajax update=":formCheckList"/>
+                                    </p:selectBooleanCheckbox>
+                                    <h:outputText rendered="#{oEgrHosp.egresaHospitalJB2.HC.episodioMedico.tipoAlta!='0'}" value="#{oEgrHosp.egresaHospitalJB2.STipoAlta}"/>
+                                    <p:selectBooleanCheckbox rendered="#{oEgrHosp.egresaHospitalJB2.HC.episodioMedico.tipoAlta!='0'}" value="#{oEgrHosp.egresaHospitalJB2.BTipoAlta}" label="#{oEgrHosp.egresaHospitalJB2.STipoAlta}">
+                                        <p:ajax update=":formCheckList"/>
+                                    </p:selectBooleanCheckbox>
+                                </p:panelGrid>
+                                <center><p:commandButton disabled="#{!oEgrHosp.egresaHospitalJB2.validaBotonCheck()  }" value="ver documentación" icon="ui-icon-clipboard"  >
+                                        <p:ajax update=":formCheckList" listener="#{oEgrHosp.egresaHospitalJB2.creaEncuestaHospitalYCheckList()}" oncomplete="diagEncuestaHosp.show()" />
+                                    </p:commandButton>
+                                </center>
+                            </p:panel>
+                            <p:separator/>                  
+                            <p:commandButton value="Regresar" oncomplete="dlg2.hide()" icon="ui-icon-arrowreturnthick-1-w" />
+                        </h:form>    
+                    </p:dialog> 
+
+                    <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="idEncuestaHosp" header="Encuesta del hospital"  widgetVar="diagEncuestaHosp" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="formDocEncuestaHosp">       
+                            <p:media id="contr" value="/resources/#{oEgrHosp.egresaHospitalJB2.rutaEncuestaHospital}" width="800" height="500">  
+                                Tu navegador no puede abrir el PDF, <h:outputLink value="/resources/#{oEgrHosp.egresaHospitalJB2.rutaEncuestaHospital}">click</h:outputLink> para descargar el PDF.  
+                            </p:media>  
+                            <p:separator />
+                            <center>                                        
+                                <p:commandButton value="Regresar"  oncomplete="diagEncuestaHosp.hide()" icon="ui-icon-arrowreturnthick-1-w"/>
+                            </center>
+                        </h:form> 
+                    </p:dialog>  
+
+                </center>        
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

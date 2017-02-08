@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Registrar Egreso por Pr&eacute;stamo</title>
+            <h:body>
+                #{oRegEgrePrest.limpiaPagina()}
+                <center><h3> Registrar Egreso por Pr&eacute;stamo</h3></center>
+                <center>
+                    <h:form>
+                        Empleado:
+                        <p:selectOneMenu value="#{oRegEgrePrest.folio}"
+                                         filter="true">
+                            <f:selectItems value="#{oRegEgrePrest.personal}"/>
+                        </p:selectOneMenu>
+                        <p:commandButton value="Buscar" 
+                                         actionListener="#{oRegEgrePrest.buscaPrestamosPersonal()}" 
+                                         update=":formp:panelEmp" />
+                    </h:form>
+                    <br/>
+                    <br/>
+                </center>
+                    <p:dialog id="dialogE" resizable="false" 
+                              header="Operación Exitosa" 
+                              widgetVar="diaE" modal="true" 
+                              closable="false" appendTo="@(body)">
+                        <p:panel id="display1">
+                            <h:panelGrid>
+                                <p:row>
+                                    Se ha registrado un egreso por pr&eacute;stamo por <br></br>
+                                    la cantidad de:  <p:outputLabel style="font-weight: bold" value="#{oRegEgrePrest.selectedPrestamo.monto}"/><br></br>
+                                    a nombre de: <p:outputLabel style="font-weight: bold" value="#{oRegEgrePrest.selectedPrestamo.personal.nombreCompleto}"/>
+                                </p:row>
+                                <br></br>
+                                <p:row>
+                                    Se ha generado el Folio de caja:  <p:outputLabel style="font-weight: bold" value="#{oRegEgrePrest.folioRet}"/>
+                                </p:row>
+                            </h:panelGrid> 
+                            <br></br>
+                            <center> 
+                                <h:panelGrid columns="2">
+                                    <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" onclick="printTicket();"/>
+
+                                    <p:commandButton label="Regresar" value="Regresar">
+                                        <p:ajax listener="#{oRegEgrePrest.regresa()}" />
+                                    </p:commandButton>
+                                </h:panelGrid>
+                            </center>
+
+                        </p:panel>  
+                    </p:dialog>
+                <h:form id="formp">
+                    <p:growl id="msgs" showDetail="true"/>  
+                    <p:panel id="panelEmp" header="Registrar Egreso por Prestamo">
+                        <p:dataTable id="tablaEmp" value="#{oRegEgrePrest.listPP}" var="oPP" rowKey="#{oPP.folioPrestamo}" style="margin-bottom: 0px" 
+                                     emptyMessage="No hay Prestamos autorizados"  selection="#{oRegEgrePrest.selectedPrestamo}"   >
+                            <f:facet name="header">
+                                Detalle de Pr&eacute;stamo
+                            </f:facet>
+                            <center>
+                                <p:column selectionMode="single"/>
+                                <p:column  headerText="Folio del Prestamo">
+                                    <h:outputText value="#{oPP.folioPrestamo}"/>
+                                </p:column>
+                                <p:column headerText="Folio del Personal">
+                                    <h:outputText value="#{oPP.personal.folioPers}"/>
+                                </p:column>    
+                                <p:column headerText="Nombre">
+                                    <h:outputText value="#{oPP.personal.nombreCompleto}"/>
+                                </p:column>                           
+                                <p:column headerText="Puesto">
+                                    <h:outputText value="#{oPP.personal.puesto.descrip}"/>
+                                </p:column>      
+                                <p:column headerText="Monto Prestamo">
+                                    <h:outputText  value="#{oPP.monto}">
+                                        <f:convertNumber pattern="#.00"/>
+                                    </h:outputText>
+                                </p:column>
+                            </center>    
+                        </p:dataTable>
+                    </p:panel>
+
+                    <p:panel>
+                        <h:panelGrid columns="4" cellpadding="5">
+                            <p:column>
+                                <h:outputText style="font-weight: bold;" value="Forma de Pago: " />
+                                <p:selectOneMenu required="true" requiredMessage="Se requiere una Forma de Pago" id="SL" value="#{oRegEgrePrest.forma}">
+                                    <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                    <f:selectItems value="#{oRegEgrePrest.formasDePago}" var="oLP1"  itemLabel="#{oLP1.descripcion}" itemValue="#{oLP1.cveFrmPago}"/>
+                                    <p:ajax update="pg1" listener="#{oRegEgrePrest.validaForma()}"/>
+                                </p:selectOneMenu>
+                            </p:column>
+                            <p:column>
+                                <h:outputText style="font-weight: bold;visibility: hidden" value="Banco : " />
+                                <p:selectOneMenu value="" required="true"
+                                                 style="visibility: hidden">
+                                    <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                    <f:selectItems value="#{oFormaDePago.bancos}" />
+                                </p:selectOneMenu>
+                            </p:column>
+                        </h:panelGrid> 
+                        <h:panelGrid id="pg1">
+                            <p:column>  <h:outputText    rendered="#{oRegEgrePrest.cheque}" style="font-weight: bold;" value="N&uacute;mero de cheque" /> </p:column> 
+                            <p:column> <p:inputText  rendered="#{oRegEgrePrest.cheque}" value="" label="N&uacute;mero de cheque"/> </p:column>
+                            <p:column><h:outputText  rendered="#{oRegEgrePrest.transferencia}" style="font-weight: bold;" value="N&uacute;mero de transferencia" /> </p:column> 
+                            <p:column> <p:inputText  rendered="#{oRegEgrePrest.transferencia}" label="N&uacute;mero de transferencia"/> </p:column>
+                        </h:panelGrid>
+                    </p:panel>
+                    <center>
+                        <p:commandButton value="Guardar">
+                            <p:ajax listener="#{oRegEgrePrest.validaEgreso}" 
+                                    process="@this,tablaEmp" 
+                                    update=":formp:msgs :dialogE"/>   
+                        </p:commandButton>
+                    </center>    
+                </h:form>
+
+                <h:panelGroup id="ticketInfo">
+                    <h:outputScript>
+                        var ticket;
+                        function printTicket() {
+                        ticket = {
+                        "reimpresion": false,
+                        "title": 11,
+                        "fecha": ""+getFecha(true)+"", 
+                        "hora": ""+getHora(true)+"",
+                        "folioope": "#{oRegEgrePrest.folioRet}",
+                        "personal": "#{oRegEgrePrest.selectedPrestamo.personal.nombreCompleto}",
+                        "usuario": "#{oUsuario.sesionUsuario.usuario}",
+                        "concepto": "PRESTAMO PERSONAL",
+                        "importe": "#{oRegEgrePrest.selectedPrestamo.monto}"
+                        };
+                        print(ticket);
+                        }
+                    </h:outputScript>
+                </h:panelGroup>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>
+

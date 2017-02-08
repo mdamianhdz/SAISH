@@ -1,0 +1,202 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inicio</title>
+            <h:body>
+                #{oRegValEfec.limpiaPagina()}
+                <h:form id="f">
+                    <p:growl id="msgs" showDetail="true" sticky="true" />
+                    <center><h2>Registrar Vale de Efectivo</h2></center>
+                    <h:form id="formP">     
+                        <h:panelGrid columns="4">
+                            Área de Funcionamiento<p:selectOneMenu label="Area de Funcionamiento" id="afunc" value="#{oRegValEfec.area}">
+                                <f:selectItem itemLabel="Selecciona área" itemValue=""/>
+                                <f:selectItems value="#{oRegValEfec.listAF}" var="oArea"
+                                               itemLabel="#{oArea.descripcion}"
+                                               itemValue="#{oArea.cveAreaFun}"/>
+                                <p:ajax update="personal"  listener="#{oRegValEfec.actualizapersonalPorAreaFuncionamiento()}"/> 
+                            </p:selectOneMenu>
+                            Personal <p:selectOneMenu label="Personal" id="personal" value="#{oRegValEfec.folioPers}">
+                                <f:selectItem itemLabel="Selecciona Personal" itemValue=""/>
+                                <f:selectItems value="#{oRegValEfec.listPH}" var="oPer"
+                                               itemLabel="#{oPer.nombreCompleto}"
+                                               itemValue="#{oPer.folioPers}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+                        <p:row>
+                            <h:panelGrid columns="5">  
+                                <p:outputLabel for="btnCldrI" value="Fecha de Inicio "/>
+                                <p:calendar id="btnCldrI" showOn="button" value="#{oRegValEfec.fechaInicial}"/>
+                                <p:outputLabel for="btnCldrF" value="Fecha de Fin "/>
+                                <p:calendar id="btnCldrF" showOn="button" value="#{oRegValEfec.fechaFinal}"/>
+                                <p:commandButton value="Buscar">
+                                    <p:ajax update="tblVS" process="formP" listener="#{oRegValEfec.valeEfectivoFiltro()}"></p:ajax>
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </p:row>
+                        <br></br>
+                        <p:dataTable id="tblVS" widgetVar="tblVS" value="#{oRegValEfec.listVE}" var="oTV" selection="#{oRegValEfec.selectedVE}"  
+                                     paginator="true" paginatorPosition="bottom" rows="6" rowKey="#{oTV.idVale}" emptyMessage="No existe información correspondiente con los filtros indicados">
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Folio">
+                                <p:outputLabel value="#{oTV.idVale}"/>
+                            </p:column>
+                            <p:column headerText="Fecha">
+                                <p:outputLabel value="#{oTV.operacionCaja.fechaOp}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>   
+                            <p:column headerText="Nombre">
+                                <p:outputLabel value="#{oTV.personalHospitalario.nombreCompleto}"/>
+                            </p:column>   
+                            <p:column headerText="Monto">
+                                <p:outputLabel value="#{oTV.opeCajaConcep.monto}"/>
+                            </p:column>   
+                            <p:column headerText="Observaciones">
+                                <p:outputLabel value="#{oTV.razonCanc}"/>
+                            </p:column>   
+                            <p:column headerText="Situación">
+                                <p:outputLabel value="#{oTV.situacion}"/>
+                            </p:column>   
+                        </p:dataTable>
+                        <br></br>
+
+                        <center>
+                            <h:panelGrid columns="2">
+                                <p:commandButton value="Nuevo" onclick="PF('diaN').show();" />
+                                <p:commandButton value="Cancelar">
+                                    <p:ajax listener="#{oRegValEfec.validaCancelaValeEfectivo()}" process="@form" update=":f:dialogs :f:msgs" ></p:ajax>
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </center>
+
+                    </h:form>
+
+                    <h:form id="dialogs">
+                        <p:dialog id="dialogCancelar" appendTo="@(body)" closable="false" resizable="false" header="Vale de Salida" modal="true"
+                                  widgetVar="diaC">
+                            <h:form>
+                                <h:panelGrid columns="4" id="pnlc">
+                                    Fecha<p:outputLabel value="#{oRegValEfec.selectedVE.operacionCaja.fechaOp}" />
+                                    Folio<p:outputLabel value="#{oRegValEfec.selectedVE.idVale}"  />
+
+                                    Área de Funcionamiento<p:selectOneMenu label="Area de Funcionamiento" id="afuncC" disabled="true">
+                                        <f:selectItem itemLabel="Selecciona área" />
+                                    </p:selectOneMenu>
+                                    Personal <p:selectOneMenu label="Personal" id="personalC" disabled="true" required="true" requiredMessage="Selecciona Personal">
+                                        <f:selectItem itemLabel="#{oRegValEfec.selectedVE.personalHospitalario.nombreCompleto}" />
+
+                                    </p:selectOneMenu>
+                                    Cantidad Entregada* <p:inputText value="#{oRegValEfec.selectedVE.opeCajaConcep.monto}" disabled="true" required="true" requiredMessage="Ingrese una cantidad">
+                                        <f:convertNumber pattern="#0.00"/>
+                                    </p:inputText>
+
+                                    Razón de la Cancelación <p:inputTextarea value="#{oRegValEfec.razon}"/>
+
+                                    <p:commandButton value="Cancelar">
+                                        <p:ajax listener="#{oRegValEfec.cancelaValeEfectivo()}" process="pnlc"/>
+                                    </p:commandButton>
+                                    <p:commandButton value="Regresar" onclick="PF('diaC').hide();"></p:commandButton>
+                                </h:panelGrid>
+                            </h:form>
+                        </p:dialog>
+                        <h:form>
+                            <p:dialog id="dialogNS" resizable="false" widgetVar="diaNS" modal="true" appendTo="@(body)">
+                                <p:outputLabel value="No hay Vale seleccionado." />
+                            </p:dialog>
+                        </h:form>
+
+                        <h:form>
+                            <p:dialog id="dialogSC" resizable="false" widgetVar="diaSC" modal="true" appendTo="@(body)">
+                                El vale con Folio No. <p:outputLabel style="font-weight: bold" value="#{oRegValEfec.selectedVE.idVale}" /> ha sido previamente cancelado.
+                            </p:dialog>
+                        </h:form>
+
+                        <h:form id="dialogM">
+                            <p:dialog id="dialogEC" header="Operación Exitosa" resizable="false" closable="false" widgetVar="diaEC" modal="true" appendTo="@(body)">
+                                El vale con numero de Folio <p:outputLabel id="lblc" style="font-weight: bold"  value="#{oRegValEfec.selectedVE.idVale}" /><br></br>
+                                ha sido cancelado.
+                                <br></br>
+                                <br></br>
+                                <center>
+                                    <h:panelGrid columns="2">   
+                                        <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" onclick="printTicket();
+                                        return false;"/>
+                                        <p:commandButton value="Regresar">
+                                            <p:ajax listener="#{oRegValEfec.regresaPrincipal()}" />
+                                        </p:commandButton>
+                                    </h:panelGrid>
+                                </center>
+                            </p:dialog>
+                        </h:form>    
+
+                    </h:form>
+
+                    <p:dialog id="diaN" appendTo="@(body)" closable="false" resizable="false" header="Vale de Efectivo" modal="true"
+                              widgetVar="diaN">
+                        <h:panelGrid columns="4">
+                            <p:outputLabel for="areafuncionam" value="Area de func: " />
+                            <p:selectOneMenu id="areafuncionam" value="#{oRegValEfec.valor}" effect="fold" editable="false">
+                                <f:selectItem itemLabel="Select One" itemValue="" />
+                                <f:selectItems value="#{oRegValEfec.listAF}" var="area" itemLabel="#{area.descripcion} - #{area.cveAreaFun}" itemValue="#{area.cveAreaFun}" />
+                                <p:ajax update="personalDialog" listener="#{oRegValEfec.actualizapersonalPorAreaFuncionamiento()}"/> 
+                            </p:selectOneMenu>
+                            
+                            Personal <p:selectOneMenu id="personalDialog" value="#{oRegValEfec.folioPers}">
+                                <f:selectItem itemLabel="Selecciona Personal" itemValue=""/>
+                                <f:selectItems value="#{oRegValEfec.listPH}" var="oPer"
+                                               itemLabel="#{oPer.nombreCompleto}"
+                                               itemValue="#{oPer.folioPers}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+                        <br></br>
+                        Cantidad Entregada* <p:inputText value="#{oRegValEfec.monto}" id="monto" required="true" requiredMessage="Ingrese una cantidad">
+                            <f:convertNumber pattern="#0.00"/>
+                        </p:inputText>
+                        <br></br>
+                        <br></br>
+                        <center>
+                            <p:commandButton value="Guardar">
+                                <p:ajax listener="#{oRegValEfec.registraValeEfectivo()}" update=":f:msgs" process="@form" ></p:ajax>
+                            </p:commandButton>
+                            <p:commandButton value="Regresar" onclick="PF('diaN').hide();" ></p:commandButton>
+                        </center> 
+                    </p:dialog>
+
+                </h:form>
+                <script>
+                                    var ticket;
+                                    function printTicket() {
+                                        ticket = {
+                                            "reimpresion": false,
+                                            "title": 1,
+                                            "fecha": "03-MAR-14",
+                                            "hora": "10:34",
+                                            "folioope": #{oRegValEfec.folioRet},
+                                            "doctor": "Dr. Miguel Ángel Dámian Hernández",
+                                            "recfiscal": "",
+                                            "mes": "SEPTIEMBRE",
+                                            "anio": "2013",
+                                            "usuario": "Fernando Cabrera Brenis",
+                                            "servicios": [
+                                                {
+                                                    "cantidad": 1,
+                                                    "descripcion": "PAGO DE RENTA",
+                                                    "precio": 1000
+                                                }
+                                            ]
+                                        };
+                                        print(ticket);
+                                    }
+                </script>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

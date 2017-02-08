@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Usuarios</title>
+            <h:body> 
+                <center><h2>Administración de Usuarios</h2>
+                <h:form id="formulario"> 
+                    <p:growl id="msg" sticky="true" showDetail="true"/> 
+                    <p:dialog id="dlgUsuario" widgetVar="dlgUsu"  
+                              position="center" closable="false" 
+                              dynamic="true" resizable="true"
+                              appendTo="@(body)" modal="true">
+                        <center>
+                            <h3>Administración de Usuarios</h3>
+                            <h:form>
+                                <p:panelGrid id="panelDatos">
+                                    <p:row>
+                                        <p:column>
+                                            <p:outputLabel value="Folio:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText id="txtFolio" 
+                                                         value="#{oUsuABC.currentUsuario.PH.folioPers}" 
+                                                         size="6" disabled="#{oUsuABC.disDatos}">
+                                                <p:ajax event="change" listener="#{oUsuABC.buscaPersonal()}" 
+                                                        update="txtNombre txtFolio :formulario:msg"/>
+                                            </p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="Nombre:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:autoComplete id="txtNombre" 
+                                                            minQueryLength="4" var="pers" 
+                                                            itemLabel="#{pers.nombreCompleto}" 
+                                                            itemValue="#{pers}" forceSelection="true" size="50"  
+                                                            converter="ConverterPersonalHosp" 
+                                                            value="#{oUsuABC.currentUsuario.PH}" 
+                                                            completeMethod="#{oUsuABC.completePersonal}" 
+                                                            disabled="#{oUsuABC.disDatos}">
+                                                <p:ajax event="itemSelect" update="txtFolio"/>/>
+                                             </p:autoComplete>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <p:outputLabel value="Usuario:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText value="#{oUsuABC.currentUsuario.usuario}" 
+                                                         disabled="#{oUsuABC.disDatos}">
+                                                <p:ajax/>
+                                            </p:inputText>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="Contraseña:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText value="#{oUsuABC.currentUsuario.contraseña}">
+                                                <p:ajax/>
+                                            </p:inputText>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                                <br/><br/><p:commandButton value="Guardar">
+                                    <p:ajax listener="#{oUsuABC.guarda}" 
+                                            update=":formulario:msg :formulario:dtUsuarios"/>
+                                </p:commandButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <p:commandButton value="Regresar" 
+                                                 oncomplete="PF('dlgUsu').hide()"/>
+                            </h:form>
+                        </center>
+                    </p:dialog>
+                    <p:dataTable id="dtUsuarios" value="#{oUsuABC.listaUsuarios}" 
+                                 rows="6" editable="true" paginator="true" 
+                                 paginatorPosition="bottom" var="oU"
+                                 style="width: 900px" 
+                                 selection="#{oUsuABC.selectedUsuario}" 
+                                 rowKey="#{oU.usuario}">
+                        <p:ajax event="rowSelectRadio"/>
+                        <p:column selectionMode="single"/>
+                        <p:column headerText="Folio">
+                            <h:outputText value="#{oU.PH.folioPers}" />
+                        </p:column>
+                        <p:column headerText="Clave Usuario">
+                            <h:outputText value="#{oU.usuario}" />
+                        </p:column>
+                        <p:column headerText="Contraseña">
+                            <h:outputText value="#{oU.contraseña}" />
+                        </p:column>
+                        <p:column headerText="Apellido Paterno">
+                            <h:outputText value="#{oU.PH.apellidoPaterno}" />
+                        </p:column>
+                        <p:column headerText="Apellido Materno">
+                            <h:outputText value="#{oU.PH.apellidoMaterno}" />
+                        </p:column>
+                        <p:column headerText="Nombre">
+                            <h:outputText value="#{oU.PH.nombre}" />
+                        </p:column>
+                        <p:column headerText="Puesto">
+                            <h:outputText value="#{oU.PH.puesto.descrip}" />
+                        </p:column>
+                        <f:facet name="footer">
+                            <p:commandButton value="Modificar Usuario" 
+                                             icon="ui-icon-pencil">
+                                <p:ajax update=":formulario:msg :formulario:dlgUsuario" 
+                                        listener="#{oUsuABC.confUsuario}"/>
+                            </p:commandButton>
+                            <p:commandButton value="Agregar usuario" 
+                                             icon="ui-icon-pencil">
+                                <p:ajax update=":formulario:msg :formulario:dlgUsuario" 
+                                        listener="#{oUsuABC.confNuevo}"/>
+                            </p:commandButton>
+                        </f:facet>
+                    </p:dataTable> 
+                </h:form></center> 
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

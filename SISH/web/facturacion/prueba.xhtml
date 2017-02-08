@@ -1,0 +1,130 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+    </h:head>
+
+    
+        Factura
+        <h:form id="formDlg">
+            <p:panelGrid  id="panelDatos">
+          
+                <p:row>
+                    <p:column style="width:20%;">
+                        <center><h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="50px"/></center>
+                    </p:column>
+                    <p:column colspan="4" style="width:80%;">
+                        <center>
+                            <h:outputText value="#{oComprobante.comprobanteResultante.emisor.nombre}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                            <h:outputText value="#{oComprobante.comprobanteResultante.emisor.rfc}" style="font-weight: bold; text-transform: capitalize; text-transform: capitalize;"/><br/>
+                            <h:outputText value="DOMICILIO: #{oComprobante.comprobanteResultante.emisor.domCompleto}" style="text-transform: capitalize;"/><br/>
+                            <h:outputText value="EXPEDIDO EN: #{oComprobante.comprobanteResultante.lugarExpedicion}"/>
+                        </center>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column colspan="3" style="width:50%;">
+                        <h:outputText value="CLIENTE" style="font-weight: bold;"/><br/>
+                        <h:outputText value="Nombre:  "/><br/>
+                        <h:outputText value="#{oComprobante.comprobanteResultante.receptor.nombre}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                        <h:outputText value="RFC:  "/><br/>
+                        <h:outputText value="#{oComprobante.comprobanteResultante.receptor.rfc}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                        <h:outputText value="DOMICILIO: "/><br/>
+                        <h:outputText value="#{oComprobante.comprobanteResultante.receptor.domCompleto}" style="font-weight: bold; text-transform: capitalize;"/>
+                    </p:column>
+                    <p:column colspan="2" style="width:50%;">
+                        <h:outputText value="SERIE: #{oComprobante.comprobanteResultante.serie}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                        <h:outputText value="FOLIO:  #{oComprobante.comprobanteResultante.folio}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                        <h:outputText value="FOLIO FISCAL: "/><br/>
+                        <h:outputText value="#{oComprobante.comprobanteResultante.uuid}" style="font-weight: bold"/> <br/>
+                        <h:outputText value="NO. DE SERIE DEL CERTIFICADO DEL SAT: "/><br/>
+                        <h:outputText value="#{oComprobante.comprobanteResultante.noCertificadoSAT}" style="font-weight: bold"/> <br/>
+                        <h:outputText value="FECHA Y HORA DE CERTIFICACIÓN: "/><br/>
+                        <h:outputText value="#{oComprobante.comprobanteResultante.fechaCertificacion}" style="font-weight: bold"> <br/>
+                            <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                        </h:outputText>
+                        <h:outputText value="NO. DE SERIE DEL CERTIFICADO DEL EMISOR: "/><br/>
+                        <h:outputText value="#{oComprobante.comprobanteResultante.noCertificado}" style="font-weight: bold"/> <br/>
+                        <h:outputText value="FECHA Y HORA DE EMISIÓN: "/><br/>
+                        <h:outputText value="#{oComprobante.comprobanteResultante.fecha}" style="font-weight: bold"> <br/>
+                            <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                        </h:outputText>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column colspan="5">
+                        <p:dataTable id="conceptosFinales" value="#{oComprobante.conceptosFinalesEnFactura}" var="concepto">
+                            <p:column style="width:10%">
+                                <f:facet name="header">Cantidad</f:facet>  
+                                <h:outputText value="#{concepto.cantidad}"/> 
+                            </p:column>
+                            <p:column style="width:10%">
+                                <f:facet name="header">Unidad</f:facet>  
+                                <h:outputText value="#{concepto.unidad}"/> 
+                            </p:column>
+                            <p:column style="width:50%">
+                                <f:facet name="header">Descripción</f:facet>  
+                                <h:outputText value="#{concepto.descripcion}" /> 
+                            </p:column>
+                            <p:column style="width:15%">
+                                <f:facet name="header">Valor unitario</f:facet>  
+                                <h:outputText value="#{concepto.costoUnitario}"/> 
+                            </p:column>
+                            <p:column style="width:15%">
+                                <f:facet name="header">Importe</f:facet>  
+                                <h:outputText value="#{concepto.importeTotalSinIva}" /> 
+                            </p:column> 
+                        </p:dataTable> 
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column colspan="3">
+                        <h:outputLabel value="EFECTOS FISCALES AL PAGO"/><br/>
+                        <h:outputLabel value="FORMA DE PAGO:"/><br/>
+                        <h:outputLabel value="#{oComprobante.comprobanteResultante.formaDePago}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                        <h:outputLabel value="MÉTODO DE PAGO:"/><br/>
+                        <h:outputLabel value="#{oComprobante.comprobanteResultante.metodoDePago}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                        <h:outputLabel value="#{oComprobante.cantidadLetra}"/><br/>
+                    </p:column>
+                    <p:column colspan="2">
+                        <p:panelGrid columns="2" style=" float: right;">
+                            <h:outputLabel value="GRAVADO"/>
+                            <h:outputLabel value="#{oComprobante.subtotalGravadoFinal}"/>
+                            <h:outputLabel value="EXCENTO"/>
+                            <h:outputLabel value="#{oComprobante.subtotalNoGravadoFinal}"/>
+                            <h:outputLabel value="SUBTOTAL"/>
+                            <h:outputLabel value="#{oComprobante.subtotalFinal}"/>
+                            <h:outputLabel value="IMPUESTOS"/>
+                            <h:outputLabel value="#{oComprobante.impuestosFinal}"/>
+                            <h:outputLabel value="TOTAL"/>
+                            <h:outputLabel value="#{oComprobante.totalFinal}"/>
+                        </p:panelGrid>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column >
+                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="50px"/>
+                    </p:column >
+                    <p:column colspan="4">
+                        CADENA ORIGINAL DEL COMPLEMENTO DIGITAL DEL SAT:<br/>
+                        <p:inputTextarea  style="width: 70%;white-space: normal" readonly="true" rows="3"   value="#{oComprobante.comprobanteResultante.cadenaOriginal}"/><br/>
+                        SELLO DIGITAL DEL EMISOR:<br/>
+                        <p:inputTextarea  style="width: 70%;white-space: normal" readonly="true" rows="3"   value="#{oComprobante.comprobanteResultante.sello}"/><br/>
+                        SELLO DIGITAL DEL SAT:<br/>
+                        <p:inputTextarea  style="width: 70%;white-space: normal" readonly="true" rows="3"   value="#{oComprobante.comprobanteResultante.selloSAT}"/><br/>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column colspan="5">
+                        <center>
+                            <p:outputLabel value="Este documento es una representación impresa de un CFDI."/><br/>
+                            <p:outputLabel value="La reproducción no autotizada de este comprobante constituye un delito en los términos de las disposiciones fiscales."/><br/>
+                        </center>
+                    </p:column>
+                </p:row>
+            </p:panelGrid>
+        </h:form>
+    
+</html>

@@ -1,0 +1,511 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo"> 
+            <title>Administrar Emisores</title>
+            <h:body>
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true" /> 
+                    <p:dialog id="dlgEmisor" widgetVar="dlgEm" modal="true" appendToBody="true"  dynamic="true">
+                        <h:form id="formDlg">
+                            <p:panelGrid>
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText value="RFC: " style="font-weight:bold"/>
+                                        <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText id="txtRFCNuevo" rendered="#{oAdmEmisor.bandNuevoEmisor}" value="#{oAdmEmisor.nuevoEmisor.rfc}">
+                                            <p:ajax event="change" update="txtRFCNuevo :form:msg" listener="#{oAdmEmisor.buscaRFC('nuevo')}"/>
+                                        </p:inputText>
+                                        <p:inputText id="txtRFC" rendered="#{!oAdmEmisor.bandNuevoEmisor}" value="#{oAdmEmisor.selectedEmisor.rfc}" readonly="true">
+                                            <p:ajax event="change" update="txtRFC"/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="Nombre: " style="font-weight:bold"/>  
+                                    </p:column>
+                                    <p:column >
+                                        <p:inputText id="txtNombreNuevo" rendered="#{oAdmEmisor.bandNuevoEmisor}" value="#{oAdmEmisor.nuevoEmisor.nombre}">
+                                            <p:ajax event="change" update="txtNombreNuevo"/>
+                                        </p:inputText>
+                                        <p:inputText id="txtNombre" rendered="#{!oAdmEmisor.bandNuevoEmisor}" value="#{oAdmEmisor.selectedEmisor.nombre}">
+                                            <p:ajax event="change" update="txtNombre"/>
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid><br/>
+                            <p:panelGrid id="panelDatosE"> 
+                                 <p:row>
+                                     <p:column colspan="8" >
+                                         <h:outputText value="Domicilio Fiscal" style="font-weight:bold"/>
+                                     </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText value="Código Postal:"/>
+                                        <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oAdmEmisor.bandNuevoEmisor}" size="6" value="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.codigoPostal}">
+                                            <p:ajax event="change" listener="#{oAdmEmisor.buscaDomFisPorCP('nuevo')}" update="txtCPLENuevo selEdoDFNuevo selMunDFNuevo selLocDFNuevo selEdoLENuevo selMunLENuevo selLocLENuevo txtPaisDFNuevo txtPaisLENuevo"/>
+                                        </p:inputText>
+                                        <p:inputText rendered="#{!oAdmEmisor.bandNuevoEmisor}" size="6" value="#{oAdmEmisor.selectedEmisor.domicilioFiscal.codigoPostal}">
+                                            <p:ajax event="change" listener="#{oAdmEmisor.buscaDomFisPorCP('')}" update="txtCPLE selEdoDF selMunDF selLocDF selEdoLE selMunLE selLocLE txtPaisDF txtPaisLE"/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="Estado:"/>
+                                        <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu rendered="#{oAdmEmisor.bandNuevoEmisor}" id="selEdoDFNuevo" value="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.edo}"  converter="#{oConverterEstadoDF}"> 
+                                            <c:choose>
+                                                <c:when test="#{oAdmEmisor.selectedEmisor.domicilioFiscal.edo.descrip==''}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <f:selectItem itemLabel="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.edo.descrip}" itemValue="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.edo}" /> 
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <f:selectItems value="#{oAdmEmisor.listEdoDF}" var="oEdoDF" itemLabel="#{oEdoDF.descrip}" itemValue="#{oEdoDF}" />  
+                                            <p:ajax update="selEdoLENuevo selMunDFNuevo selLocDFNuevo selMunLENuevo selLocLENuevo" listener="#{oAdmEmisor.buscarDomFisPorEdo('nuevo')}"/> 
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu rendered="#{!oAdmEmisor.bandNuevoEmisor}" id="selEdoDF" value="#{oAdmEmisor.selectedEmisor.domicilioFiscal.edo}"  converter="#{oConverterEstadoDF}"> 
+                                            <c:choose>
+                                                <c:when test="#{oAdmEmisor.selectedEmisor.domicilioFiscal.edo.descrip==''}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <f:selectItem itemLabel="#{oAdmEmisor.selectedEmisor.domicilioFiscal.edo.descrip}" itemValue="#{oAdmEmisor.selectedEmisor.domicilioFiscal.edo}" /> 
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <f:selectItems value="#{oAdmEmisor.listEdoDF}" var="oEdoDF" itemLabel="#{oEdoDF.descrip}" itemValue="#{oEdoDF}" />  
+                                            <p:ajax update="selEdoLE selMunDF selLocDF selMunLE selLocLE" listener="#{oAdmEmisor.buscarDomFisPorEdo('')}"/> 
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="Municipio: "/>
+                                        <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu rendered="#{oAdmEmisor.bandNuevoEmisor}"  id="selMunDFNuevo" value="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.mun}"  converter="#{oConverterMunicipioDF}">  
+                                            <c:choose>
+                                                <c:when test="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.mun.descrip==''}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <f:selectItem itemLabel="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.mun.descrip}" itemValue="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.mun}" /> 
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <f:selectItems value="#{oAdmEmisor.listMunDF}" var="oMunDF" itemLabel="#{oMunDF.descrip}" itemValue="#{oMunDF}" />  
+                                            <p:ajax update="selMunLENuevo selLocDFNuevo selLocLENuevo" listener="#{oAdmEmisor.buscarDomFisPorMun('nuevo')}" /> 
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu rendered="#{!oAdmEmisor.bandNuevoEmisor}"  id="selMunDF" value="#{oAdmEmisor.selectedEmisor.domicilioFiscal.mun}"  converter="#{oConverterMunicipioDF}">  
+                                            <c:choose>
+                                                <c:when test="#{oAdmEmisor.selectedEmisor.domicilioFiscal.mun.descrip==''}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <f:selectItem itemLabel="#{oAdmEmisor.selectedEmisor.domicilioFiscal.mun.descrip}" itemValue="#{oAdmEmisor.selectedEmisor.domicilioFiscal.mun}" /> 
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <f:selectItems value="#{oAdmEmisor.listMunDF}" var="oMunDF" itemLabel="#{oMunDF.descrip}" itemValue="#{oMunDF}" />  
+                                            <p:ajax update="selMunLE selLocDF selLocLE" listener="#{oAdmEmisor.buscarDomFisPorMun('')}" /> 
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="Localidad:"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu rendered="#{oAdmEmisor.bandNuevoEmisor}" id="selLocDFNuevo" value="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.cd}" converter="#{oConverterCiudadDF}">
+                                            <c:choose>
+                                                <c:when test="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.cd.descrip==''}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <f:selectItem itemLabel="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.cd.descrip}" itemValue="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.cd}" /> 
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <f:selectItems value="#{oAdmEmisor.listCdDF}" var="oLocDF" itemLabel="#{oLocDF.descrip}" itemValue="#{oLocDF}"/>
+                                            <p:ajax update="selLocLENuevo" listener="#{oAdmEmisor.copiaDatos('nuevo')}" /> 
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu rendered="#{!oAdmEmisor.bandNuevoEmisor}" id="selLocDF" value="#{oAdmEmisor.selectedEmisor.domicilioFiscal.cd}" converter="#{oConverterCiudadDF}">
+                                            <c:choose>
+                                                <c:when test="#{oAdmEmisor.selectedEmisor.domicilioFiscal.cd.descrip==''}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <f:selectItem itemLabel="#{oAdmEmisor.selectedEmisor.domicilioFiscal.cd.descrip}" itemValue="#{oAdmEmisor.selectedEmisor.domicilioFiscal.cd}" /> 
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <f:selectItems value="#{oAdmEmisor.listCdDF}" var="oLocDF" itemLabel="#{oLocDF.descrip}" itemValue="#{oLocDF}"/>
+                                            <p:ajax update="selLocLE" listener="#{oAdmEmisor.copiaDatos('')}" /> 
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText value="Colonia:"/>  
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oAdmEmisor.bandNuevoEmisor}" size="15" value="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.colonia}">
+                                            <p:ajax event="change" update="txtColLENuevo" listener="#{oAdmEmisor.copiaDatos('nuevo')}"/>
+                                        </p:inputText>
+                                        <p:inputText rendered="#{!oAdmEmisor.bandNuevoEmisor}" size="15" value="#{oAdmEmisor.selectedEmisor.domicilioFiscal.colonia}">
+                                            <p:ajax event="change" update="txtColLE" listener="#{oAdmEmisor.copiaDatos('')}"/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="Calle"/>
+                                        <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oAdmEmisor.bandNuevoEmisor}" size="15" value="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.calle}">
+                                            <p:ajax event="change" update="txtCalleLENuevo" listener="#{oAdmEmisor.copiaDatos('nuevo')}"/>
+                                        </p:inputText>
+                                        <p:inputText rendered="#{!oAdmEmisor.bandNuevoEmisor}" size="15" value="#{oAdmEmisor.selectedEmisor.domicilioFiscal.calle}">
+                                            <p:ajax event="change" update="txtCalleLE" listener="#{oAdmEmisor.copiaDatos('')}"/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="Número Exterior:" />  
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oAdmEmisor.bandNuevoEmisor}" size="5" value="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.noExterior}">
+                                            <p:ajax event="change" update="txtNumELENuevo" listener="#{oAdmEmisor.copiaDatos('nuevo')}"/>
+                                        </p:inputText>
+                                        <p:inputText rendered="#{!oAdmEmisor.bandNuevoEmisor}" size="5" value="#{oAdmEmisor.selectedEmisor.domicilioFiscal.noExterior}">
+                                            <p:ajax event="change" update="txtNumELE" listener="#{oAdmEmisor.copiaDatos('')}"/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="Número Interior:"/>  
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oAdmEmisor.bandNuevoEmisor}" size="5" value="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.noInterior}">
+                                            <p:ajax event="change" update="txtNumILENuevo" listener="#{oAdmEmisor.copiaDatos('nuevo')}"/>
+                                        </p:inputText>
+                                        <p:inputText rendered="#{!oAdmEmisor.bandNuevoEmisor}" size="5" value="#{oAdmEmisor.selectedEmisor.domicilioFiscal.noInterior}">
+                                            <p:ajax event="change" update="txtNumILE" listener="#{oAdmEmisor.copiaDatos('')}"/>
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row>
+                                 <p:row>
+                                    <p:column>
+                                        <h:outputText value="Referencia:"/>  
+                                    </p:column>
+                                     <p:column colspan="3">
+                                         <p:inputTextarea rendered="#{oAdmEmisor.bandNuevoEmisor}" rows="2" cols="44" value="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.referencia}">
+                                            <p:ajax event="change" update="txtRefLENuevo" listener="#{oAdmEmisor.copiaDatos('nuevo')}"/>
+                                        </p:inputTextarea>
+                                         <p:inputTextarea rendered="#{!oAdmEmisor.bandNuevoEmisor}" rows="2" cols="44" value="#{oAdmEmisor.selectedEmisor.domicilioFiscal.referencia}">
+                                            <p:ajax event="change" update="txtRefLE" listener="#{oAdmEmisor.copiaDatos('')}"/>
+                                        </p:inputTextarea>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="País:"/>  
+                                        <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    </p:column>
+                                     <p:column colspan="3">
+                                         <p:inputText readonly="true" id="txtPaisDFNuevo" rendered="#{oAdmEmisor.bandNuevoEmisor}" size="15" value="#{oAdmEmisor.nuevoEmisor.domicilioFiscal.objPais.descrip}">
+                                            <p:ajax event="change" update="txtPaisLENuevo" listener="#{oAdmEmisor.copiaDatos('nuevo')}"/>
+                                        </p:inputText>
+                                         <p:inputText readonly="true" id="txtPaisDF" rendered="#{!oAdmEmisor.bandNuevoEmisor}" size="15" value="#{oAdmEmisor.selectedEmisor.domicilioFiscal.objPais.descrip}">
+                                            <p:ajax event="change" update="txtPaisLE" listener="#{oAdmEmisor.copiaDatos('')}"/>
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column colspan="8">
+                                        <p:selectBooleanCheckbox rendered="#{oAdmEmisor.bandNuevoEmisor}"  value="#{oAdmEmisor.checkDir}"  itemLabel="&nbsp;&nbsp;&nbsp;Mismos domicilio fiscal y lugar de expedición">
+                                            <p:ajax update="panelDatosE" listener="#{oAdmEmisor.validaMismaDireccion('nuevo')}"/>
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox rendered="#{!oAdmEmisor.bandNuevoEmisor}"  value="#{oAdmEmisor.checkDir}"  itemLabel="&nbsp;&nbsp;&nbsp;Mismos domicilio fiscal y lugar de expedición">
+                                            <p:ajax update="panelDatosE" listener="#{oAdmEmisor.validaMismaDireccion('')}"/>
+                                        </p:selectBooleanCheckbox>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column colspan="8" >
+                                        <h:outputText value="Lugar de Expedición" style="font-weight:bold"/>
+                                    </p:column>
+                               </p:row>
+                               <p:row>
+                                   <p:column>
+                                       <h:outputText value="Código Postal:"/>
+                                       <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                   </p:column>
+                                   <p:column>
+                                       <p:inputText rendered="#{oAdmEmisor.bandNuevoEmisor}"  id="txtCPLENuevo" size="6" value="#{oAdmEmisor.nuevoEmisor.expedidoEn.codigoPostal}" disabled="#{oAdmEmisor.checkDir}">
+                                            <p:ajax event="change" listener="#{oAdmEmisor.buscaLugExpPorCP('nuevo')}" update="selEdoLENuevo selMunLENuevo selLocLENuevo txtPaisLENuevo"/>
+                                       </p:inputText>
+                                       <p:inputText rendered="#{!oAdmEmisor.bandNuevoEmisor}"  id="txtCPLE" size="6" value="#{oAdmEmisor.selectedEmisor.expedidoEn.codigoPostal}" disabled="#{oAdmEmisor.checkDir}">
+                                            <p:ajax event="change" listener="#{oAdmEmisor.buscaLugExpPorCP('')}" update="selEdoLE selMunLE selLocLE txtPaisLE"/>
+                                       </p:inputText>
+                                   </p:column>
+                                   <p:column>
+                                       <h:outputText value="Estado:"/>
+                                       <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                   </p:column>
+                                   <p:column>
+                                       <p:selectOneMenu rendered="#{oAdmEmisor.bandNuevoEmisor}" id="selEdoLENuevo" value="#{oAdmEmisor.nuevoEmisor.expedidoEn.edo}"  converter="#{oConverterEstadoLE}" disabled="#{oAdmEmisor.checkDir}">  
+                                           <c:choose>
+                                                <c:when test="#{oAdmEmisor.nuevoEmisor.expedidoEn.edo.descrip==''}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <f:selectItem itemLabel="#{oAdmEmisor.nuevoEmisor.expedidoEn.edo.descrip}" itemValue="#{oAdmEmisor.nuevoEmisor.expedidoEn.edo}" /> 
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <f:selectItems value="#{oAdmEmisor.listEdoLE}" var="oEdoLE" itemLabel="#{oEdoLE.descrip}" itemValue="#{oEdoLE}" />  
+                                            <p:ajax update="selMunLENuevo selLocLENuevo" listener="#{oAdmEmisor.buscarLugExpPorEdo('nuevo')}"/> 
+                                        </p:selectOneMenu>
+                                       <p:selectOneMenu rendered="#{!oAdmEmisor.bandNuevoEmisor}" id="selEdoLE" value="#{oAdmEmisor.selectedEmisor.expedidoEn.edo}"  converter="#{oConverterEstadoLE}" disabled="#{oAdmEmisor.checkDir}">  
+                                           <c:choose>
+                                                <c:when test="#{oAdmEmisor.selectedEmisor.expedidoEn.edo.descrip==''}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <f:selectItem itemLabel="#{oAdmEmisor.selectedEmisor.expedidoEn.edo.descrip}" itemValue="#{oAdmEmisor.selectedEmisor.expedidoEn.edo}" /> 
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <f:selectItems value="#{oAdmEmisor.listEdoLE}" var="oEdoLE" itemLabel="#{oEdoLE.descrip}" itemValue="#{oEdoLE}" />  
+                                            <p:ajax update="selMunLE selLocLE" listener="#{oAdmEmisor.buscarLugExpPorEdo('')}"/> 
+                                        </p:selectOneMenu>
+                                   </p:column>
+                                   <p:column>
+                                       <h:outputText value="Municipio:"/>
+                                       <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                   </p:column>
+                                   <p:column>
+                                       <p:selectOneMenu rendered="#{oAdmEmisor.bandNuevoEmisor}" id="selMunLENuevo" value="#{oAdmEmisor.nuevoEmisor.expedidoEn.mun}"  converter="#{oConverterMunicipioLE}" disabled="#{oAdmEmisor.checkDir}">  
+                                            <c:choose>
+                                                <c:when test="#{oAdmEmisor.nuevoEmisor.expedidoEn.mun.descrip==''}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <f:selectItem itemLabel="#{oAdmEmisor.nuevoEmisor.expedidoEn.mun.descrip}" itemValue="#{oAdmEmisor.nuevoEmisor.expedidoEn.mun}" /> 
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <f:selectItems value="#{oAdmEmisor.listMunLE}" var="oMunLE" itemLabel="#{oMunLE.descrip}" itemValue="#{oMunLE}" />  
+                                            <p:ajax update="selLocLENuevo" listener="#{oAdmEmisor.buscarLugExpPorMun('nuevo')}" /> 
+                                        </p:selectOneMenu>
+                                       <p:selectOneMenu rendered="#{!oAdmEmisor.bandNuevoEmisor}" id="selMunLE" value="#{oAdmEmisor.selectedEmisor.expedidoEn.mun}"  converter="#{oConverterMunicipioLE}" disabled="#{oAdmEmisor.checkDir}">  
+                                            <c:choose>
+                                                <c:when test="#{oAdmEmisor.selectedEmisor.expedidoEn.mun.descrip==''}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <f:selectItem itemLabel="#{oAdmEmisor.selectedEmisor.expedidoEn.mun.descrip}" itemValue="#{oAdmEmisor.selectedEmisor.expedidoEn.mun}" /> 
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <f:selectItems value="#{oAdmEmisor.listMunLE}" var="oMunLE" itemLabel="#{oMunLE.descrip}" itemValue="#{oMunLE}" />  
+                                            <p:ajax update="selLocLE" listener="#{oAdmEmisor.buscarLugExpPorMun('')}" /> 
+                                        </p:selectOneMenu>
+                                   </p:column>
+                                   <p:column>
+                                       <h:outputText value="Localidad:"/>
+                                   </p:column>
+                                   <p:column>
+                                       <p:selectOneMenu rendered="#{oAdmEmisor.bandNuevoEmisor}" id="selLocLENuevo" value="#{oAdmEmisor.nuevoEmisor.expedidoEn.cd}" converter="#{oConverterCiudadLE}" disabled="#{oAdmEmisor.checkDir}">
+                                           <c:choose>
+                                                <c:when test="#{oAdmEmisor.nuevoEmisor.expedidoEn.cd.descrip==''}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <f:selectItem itemLabel="#{oAdmEmisor.nuevoEmisor.expedidoEn.cd.descrip}" itemValue="#{oAdmEmisor.nuevoEmisor.expedidoEn.cd}" /> 
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <f:selectItems value="#{oAdmEmisor.listCdLE}" var="oLocLE" itemLabel="#{oLocLE.descrip}" itemValue="#{oLocLE}"/>
+                                            <p:ajax/>
+                                       </p:selectOneMenu>
+                                       <p:selectOneMenu rendered="#{!oAdmEmisor.bandNuevoEmisor}" id="selLocLE" value="#{oAdmEmisor.selectedEmisor.expedidoEn.cd}" converter="#{oConverterCiudadLE}" disabled="#{oAdmEmisor.checkDir}">
+                                           <c:choose>
+                                                <c:when test="#{oAdmEmisor.selectedEmisor.expedidoEn.cd.descrip==''}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <f:selectItem itemLabel="#{oAdmEmisor.selectedEmisor.expedidoEn.cd.descrip}" itemValue="#{oAdmEmisor.selectedEmisor.expedidoEn.cd}" /> 
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <f:selectItems value="#{oAdmEmisor.listCdLE}" var="oLocLE" itemLabel="#{oLocLE.descrip}" itemValue="#{oLocLE}"/>
+                                            <p:ajax/>
+                                       </p:selectOneMenu>
+                                   </p:column>
+                               </p:row>
+                               <p:row>
+                                   <p:column>
+                                       <h:outputText value="Colonia:"/>  
+                                   </p:column>
+                                   <p:column>
+                                       <p:inputText rendered="#{oAdmEmisor.bandNuevoEmisor}" id="txtColLENuevo" size="15" value="#{oAdmEmisor.nuevoEmisor.expedidoEn.colonia}" disabled="#{oAdmEmisor.checkDir}"><p:ajax event="change"/></p:inputText>
+                                       <p:inputText rendered="#{!oAdmEmisor.bandNuevoEmisor}" id="txtColLE" size="15" value="#{oAdmEmisor.selectedEmisor.expedidoEn.colonia}" disabled="#{oAdmEmisor.checkDir}"><p:ajax event="change"/></p:inputText>
+                                   </p:column>
+                                   <p:column>
+                                       <h:outputText value="Calle"/>
+                                       <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                   </p:column>
+                                   <p:column>
+                                       <p:inputText rendered="#{oAdmEmisor.bandNuevoEmisor}" id="txtCalleLENuevo" size="15" value="#{oAdmEmisor.nuevoEmisor.expedidoEn.calle}" disabled="#{oAdmEmisor.checkDir}"><p:ajax event="change"/></p:inputText>
+                                       <p:inputText rendered="#{!oAdmEmisor.bandNuevoEmisor}" id="txtCalleLE" size="15" value="#{oAdmEmisor.selectedEmisor.expedidoEn.calle}" disabled="#{oAdmEmisor.checkDir}"><p:ajax event="change"/></p:inputText>
+                                   </p:column>
+                                   <p:column>
+                                       <h:outputText value="Número Exterior:" />  
+                                   </p:column>
+                                   <p:column>
+                                       <p:inputText rendered="#{oAdmEmisor.bandNuevoEmisor}" id="txtNumELENuevo" size="5" value="#{oAdmEmisor.nuevoEmisor.expedidoEn.noExterior}" disabled="#{oAdmEmisor.checkDir}"><p:ajax event="change"/></p:inputText>
+                                       <p:inputText rendered="#{!oAdmEmisor.bandNuevoEmisor}" id="txtNumELE" size="5" value="#{oAdmEmisor.selectedEmisor.expedidoEn.noExterior}" disabled="#{oAdmEmisor.checkDir}"><p:ajax event="change"/></p:inputText>
+                                   </p:column>
+                                   <p:column>
+                                       <h:outputText value="Número Interior:"/>  
+                                   </p:column>
+                                   <p:column>
+                                       <p:inputText rendered="#{oAdmEmisor.bandNuevoEmisor}" id="txtNumILENuevo" size="5" value="#{oAdmEmisor.nuevoEmisor.expedidoEn.noInterior}" disabled="#{oAdmEmisor.checkDir}"><p:ajax event="change"/></p:inputText>
+                                       <p:inputText rendered="#{!oAdmEmisor.bandNuevoEmisor}" id="txtNumILE" size="5" value="#{oAdmEmisor.selectedEmisor.expedidoEn.noInterior}" disabled="#{oAdmEmisor.checkDir}"><p:ajax event="change"/></p:inputText>
+                                   </p:column>
+                               </p:row>
+                                <p:row>
+                                   <p:column>
+                                       <h:outputText value="Referencia:"/>  
+                                   </p:column>
+                                    <p:column colspan="3">
+                                        <p:inputTextarea rendered="#{oAdmEmisor.bandNuevoEmisor}"  id="txtRefLENuevo" rows="2" cols="44" value="#{oAdmEmisor.nuevoEmisor.expedidoEn.referencia}" disabled="#{oAdmEmisor.checkDir}"><p:ajax event="change"/></p:inputTextarea>
+                                        <p:inputTextarea rendered="#{!oAdmEmisor.bandNuevoEmisor}"  id="txtRefLE" rows="2" cols="44" value="#{oAdmEmisor.selectedEmisor.expedidoEn.referencia}" disabled="#{oAdmEmisor.checkDir}"><p:ajax event="change"/></p:inputTextarea>
+                                   </p:column>
+                                   <p:column>
+                                       <h:outputText value="País:"/>  
+                                       <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                   </p:column>
+                                    <p:column colspan="3">
+                                        <p:inputText readonly="true" rendered="#{oAdmEmisor.bandNuevoEmisor}"  id="txtPaisLENuevo" size="15" value="#{oAdmEmisor.nuevoEmisor.expedidoEn.objPais.descrip}" disabled="#{oAdmEmisor.checkDir}"><p:ajax event="change"/></p:inputText>
+                                        <p:inputText readonly="true" rendered="#{!oAdmEmisor.bandNuevoEmisor}"  id="txtPaisLE" size="15" value="#{oAdmEmisor.selectedEmisor.expedidoEn.objPais.descrip}" disabled="#{oAdmEmisor.checkDir}"><p:ajax event="change"/></p:inputText>
+                                   </p:column>
+                               </p:row>
+                                <p:row>
+                                    <p:column colspan="8"/>
+                                </p:row> 
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Regimen Fiscal" style="font-weight:bold"/>
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:dataTable id="dtRegFisNuevo" rendered="#{oAdmEmisor.bandNuevoEmisor}" value="#{oAdmEmisor.nuevoEmisor.regimenFiscal}" var="oRF">
+                                            <p:column>
+                                                <p:outputLabel value="#{oRF.regimen}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:commandButton icon="ui-icon-close">
+                                                    <p:ajax listener="#{oAdmEmisor.eliminaRegFis('nuevo',oRF.regimen)}" update="dtRegFisNuevo :form:formDlg:selRegFis"/>
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:dataTable>
+                                        <p:dataTable id="dtRegFis" rendered="#{!oAdmEmisor.bandNuevoEmisor}" value="#{oAdmEmisor.selectedEmisor.regimenFiscal}" var="oRF">
+                                            <p:column>
+                                                <p:outputLabel value="#{oRF.regimen}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:commandButton icon="ui-icon-close">
+                                                    <p:ajax listener="#{oAdmEmisor.eliminaRegFis('',oRF.regimen)}" update=":form:formDlg:dtRegFis :form:formDlg:selRegFis"/>
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:selectOneMenu id="selRegFis" value="#{oAdmEmisor.selectedRegimen}">
+                                            <f:selectItem noSelectionOption="true" itemLabel="Seleccione" itemValue="" />
+                                            <f:selectItems value="#{oAdmEmisor.regimenesFis}" var="oRegFis" itemLabel="#{oRegFis}" itemValue="#{oRegFis}"/>
+                                            <p:ajax listener="#{oAdmEmisor.metodo()}"/>
+                                        </p:selectOneMenu> 
+                                    </p:column>
+                                    <p:column>
+                                        <p:commandButton rendered="#{oAdmEmisor.bandNuevoEmisor}" value="Agregar">
+                                            <p:ajax listener="#{oAdmEmisor.agregaRF('nuevo')}" update="dtRegFisNuevo selRegFis"/>
+                                        </p:commandButton>
+                                        <p:commandButton rendered="#{!oAdmEmisor.bandNuevoEmisor}" value="Agregar">
+                                            <p:ajax listener="#{oAdmEmisor.agregaRF('')}" update="dtRegFis selRegFis"/>
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column colspan="8">
+                                        <p:commandButton rendered="#{oAdmEmisor.bandNuevoEmisor}" value="Guardar" oncomplete="PF('dlgEm').hide()">
+                                            <p:ajax listener="#{oAdmEmisor.guardar('nuevo')}" update=":form:msg :form:dtEmisores"/>
+                                        </p:commandButton> 
+                                        <p:commandButton rendered="#{!oAdmEmisor.bandNuevoEmisor}" value="Guardar" oncomplete="PF('dlgEm').hide()">
+                                            <p:ajax listener="#{oAdmEmisor.guardar('')}" update=":form:msg :form:dtEmisores"/>
+                                        </p:commandButton> 
+                                        <p:commandButton value="Cancelar" action="#{oAdmEmisor.cancelar()}" oncomplete="PF('dlgEm').hide()"/>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                        </h:form>
+                    </p:dialog>
+                    <p:dialog id="dlgElimina" widgetVar="dlgElimina" modal="true" appendToBody="true" dynamic="true">
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column colspan="2">
+                                    <p:outputLabel value="¿Desea eliminar el emisor seleccionado?"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <center>
+                                        <p:commandButton value="Sí">
+                                            <p:ajax listener="#{oAdmEmisor.eliminar()}" oncomplete="PF('dlgElimina').hide()" update=":form:msg :form:dtEmisores"/>
+                                        </p:commandButton>
+                                    </center>
+                                </p:column>
+                                <p:column>
+                                    <center>
+                                        <p:commandButton value="No" oncomplete="PF('dlgElimina').hide()"/>
+                                    </center>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid>
+                    </p:dialog>
+                    <p:dataTable id="dtEmisores" value="#{oAdmEmisor.listaEmisores}" var="oEm" selection="#{oAdmEmisor.selectedEmisor}" 
+                                 rowKey="#{oEm.rfc}" paginator="true" paginatorPosition="bottom" rows="5">
+                        <p:ajax event="rowSelectRadio" update="btnActualizar btnEliminar"/>
+                        <p:column selectionMode="single"/>
+                        <p:column headerText="RFC">
+                            <h:outputText value="#{oEm.rfc}"/>
+                        </p:column>
+                        <p:column headerText="Nombre">
+                            <h:outputText value="#{oEm.nombre}"/>
+                        </p:column>
+                        <p:column headerText="Domicilio Fiscal">
+                            <h:outputText value="#{oEm.domicilioFiscal.calle} ##{oEm.domicilioFiscal.noExterior}, Col. #{oEm.domicilioFiscal.colonia}, #{oEm.domicilioFiscal.cd.descrip}"/><br/>
+                            <h:outputText value="#{oEm.domicilioFiscal.mun.descrip} #{oEm.domicilioFiscal.edo.descrip}. C.P. #{oEm.domicilioFiscal.codigoPostal}"/>  
+                        </p:column>
+                        <p:column headerText="Lugar de Expedición">
+                            <h:outputText value="#{oEm.expedidoEn.calle} ##{oEm.expedidoEn.noExterior}, Col. #{oEm.expedidoEn.colonia}, #{oEm.domicilioFiscal.cd.descrip}"/><br/>
+                            <h:outputText value="#{oEm.expedidoEn.mun.descrip} #{oEm.expedidoEn.edo.descrip}. C.P. #{oEm.expedidoEn.codigoPostal}"/>
+                        </p:column>
+                        <p:column headerText="Regimenes Fiscales">
+                            <p:dataList value="#{oEm.regimenFiscal}" var="oRF">
+                                #{oRF.regimen}
+                            </p:dataList>
+                        </p:column>
+                        <f:facet name="footer">  
+                            <p:commandButton id="btnActualizar" value="Actualizar" icon="ui-icon-pencil" oncomplete="PF('dlgEm').show()" 
+                                             update=":form:dlgEmisor">
+                                <p:ajax listener="#{oAdmEmisor.confModifica()}"/>
+                            </p:commandButton>
+                              <p:commandButton id="btnEliminar" value="Eliminar" icon="ui-icon-search" oncomplete="PF('dlgElimina').show()"/>&nbsp;&nbsp;&nbsp; 
+                              <p:commandButton id="btnNuevo" value="Nuevo" icon="ui-icon-search" oncomplete="PF('dlgEm').show()"> 
+                                  <p:ajax listener="#{oAdmEmisor.confNuevo()}" update=":form:dlgEmisor"/>
+                              </p:commandButton>
+                        </f:facet>
+                    </p:dataTable>
+                </h:form>
+            </h:body>
+        </ui:define>
+    </ui:composition>
+</html>

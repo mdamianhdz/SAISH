@@ -1,0 +1,283 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Registrar Pago de Abono con Descuento o Crédito a Particular</title>
+            <h:body>
+                <center><h3>Registrar Pago de Abono con Descuento o Crédito a Particular</h3></center>
+                    #{oRegPagAboDsctoCred.limpiaPagina()}
+
+                <p:dialog closable="false" dynamic="true" appendTo="@(body)" 
+                          modal="true" id="dlgCompBusq" header="Búsqueda de paciente" 
+                          widgetVar="dlgCompBusqVar" style="font-size: 12px" 
+                          styleClass="text-align: center;" position="center" 
+                          showEffect="clip" hideEffect="fold">
+                    <h:form id="form">
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include>
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar" 
+                                update=":formp:panelP " 
+                                actionListener="#{oRegPagAboDsctoCred.buscaAbonoDsctoCredPorPagar}" 
+                                oncomplete="dlgCompBusqVar.hide()" icon="ui-icon-search"/>
+                        <p:commandButton value="Cancelar" 
+                                oncomplete="dlgCompBusqVar.hide()" />
+                    </h:form>
+                </p:dialog>
+                <br/>
+                <h:form>
+                    <center>
+                        <p:commandButton value="Seleccionar paciente" 
+                                update=":dlgCompBusq :formp:panelP  " 
+                                oncomplete="dlgCompBusqVar.show()" 
+                                icon="ui-icon-search"/>
+                    </center>
+                </h:form>
+                <h:form id="formp">
+                    <p:growl id="msgs" showDetail="true" sticky="true"/>
+                    <p:panel header="Abono con Descuento o Crédito a Particular" id="panelP" 
+                             visible="#{oRegPagAboDsctoCred.validaPaciente()}">
+                        Paciente: 
+                        <p:outputLabel rendered="#{oRegPagAboDsctoCred.validaPaciente()}" 
+                                     style="font-weight: bold" 
+                                     value="#{oRegPagAboDsctoCred.paciente.nombreCompleto}"/> 
+                        <p:dataTable selection="#{oRegPagAboDsctoCred.selectedServ}"  
+                                     value="#{oRegPagAboDsctoCred.listAP}" 
+                                     rowKey="#{oAP.idFolio}" id="dataTableAnt" 
+                                     style="margin-bottom: 0px" 
+                                     paginator="true" paginatorPosition="bottom" 
+                                     rows="6" var="oAP"
+                                     emptyMessage="No se encontraron abonos pendientes autorizados">
+                            <p:ajax event="rowSelectRadio" 
+                                    listener="#{oRegPagAboDsctoCred.habilitaBoton()}" 
+                                    update="btnCapturaPago"/>
+                            <f:facet name="header">
+                                Abonos autorizados con Descuento o Crédito a Particular
+                            </f:facet>
+                            <p:column headerText="Pagar" selectionMode="single" 
+                                      style="width: 16px; text-align: center"/>
+                            <p:column headerText="Folio Requisición" 
+                                      style="width: 16px; text-align: center">
+                                <h:outputText value="#{oAP.idFolio}"/>
+                            </p:column>
+                            <p:column headerText="Folio de Paquete" 
+                                      style="width: 16px; text-align: center">
+                                <h:outputText value="#{oAP.paqueteContratado.paquete.idPaquete}"/>
+                            </p:column>
+                            <p:column headerText="Cama" style="width: 16px; text-align: center">
+                                <h:outputText value="#{oAP.episodioMedico.hab.hab}"/>
+                            </p:column>
+                            <p:column headerText="Monto a Pagar" style="width: 16px; text-align: center">
+                                <h:outputText value="#{oAP.paqueteContratado.anticipo}">
+                                    <f:convertNumber pattern="#0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Pagar" widgetVar="btnCapturaPago"
+                                         id="btnCapturaPago">
+                                    <p:ajax listener="#{oRegPagAboDsctoCred.seleccion}"
+                                         disabled="#{oRegPagAboDsctoCred.botonPagar}"
+                                         update=":formp:msgs :dialogs:display 
+                                         :dialogsop:dialogOP" />
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                    </p:panel> 
+                </h:form> 
+                
+                <p:dialog id="dialog" header="Registrar Pago de Abono con Descuento o Crédito Particular" 
+                          widgetVar="selDialog" showEffect="clip" 
+                          appendTo="@(body)" modal="true" closable="false">
+                    <h:form id="dialogs">
+                        <p:panel id="display">
+                            <h:panelGrid columns="4" cellpadding="7">
+                                <p:column><h:outputText style="font-weight: bold;" value="Folio Paciente"/> </p:column>
+                                <p:column><h:outputText value="#{oRegPagAboDsctoCred.selectedServ.paciente.folioPac}"/></p:column>
+                                <p:column><h:outputText style="font-weight: bold;" value="Nombre"/></p:column>
+                                <p:column><h:outputText value="#{oRegPagAboDsctoCred.selectedServ.paciente.nombreCompleto}"/></p:column>
+                                <p:column><h:outputText style="font-weight: bold;" value="Folio Servicio"/></p:column>
+                                <p:column><h:outputText value="#{oRegPagAboDsctoCred.selectedServ.idFolio}"/></p:column>
+                                <p:column><h:outputText  style="font-weight: bold;" value="Concepto"/></p:column>
+                                <p:column><h:outputText value="#{oRegPagAboDsctoCred.selectedServ.concepPrestado.descripConcep}"/></p:column>
+                            </h:panelGrid>
+                            <h:panelGrid columns="4" cellpadding="8">
+                                <p:column><h:outputText style="font-weight: bold;" value="Monto"/> </p:column>
+                                <p:column><h:outputText value="#{oRegPagAboDsctoCred.selectedServ.costoCobrado}"/></p:column>
+                                <p:column><h:outputText style="font-weight: bold;" value="Quién Paga"/> </p:column>
+                                <p:column><h:outputText value="#{oRegPagAboDsctoCred.selectedServ.convQuienPaga}"/></p:column>
+                            </h:panelGrid>
+
+                            <p:panel>
+                                <h:panelGrid columns="4">
+                                    <p:column>
+                                        <h:outputText style="font-weight: bold;" 
+                                                      value="Monto Real a Pagar"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText value="#{oRegPagAboDsctoCred.selectedServ.costoCobrado}"
+                                            required="true"
+                                            disabled="true">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText style="font-weight: bold;" 
+                                                      value="Forma de Pago: " />
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu required="true" 
+                                                         requiredMessage="Se requiere una Forma de Pago" 
+                                                         id="SL" 
+                                                         value="#{oRegPagAboDsctoCred.forma}">
+                                            <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                            <f:selectItems value="#{oFormaDePago.formasDePago}" 
+                                                           var="oLP1"  itemLabel="#{oLP1.descripcion}" 
+                                                           itemValue="#{oLP1.cveFrmPago}"/>
+                                            <p:ajax update="pg1" listener="#{oRegPagAboDsctoCred.validaForma()}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </h:panelGrid>
+                                <h:panelGrid id="pg1" columns="9">
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegPagAboDsctoCred.verBanco}"
+                                            style="font-weight: bold;" value="Banco : " />
+                                        <p:selectOneMenu rendered="#{oRegPagAboDsctoCred.verBanco}"
+                                            id="SB" value="#{oRegPagAboDsctoCred.opeCaja.datosPago}">
+                                            <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                            <f:selectItems value="#{oFormaDePago.bancos}" />
+                                            <p:ajax/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegPagAboDsctoCred.verCtaBanco}"
+                                                      style="font-weight: bold;" 
+                                                      value="Cuenta"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu rendered="#{oRegPagAboDsctoCred.verCtaBanco}"
+                                                         id="cbanco" 
+                                                         value="#{oRegPagAboDsctoCred.opeCaja.ctaBcoRecep}">
+                                            <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                            <f:selectItem itemLabel="BcmerSanatorio" itemValue="BcmerSanatorio" />
+                                            <f:selectItem itemLabel="BcmerDHR" itemValue="BcmerDHR" />
+                                            <p:ajax/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegPagAboDsctoCred.verFecRecep}"
+                                                      style="font-weight: bold;" 
+                                                      value="Fecha de recepción"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oRegPagAboDsctoCred.verFecRecep}"
+                                                     value="#{oRegPagAboDsctoCred.opeCaja.fecIngRecep}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegPagAboDsctoCred.verNumDcto}"
+                                                      style="font-weight: bold;" 
+                                                      value="Cheque/Transferencia/Tarjeta"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oRegPagAboDsctoCred.verNumDcto}"
+                                                     value="#{oRegPagAboDsctoCred.opeCaja.numDcto}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegPagAboDsctoCred.verTitularTarjeta}"
+                                                      style="font-weight: bold;" 
+                                                      value="Titular"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oRegPagAboDsctoCred.verTitularTarjeta}"
+                                                     value="#{oRegPagAboDsctoCred.opeCaja.nomTit}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                </h:panelGrid>
+                            </p:panel>
+                            <p:commandButton value="Guardar" type="button"
+                                             widgetVar="btnGuardar"
+                                             disabled="#{!oRegPagAboDsctoCred.autorizado}">
+                                <p:ajax update=":formp:dataTableAnt :dialogsop:dialogOP :ticketInfo " 
+                                        listener="#{oRegPagAboDsctoCred.registraPago()}" />
+                            </p:commandButton>
+                            <p:commandButton value="Regresar">
+                                <p:ajax listener="#{oRegPagAboDsctoCred.regresar}"/>
+                            </p:commandButton>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>                
+                
+                <p:dialog id="dlgOP" resizable="false" 
+                          header="Operación Exitosa" widgetVar="diaE" modal="true" appendTo="@(body)" closable="false">
+                    <h:form id="dialogsop">
+                        <p:panel id="dialogOP">
+                            <h:panelGrid>
+                                <p:row>
+                                    El pago de abono se ha registrado de manera exitosa.
+                                </p:row>
+                                <br></br>
+                                <p:row>
+                                    Se ha generado el Folio de caja:  
+                                    <p:outputLabel style="font-weight: bold" 
+                                                   value="#{oRegPagAboDsctoCred.opeCaja.folioRet}"/>
+                                </p:row>
+                            </h:panelGrid>
+                            <br></br>
+                            <h:panelGrid columns="2"> 
+                                <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" onclick="printTicket();
+                                        return false;"/>
+                                <p:commandButton label="Regresar" value="Regresar">
+                                    <p:ajax listener="#{oRegPagAboDsctoCred.regresar()}" />
+                                </p:commandButton>
+                            </h:panelGrid>     
+                        </p:panel>  
+                    </h:form>
+               </p:dialog>
+
+                <h:panelGroup id="ticketInfo">
+                    <h:outputScript>
+                        var ticket;
+                        function printTicket() {
+                        ticket = {
+                        "reimpresion": false,
+                        "title": 1,
+                        "fecha": ""+getFecha(true)+"",
+                        "hora": ""+getHora(true)+"",
+                        "folioope": "#{oRegPagAboDsctoCred.opeCaja.folioRet}",
+                        "paciente": {
+                        "folio": "#{oRegPagAboDsctoCred.selectedServ.paciente.folioPac}",
+                        "nombre": "#{oRegPagAboDsctoCred.selectedServ.paciente.nombreCompleto}"
+                        },
+                        "empresa": "#{oRegPagAboDsctoCred.descripcionEmpresa}",
+                        "doctor": "#{oRegPagAboDsctoCred.medicoTratante}",
+                        "fmapago": "#{oRegPagAboDsctoCred.descripcionForma}",
+                        "usuario": "#{oUsuario.sesionUsuario.usuario}",
+                        "servicios": [
+                        {
+                        "cantidad": "#{oRegPagAboDsctoCred.selectedServ.cantidad}",
+                        "descripcion": "#{oRegPagAboDsctoCred.selectedServ.concepPrestado.descripConcep}",
+                        "precio": "#{oRegPagAboDsctoCred.selectedServ.costoOriginal}"
+                        }
+                        ],
+                        "subtotal": "#{oRegPagAboDsctoCred.obtenerCifra('subtotal')}",
+                        "iva": "#{oRegPagAboDsctoCred.obtenerCifra('iva')}",
+                        "desc": "#{oRegPagAboDsctoCred.desctoTicket}",
+                        "total": "#{oRegPagAboDsctoCred.selectedServ.costoCobrado}"
+
+                        };
+                        print(ticket);
+                        }
+                    </h:outputScript>
+                </h:panelGroup>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

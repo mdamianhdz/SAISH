@@ -1,0 +1,828 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Emitir factura</title>   
+            <h:body> 
+                #{oComprobante.limpiar()}
+                #{oComprobante.limpiarFactura()}
+                <h:form id="formulario"> 
+                    <p:growl id="messages" showDetail="true"/>
+                    <p:panel header="Emisor" style="margin-bottom:10px;">
+                        <h:panelGrid columns="4" id="busquedaEmisor">
+                            Régimen fiscal 
+                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                            <p:selectOneMenu value="#{oComprobante.regimen}">  
+                                <p:ajax listener="#{oComprobante.validaTipoFactura}"
+                                        update="cmbTipoFact messages datosTipoFactura  consumosSeleccionadosAcumulados conceptosSeleccionadosAcumulados conceptosParaFacturar datosParaFacturar totales panelGridConsumosSeleccionadosAcumulados panelGridConceptosSeleccionadosAcumulados"/>
+                                <f:selectItem itemLabel="Selecciona" itemValue="" />  
+                                <f:selectItem itemLabel="Régimen General Actividad empresarial profesional" itemValue="Regimen General Actividad empresarial profesional" />  
+                                <f:selectItem itemLabel="Arrendamiento" itemValue="Arrendamiento" />                                
+                            </p:selectOneMenu>
+                            <h:outputText value=" "/>
+                            <h:outputText value="Nombre :"/>
+                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                            <p:selectOneMenu id="emisor" value="#{oComprobante.emisorSeleccionado}" style="width: 263px;" converter="#{oConverterEmisor}">
+                                <f:selectItem itemLabel="Selecciona uno" itemValue="" />
+                                <f:selectItems value="#{oComprobante.emisores}" var="emisor" itemLabel="#{emisor.nombre}" itemValue="#{emisor}"/>
+                            </p:selectOneMenu>
+                            <p:commandButton value="Buscar"  update="messages datosEmisor" icon="ui-icon-search"/>
+
+                        </h:panelGrid>
+                        <h:panelGrid id="datosEmisor">
+                            <h:panelGrid columns="3">
+                                <h:outputLabel value="Nombre" for="txtEmisorNombre" rendered="#{not empty oComprobante.emisorSeleccionado.nombre}"/>
+                                <h:outputText value=""/>
+                                <p:inputText id="txtEmisorNombre" value="#{oComprobante.emisorSeleccionado.nombre}"  rendered="#{not empty oComprobante.emisorSeleccionado.nombre}" readonly="true"></p:inputText>
+                            </h:panelGrid>
+                            <h:outputLabel value="Domicilio fiscal"  style="font-weight:bold;" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.pais}"/>
+                            <h:panelGrid columns="6" >
+                                <h:outputLabel value="Calle" for="txtEmisorDomFiscalCalle" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.calle}"/>
+                                <p:inputText id="txtEmisorDomFiscalCalle" value="#{oComprobante.emisorSeleccionado.domicilioFiscal.calle}" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.calle}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Número exterior" for="txtEmisorDomFiscalNumExt" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.noExterior}"/>
+                                <p:inputText id="txtEmisorDomFiscalNumExt" value="#{oComprobante.emisorSeleccionado.domicilioFiscal.noExterior}" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.noExterior}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Número interior" for="txtEmisorDomFiscalNumInt" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.noInterior}"/>
+                                <p:inputText id="txtEmisorDomFiscalNumInt" value="#{oComprobante.emisorSeleccionado.domicilioFiscal.noInterior}" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.noInterior}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Colonia" for="txtEmisorDomFiscalCol" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.colonia}"/>
+                                <p:inputText id="txtEmisorDomFiscalCol" value="#{oComprobante.emisorSeleccionado.domicilioFiscal.colonia}" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.colonia}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Localidad" for="txtEmisorDomFiscalLoc" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.localidad}"/>
+                                <p:inputText id="txtEmisorDomFiscalLoc" value="#{oComprobante.emisorSeleccionado.domicilioFiscal.localidad}" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.localidad}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Referencia" for="txtEmisorDomFiscalRef" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.referencia}"/>
+                                <p:inputText id="txtEmisorDomFiscalRef" value="#{oComprobante.emisorSeleccionado.domicilioFiscal.referencia}" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.referencia}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Municipio" for="txtEmisorDomFiscalMun" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.municipio}"/>
+                                <p:inputText id="txtEmisorDomFiscalMun" value="#{oComprobante.emisorSeleccionado.domicilioFiscal.municipio}" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.municipio}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Estado" for="txtEmisorDomFiscalEdo" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.estado}"/>
+                                <p:inputText id="txtEmisorDomFiscalEdo" value="#{oComprobante.emisorSeleccionado.domicilioFiscal.estado}" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.estado}" readonly="true"></p:inputText>
+                                <h:outputLabel value="País" for="txtEmisorDomFiscalPais" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.pais}"/>
+                                <p:inputText id="txtEmisorDomFiscalPais" value="#{oComprobante.emisorSeleccionado.domicilioFiscal.pais}" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.pais}" readonly="true"></p:inputText>
+                                <h:outputLabel value="C.P." for="txtEmisorDomFiscalCP" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.codigoPostal}"/>
+                                <p:inputText id="txtEmisorDomFiscalCP" value="#{oComprobante.emisorSeleccionado.domicilioFiscal.codigoPostal}" rendered="#{not empty oComprobante.emisorSeleccionado.domicilioFiscal.codigoPostal}" readonly="true"></p:inputText>
+                            </h:panelGrid>
+                            <h:outputLabel value="Domicilio de expedición"  style="font-weight:bold;"  rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.pais}"/>
+                            <h:panelGrid columns="6" >
+                                <h:outputLabel value="Calle" for="txtEmisorDomExpCalle" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.calle}"/>
+                                <p:inputText id="txtEmisorDomExpCalle" value="#{oComprobante.emisorSeleccionado.expedidoEn.calle}" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.calle}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Número exterior" for="txtEmisorDomExpNumExt" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.noExterior}"/>
+                                <p:inputText id="txtEmisorDomExpNumExt" value="#{oComprobante.emisorSeleccionado.expedidoEn.noExterior}" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.noExterior}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Número interior" for="txtEmisorDomExpNumInt" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.noInterior}"/>
+                                <p:inputText id="txtEmisorDomExpNumInt" value="#{oComprobante.emisorSeleccionado.expedidoEn.noInterior}" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.noInterior}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Colonia" for="txtEmisorDomExpCol" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.colonia}"/>
+                                <p:inputText id="txtEmisorDomExpCol" value="#{oComprobante.emisorSeleccionado.expedidoEn.colonia}" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.colonia}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Localidad" for="txtEmisorExpLoc" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.localidad}"/>
+                                <p:inputText id="txtEmisorExpLoc" value="#{oComprobante.emisorSeleccionado.expedidoEn.localidad}" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.localidad}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Referencia" for="txtEmisorDomExpRef" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.referencia}"/>
+                                <p:inputText id="txtEmisorDomExpRef" value="#{oComprobante.emisorSeleccionado.expedidoEn.referencia}" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.referencia}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Municipio" for="txtEmisorDomExpMun" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.municipio}"/>
+                                <p:inputText id="txtEmisorDomExpMun" value="#{oComprobante.emisorSeleccionado.expedidoEn.municipio}" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.municipio}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Estado" for="txtEmisorDomExpEdo" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.estado}"/>
+                                <p:inputText id="txtEmisorDomExpEdo" value="#{oComprobante.emisorSeleccionado.expedidoEn.estado}" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.estado}" readonly="true"></p:inputText>
+                                <h:outputLabel value="País" for="txtEmisorDomExpPais" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.pais}"/>
+                                <p:inputText id="txtEmisorDomExpPais" value="#{oComprobante.emisorSeleccionado.expedidoEn.pais}" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.pais}" readonly="true"></p:inputText>
+                                <h:outputLabel value="C.P." for="txtEmisorDomExpCP" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.codigoPostal}"/>
+                                <p:inputText id="txtEmisorDomExpCP" value="#{oComprobante.emisorSeleccionado.expedidoEn.codigoPostal}" rendered="#{not empty oComprobante.emisorSeleccionado.expedidoEn.codigoPostal}" readonly="true"></p:inputText>
+                            </h:panelGrid>
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel header="Receptor" style="margin-bottom:10px;"> 
+                        <h:panelGrid id="busquedaReceptor" columns="4">
+                            Nombre <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                            <p:selectOneMenu id="buscaReceptor" value="#{oComprobante.receptorSeleccionado}" effect="fade" converter="#{oConverterReceptor}"> 
+                                <p:ajax listener="#{oComprobante.validaTipoFactura}"
+                                        update="cmbTipoFact messages datosTipoFactura  consumosSeleccionadosAcumulados conceptosSeleccionadosAcumulados conceptosParaFacturar datosParaFacturar totales panelGridConsumosSeleccionadosAcumulados panelGridConceptosSeleccionadosAcumulados"/>
+                                <f:selectItem itemLabel="Selecciona uno" itemValue="" />
+                                <f:selectItems value="#{oComprobante.receptores}" var="rec" itemLabel="#{rec.nombre}" itemValue="#{rec}"/> 
+                            </p:selectOneMenu>
+                            <p:commandButton value="Buscar"  update="messages datosReceptor" icon="ui-icon-search"/>
+                        </h:panelGrid>
+                        <h:panelGrid id="datosReceptor">
+                            <h:panelGrid columns="6" >
+                                <h:outputLabel value="Nombre" for="txtReceptorNombre" rendered="#{not empty oComprobante.receptorSeleccionado.nombre}"/>
+                                <p:inputText id="txtReceptorNombre" value="#{oComprobante.receptorSeleccionado.nombre}" rendered="#{not empty oComprobante.receptorSeleccionado.nombre}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Correo electrónico" for="txtReceptorCorreo" rendered="#{not empty oComprobante.receptorSeleccionado.correoElectronico}"/>
+                                <p:inputText id="txtReceptorCorreo" value="#{oComprobante.receptorSeleccionado.correoElectronico}" rendered="#{not empty oComprobante.receptorSeleccionado.correoElectronico}" readonly="true"></p:inputText>
+                                <h:outputText value=" " />
+                                <h:outputText value=" " />
+                                <h:outputLabel value="Domicilio fiscal"   style="font-weight:bold;" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.pais}"/>
+                                <h:outputText value=" " />
+                                <h:outputText value=" " />
+                                <h:outputText value=" " />
+                                <h:outputText value=" " />
+                                <h:outputText value=" " />
+                                <h:outputLabel value="Calle" for="txtReceptorDomCalle" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.calle}"/>
+                                <p:inputText id="txtReceptorDomCalle" value="#{oComprobante.receptorSeleccionado.domicilio.calle}" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.calle}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Número exterior" for="txtReceptorDomNumExt" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.noExterior}"/>
+                                <p:inputText id="txtReceptorDomNumExt" value="#{oComprobante.receptorSeleccionado.domicilio.noExterior}" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.noExterior}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Número interior" for="txtReceptorDomNumInt" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.noInterior}"/>
+                                <p:inputText id="txtReceptorDomNumInt" value="#{oComprobante.receptorSeleccionado.domicilio.noInterior}" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.noInterior}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Colonia" for="txtReceptorDomCol" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.colonia}"/>
+                                <p:inputText id="txtReceptorDomCol" value="#{oComprobante.receptorSeleccionado.domicilio.colonia}" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.colonia}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Localidad" for="txtReceptorDomLoc" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.localidad}"/>
+                                <p:inputText id="txtReceptorDomLoc" value="#{oComprobante.receptorSeleccionado.domicilio.localidad}" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.localidad}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Referencia" for="txtReceptorDomRef" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.referencia}"/>
+                                <p:inputText id="txtReceptorDomRef" value="#{oComprobante.receptorSeleccionado.domicilio.referencia}" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.referencia}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Municipio" for="txtReceptorDomMun" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.municipio}"/>
+                                <p:inputText id="txtReceptorDomMun" value="#{oComprobante.receptorSeleccionado.domicilio.municipio}" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.municipio}" readonly="true"></p:inputText>
+                                <h:outputLabel value="Estado" for="txtReceptorDomEdo" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.estado}"/>
+                                <p:inputText id="txtReceptorDomEdo" value="#{oComprobante.receptorSeleccionado.domicilio.estado}" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.estado}" readonly="true"></p:inputText>
+                                <h:outputLabel value="País" for="txtReceptorDomPais" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.pais}"/>
+                                <p:inputText id="txtReceptorDomPais" value="#{oComprobante.receptorSeleccionado.domicilio.pais}" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.pais}" readonly="true"></p:inputText>
+                                <h:outputLabel value="C.P." for="txtReceptorDomCP" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.codigoPostal}"/>
+                                <p:inputText id="txtReceptorDomCP" value="#{oComprobante.receptorSeleccionado.domicilio.codigoPostal}" rendered="#{not empty oComprobante.receptorSeleccionado.domicilio.codigoPostal}" readonly="true"></p:inputText>
+                            </h:panelGrid>
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel header="Datos del comprobante" style="margin-bottom:10px;">     
+                        <h:panelGrid id="datosComprobante" columns="6" > 
+                            <h:outputLabel value="Tipo de comprobante" for="txtTipoComprobante"/>
+                            <h:outputText value=""/>
+                            <p:inputText id="txtTipoComprobante" size="25" value="#{oComprobante.comprobanteCreado.tipoDeComprobante}" readonly="true"></p:inputText>
+                            Serie 
+                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                            <p:selectOneMenu id="series" value="#{oComprobante.comprobanteCreado.serie}"> 
+                                <f:selectItem itemLabel="Selecciona" itemValue="" />
+                                <f:selectItems value="#{oComprobante.seriesPorDocumentoCFDI}" var="serie" itemLabel="#{serie.nombre}" itemValue="#{serie.nombre}"/>
+                            </p:selectOneMenu> 
+                            <h:outputLabel value="Forma de pago" for="txtFormaPago"/>
+                            <h:outputText value=""/>
+                            <p:inputText id="txtFormaPago" value="#{oComprobante.comprobanteCreado.formaDePago}" size="25" readonly="true"></p:inputText>
+                            Método de pago 
+                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                            <p:selectOneMenu value="#{oComprobante.comprobanteCreado.metodoDePago}">  
+                                <f:selectItem itemLabel="Selecciona" itemValue="" />  
+                                <f:selectItem itemLabel="Efectivo" itemValue="Efectivo" />  
+                                <f:selectItem itemLabel="Transferencia electrónica" itemValue="Transferencia electronica" />  
+                                <f:selectItem itemLabel="Tarjeta de crédito" itemValue="Tarjeta de credito" /></p:selectOneMenu>
+                            <h:outputLabel value="Número de cuenta" for="txtNumCta"/>
+                            <h:outputText value=""/>
+                            <p:inputText id="txtNumCta" value="#{oComprobante.comprobanteCreado.numCtaPago}" size="25" ></p:inputText>
+                            Moneda
+                            <h:outputText value=""/>
+                            <p:selectOneMenu value="#{oComprobante.comprobanteCreado.moneda}">  
+                                <f:selectItem itemLabel="Selecciona" itemValue="" />
+                                <f:selectItem itemLabel="Pesos" itemValue="pesos" />  
+                                <f:selectItem itemLabel="Dólares" itemValue="dolares" /></p:selectOneMenu> 
+                            <h:outputLabel value="Lugar de expedición" for="txtLugarExp"/><h:outputText value=" * " style="font-weight:bold;color: red"/>
+                            <p:inputText id="txtLugarExp" value="#{oComprobante.comprobanteCreado.lugarExpedicion}" size="25"></p:inputText>
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel header="Conceptos" style="margin-bottom:10px;">  
+                        <h:panelGrid id="tipoFactura" columns="3">
+                            Tipo de factura 
+                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                            <p:selectOneMenu value="#{oComprobante.tipoFactura}" id="cmbTipoFact">  
+                                <f:selectItem itemLabel="Selecciona"/>
+                                <p:ajax  listener="#{oComprobante.validaTipoFactura}"
+                                    update="cmbTipoFact messages datosTipoFactura consumosSeleccionadosAcumulados conceptosSeleccionadosAcumulados conceptosParaFacturar datosParaFacturar totales panelGridConsumosSeleccionadosAcumulados panelGridConceptosSeleccionadosAcumulados" />
+                                <f:selectItem itemLabel="Crédito-Empresas" itemValue="Credito-Empresas" />
+                                <f:selectItem itemLabel="Pago de paquetes" itemValue="Paquetes" />
+                                <f:selectItem itemLabel="Pago de cuentas" itemValue="Cuentas" />
+                                <f:selectItem itemLabel="Venta al público en general" itemValue="PublicoGral" />  
+                                <f:selectItem itemLabel="Venta al público en general con tarjeta de crédito" itemValue="PublicoGralConTDC" /> 
+                                <f:selectItem itemLabel="Particulares" itemValue="Particulares" />  
+                                <f:selectItem itemLabel="Rentas" itemValue="Rentas" /></p:selectOneMenu> 
+                        </h:panelGrid>
+                        <h:panelGrid id="datosTipoFactura" >
+                            <!--Criterios de búsqueda: por nombre del paciente, por poliza (empresa) y por número de paquete, según sea el caso-->
+                            <h:panelGrid columns="8" >
+                                <h:outputLabel value="Nombre" for="txtNomPaciente" rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3 or oComprobante.tipoFact==4}"/>
+                                <p:inputText id="txtNomPaciente" value="#{oComprobante.nombrePaciente}" rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3 or oComprobante.tipoFact==4}"></p:inputText>
+                                <h:outputLabel value=" " rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3 or oComprobante.tipoFact==4}"/>
+                                <h:outputLabel value="Apellido paterno" for="txtApPatPaciente" rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3 or oComprobante.tipoFact==4}"/>
+                                <p:inputText id="txtApPatPaciente" value="#{oComprobante.apPaternoPaciente}" rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3 or oComprobante.tipoFact==4}"></p:inputText>
+                                <h:outputLabel value=" " rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3 or oComprobante.tipoFact==4}"/>
+                                <h:outputLabel value="Apellido materno" for="txtApMatPaciente" rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3 or oComprobante.tipoFact==4}"/>
+                                <p:inputText id="txtApMatPaciente" value="#{oComprobante.apMaternoPaciente}" rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3 or oComprobante.tipoFact==4}"></p:inputText>
+                                <h:outputLabel value=" " rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3 or oComprobante.tipoFact==4}"/>
+                            </h:panelGrid>
+                            <h:panelGrid columns="3" >
+                                <p:commandButton value="Seleccione un paciente" icon="ui-icon-search"
+                                                 actionListener="#{oComprobante.buscarCuentasPacientesEmpresaPorNombre()}" 
+                                                 update=":formCuentasAElegir:despliegaCuentasAElegir :formulario:messages" oncomplete="dialogCuentas.show()"
+                                                 rendered="#{oComprobante.tipoFact==1}"/>
+                                <p:commandButton value="Todos los conceptos facturables" icon="ui-icon-search"
+                                                 actionListener="#{oComprobante.buscarConceptos()}" 
+                                                 update=":formConceptosAElegir:despliegaConceptosAElegir :formulario:messages" oncomplete="dialogConceptos.show()"
+                                                 rendered="#{oComprobante.tipoFact==1}"/>
+                                <p:commandButton value="Todos los Coaseguros/Deducibles" icon="ui-icon-search"
+                                                 actionListener="#{oComprobante.buscarCoasegurosDeduciblesEmpresa()}" 
+                                                 update=":formConceptosCoasegurosDeduciblesAElegir:despliegaConceptosCoasegurosDeduciblesAElegir :formulario:messages" oncomplete="dialogConceptosCoasegurosDeduciblesEmpresa.show()"
+                                                 rendered="#{oComprobante.tipoFact==1}"/>
+                                <p:commandButton value="Seleccione un paciente de paquete" icon="ui-icon-search"
+                                                 actionListener="#{oComprobante.buscarPaquetesPacientesPorNombre()}" 
+                                                 update=":formCuentasAElegir:despliegaCuentasAElegir :formulario:messages" oncomplete="dialogCuentas.show()"
+                                                 rendered="#{oComprobante.tipoFact==2}"/>
+                                <p:commandButton value="Cuentas" icon="ui-icon-search"
+                                                 actionListener="#{oComprobante.buscarCuentasPacienteParticularPorNombre()}" 
+                                                 update=":formCuentasAElegir:despliegaCuentasAElegir :formulario:messages" oncomplete="dialogCuentas.show()"
+                                                 rendered="#{oComprobante.tipoFact==3}"/>
+                                <p:commandButton value="Buscar paciente" icon="ui-icon-search"
+                                                 actionListener="#{oComprobante.buscarFoliosPacienteParticularPorNombre()}" 
+                                                 update=":formFoliosAElegir:despliegaFoliosAElegir :formulario:messages" oncomplete="dialogFolioParticulares.show()"
+                                                 rendered="#{oComprobante.tipoFact==4}"/>
+                                <p:commandButton value="Conceptos facturables" icon="ui-icon-search"
+                                                 actionListener="#{oComprobante.buscarConceptos()}" 
+                                                 update=":formConceptosAElegir:despliegaConceptosAElegir :formulario:messages" oncomplete="dialogConceptos.show()"
+                                                 rendered="#{oComprobante.tipoFact==5 or oComprobante.tipoFact==6}"/>
+                            </h:panelGrid>
+                        </h:panelGrid>
+                        <h:panelGrid id="panelGridConsumosSeleccionadosAcumulados">
+                            <h:outputLabel value=" " rendered="#{oComprobante.tipoFact==2 or oComprobante.tipoFact==3}"/> 
+                            <h:outputLabel value="Consumos seleccionados"  style="font-weight:bold;" rendered="#{oComprobante.tipoFact==3}"/> 
+                            <h:outputLabel value="Servicios seleccionados contratados en el paquete"  style="font-weight:bold;" rendered="#{oComprobante.tipoFact==2}"/> 
+                            <p:dataTable id="consumosSeleccionadosAcumulados" value="#{oComprobante.consumosSeleccionadosAcumulados}" var="consumoSeleccionadoAcumulado"
+                                         rendered="#{oComprobante.tipoFact==2 or oComprobante.tipoFact==3}">
+                                <p:column style="width:9%">
+                                    <f:facet name="header" >FolioServicio</f:facet>  
+                                    <h:outputText value="#{consumoSeleccionadoAcumulado.folioServicio}" /> 
+                                </p:column>
+                                <p:column style="width:9%">
+                                    <f:facet name="header" >Cantidad</f:facet>  
+                                    <h:outputText value="#{consumoSeleccionadoAcumulado.cantidad}" /> 
+                                </p:column>
+                                <p:column style="width:10%">
+                                    <f:facet name="header" >Unidad</f:facet>  
+                                    <h:outputText value="#{consumoSeleccionadoAcumulado.unidad}" /> 
+                                </p:column>
+                                <p:column style="width:46%">
+                                    <f:facet name="header">Descripción</f:facet>  
+                                    <h:outputText value="#{consumoSeleccionadoAcumulado.descripcion}" /> 
+                                </p:column>
+                                <p:column style="width:15%">
+                                    <f:facet name="header" >Costo unitario</f:facet>  
+                                    <h:outputText value="#{consumoSeleccionadoAcumulado.costoUnitario}" /> 
+                                </p:column>
+                                <p:column style="width:12%">
+                                    <f:facet name="header" >Importe</f:facet>  
+                                    <h:outputText value="#{consumoSeleccionadoAcumulado.importeTotalSinIva}" /> 
+                                </p:column>                
+                            </p:dataTable>
+                        </h:panelGrid>
+                        <h:panelGrid id="panelGridConceptosSeleccionadosAcumulados">
+                            <h:outputLabel value=" " rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3 or oComprobante.tipoFact==6}"/> 
+                            <h:outputLabel value="Conceptos seleccionados"  style="font-weight:bold;" 
+                                           rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3 or oComprobante.tipoFact==6}"/> 
+                            <p:dataTable id="conceptosSeleccionadosAcumulados" value="#{oComprobante.conceptosSeleccionadosAcumulados}" var="conceptoSeleccionadoAcumulado"
+                                         rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3 or oComprobante.tipoFact==6}">
+                                <p:column style="width:8%">
+                                    <f:facet name="header" >Folio</f:facet>  
+                                    <h:outputText value="#{conceptoSeleccionadoAcumulado.folioOC}" /> 
+                                </p:column>
+                                <p:column style="width:9%">
+                                    <f:facet name="header" >Cantidad</f:facet>  
+                                    <h:outputText value="#{conceptoSeleccionadoAcumulado.cantidad}" /> 
+                                </p:column>
+                                <p:column style="width:10%">
+                                    <f:facet name="header" >Unidad</f:facet>  
+                                    <h:outputText value="#{conceptoSeleccionadoAcumulado.unidad}" /> 
+                                </p:column>
+                                <p:column style="width:46%">
+                                    <f:facet name="header">Descripción</f:facet>  
+                                    <h:outputText value="#{conceptoSeleccionadoAcumulado.descripcion}" /> 
+                                </p:column>
+                                <p:column style="width:15%">
+                                    <f:facet name="header" >Costo unitario</f:facet>  
+                                    <h:outputText value="#{conceptoSeleccionadoAcumulado.costoUnitario}" /> 
+                                </p:column>
+                                <p:column style="width:12%">
+                                    <f:facet name="header" >Importe</f:facet>  
+                                    <h:outputText value="#{conceptoSeleccionadoAcumulado.importeTotalSinIva}" /> 
+                                </p:column>                
+                            </p:dataTable>
+                        </h:panelGrid>
+                        <h:panelGrid id="datosParaFacturar" >
+                            <h:outputLabel value=" "/> 
+                            <h:outputLabel value="Conceptos que aparecerán en la factura"  style="font-weight:bold;" />    
+                            <p:dataTable id="conceptosParaFacturar" value="#{oComprobante.conceptosParaFacturar}" var="conceptoParaFacturar">
+                                <p:column style="width:8%">
+                                    <f:facet name="header">Folio</f:facet>  
+                                    <h:outputText value="#{conceptoParaFacturar.folioOC}"/> 
+                                </p:column>
+                                <p:column style="width:9%">
+                                    <f:facet name="header">Cantidad</f:facet>  
+                                    <h:outputText value="#{conceptoParaFacturar.cantidad}"/> 
+                                </p:column>
+                                <p:column style="width:10%">
+                                    <f:facet name="header">Unidad</f:facet>  
+                                    <h:outputText value="#{conceptoParaFacturar.unidad}"/> 
+                                </p:column>
+                                <p:column style="width:40%">
+                                    <f:facet name="header">Descripción</f:facet>  
+                                    <h:outputText value="#{conceptoParaFacturar.descripcion}" /> 
+                                </p:column>
+                                <p:column style="width:15%">
+                                    <f:facet name="header">Valor unitario</f:facet>  
+                                    <h:outputText value="#{conceptoParaFacturar.costoUnitario}" /> 
+                                </p:column>
+                                <p:column style="width:10%">
+                                    <f:facet name="header">Importe</f:facet>  
+                                    <h:outputText value="#{conceptoParaFacturar.importeTotalSinIva}" /> 
+                                </p:column> 
+                                <p:column headerText="Eliminar" style="width:8%" ><p:commandButton value="X" 
+                                                                                                   actionListener="#{oComprobante.eliminarConceptoParaFacturar(conceptoParaFacturar.folioOC)}" 
+                                                                                                   update=":formulario:totales :formulario:conceptosParaFacturar :formulario:consumosSeleccionadosAcumulados :formulario:conceptosSeleccionadosAcumulados :formulario:messages"  /> 
+                                </p:column>
+
+                            </p:dataTable> 
+                        </h:panelGrid>
+                        <h:panelGrid id="totales" columns="2">
+                            <h:outputLabel value="Subtotal" for="txtSubtotal"/>
+                            <p:inputText id="txtSubtotal" value="#{oComprobante.subtotal}"></p:inputText>
+                            <h:outputLabel value="Impuestos trasladados" for="txtImpuestos"/>
+                            <p:inputText id="txtImpuestos" value="#{oComprobante.impuestos}" ></p:inputText>
+                            <h:outputLabel value="Total" for="txtTotal"/>
+                            <p:inputText id="txtTotal" value="#{oComprobante.total}" ></p:inputText>
+                        </h:panelGrid>
+                        <h:outputLabel value="Observaciones" for="txtObservaciones"/>
+                        <p:inputText id="txtObservaciones" value="#{oComprobante.observaciones}" ></p:inputText>
+                        <center>
+                            <p:commandButton value="Vista previa" oncomplete="cfdiDialog.show()" update=":formulario:messages  :formVistaPrevia:rpt" actionListener="#{oComprobante.prepararVistaPrevia()}"/>
+                            <p:commandButton value="Generar factura" 
+                                             oncomplete="dialogEmitirFactura.show()" 
+                                             update=":formulario:messages :formEmitirFactura:generacionFactura" 
+                                             actionListener="#{oComprobante.revisarCFDI()}"/>
+                            <p:commandButton value="Cancelar" update=":formulario:datosEmisor :formulario:datosReceptor :formulario:messages"  actionListener="#{oComprobante.cancelar()}"/>
+                        </center>
+                    </p:panel>    
+                </h:form>
+                <p:dialog header="Factura" appendTo="@(body)" widgetVar="cfdiDialog" 
+                          modal="true" showEffect="fade" hideEffect="fade" 
+                          resizable="true" closable="true">
+                    <h:form id="formVistaPrevia">
+                        <p:scrollPanel mode="native" style="width:90%;height:70%">
+                            <p:panelGrid  id="rpt">
+                                <p:row>
+                                    <p:column style="width:25%;">
+                                        <center><h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="50px"/></center>
+                                    </p:column>
+                                    <p:column colspan="3" style="width:75%;">
+                                        <center>
+                                            <h:outputText value="#{oComprobante.comprobanteResultante.emisor.nombre}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                                            <h:outputText value="#{oComprobante.comprobanteResultante.emisor.rfc}" style="font-weight: bold; text-transform: capitalize; text-transform: capitalize;"/><br/>
+                                            <h:outputText value="DOMICILIO: #{oComprobante.comprobanteResultante.emisor.domCompleto}" style="text-transform: capitalize;"/><br/>
+                                            <h:outputText value="EXPEDIDO EN: #{oComprobante.comprobanteResultante.lugarExpedicion}"/>
+                                        </center>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column colspan="2" style="width:50%;">
+                                        <h:outputText value="CLIENTE" style="font-weight: bold;"/><br/>
+                                        <h:outputText value="Nombre:  "/><br/>
+                                        <h:outputText value="#{oComprobante.comprobanteResultante.receptor.nombre}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                                        <h:outputText value="RFC:  "/><br/>
+                                        <h:outputText value="#{oComprobante.comprobanteResultante.receptor.rfc}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                                        <h:outputText value="DOMICILIO: "/><br/>
+                                        <h:outputText value="#{oComprobante.comprobanteResultante.receptor.domCompleto}" style="font-weight: bold; text-transform: capitalize;"/>
+                                    </p:column>
+                                    <p:column colspan="2" style="width:50%;">
+                                        <h:outputText value="SERIE: #{oComprobante.comprobanteResultante.serie}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                                        <h:outputText value="FOLIO:  #{oComprobante.comprobanteResultante.folio}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                                        <h:outputText value="FOLIO FISCAL: "/><br/>
+                                        <h:outputText value="#{oComprobante.comprobanteResultante.uuid}" style="font-weight: bold"/> <br/>
+                                        <h:outputText value="NO. DE SERIE DEL CERTIFICADO DEL SAT: "/><br/>
+                                        <h:outputText value="#{oComprobante.comprobanteResultante.noCertificadoSAT}" style="font-weight: bold"/> <br/>
+                                        <h:outputText value="FECHA Y HORA DE CERTIFICACIÓN: "/><br/>
+                                        <h:outputText value="#{oComprobante.comprobanteResultante.fechaCertificacion}" style="font-weight: bold"> <br/>
+                                            <f:convertDateTime pattern="dd-MMMM-yyyy HH:mm:ss" timeZone="America/Mexico City"/>
+                                        </h:outputText>
+                                        <h:outputText value="NO. DE SERIE DEL CERTIFICADO DEL EMISOR: "/><br/>
+                                        <h:outputText value="#{oComprobante.comprobanteResultante.noCertificado}" style="font-weight: bold"/> <br/>
+                                        <h:outputText value="FECHA Y HORA DE EMISIÓN: "/><br/>
+                                        <h:outputText value="#{oComprobante.comprobanteResultante.fecha}" style="font-weight: bold"> <br/>
+                                            <f:convertDateTime pattern="dd-MMMM-yyyy HH:mm:ss" timeZone="America/Mexico City" />
+                                        </h:outputText>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column colspan="4">
+                                        <p:dataTable id="conceptosFinales" value="#{oComprobante.conceptosFinalesEnFactura}" var="concepto">
+                                            <p:column style="width:10%">
+                                                <f:facet name="header">Cantidad</f:facet>  
+                                                <h:outputText value="#{concepto.cantidad}"/> 
+                                            </p:column>
+                                            <p:column style="width:10%">
+                                                <f:facet name="header">Unidad</f:facet>  
+                                                <h:outputText value="#{concepto.unidad}"/> 
+                                            </p:column>
+                                            <p:column style="width:50%">
+                                                <f:facet name="header">Descripción</f:facet>  
+                                                <h:outputText value="#{concepto.descripcion}" /> 
+                                            </p:column>
+                                            <p:column style="width:15%">
+                                                <f:facet name="header">Valor unitario</f:facet>  
+                                                <h:outputText value="#{concepto.costoUnitario}"/> 
+                                            </p:column>
+                                            <p:column style="width:15%">
+                                                <f:facet name="header">Importe</f:facet>  
+                                                <h:outputText value="#{concepto.importeTotalSinIva}" /> 
+                                            </p:column> 
+                                        </p:dataTable> 
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column colspan="2" style="width:50%;">
+                                        <h:outputLabel value="EFECTOS FISCALES AL PAGO"/><br/>
+                                        <h:outputLabel value="FORMA DE PAGO:"/><br/>
+                                        <h:outputLabel value="#{oComprobante.comprobanteResultante.formaDePago}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                                        <h:outputLabel value="MÉTODO DE PAGO:"/><br/>
+                                        <h:outputLabel value="#{oComprobante.comprobanteResultante.metodoDePago}" style="font-weight: bold; text-transform: capitalize;"/><br/>
+                                        <h:outputLabel value="#{oComprobante.cantidadLetra}"/><br/>
+                                    </p:column>
+                                    <p:column colspan="2" style="width:50%;">
+                                        <p:panelGrid columns="2" style=" float: right;">
+                                            <h:outputLabel value="GRAVADO"/>
+                                            <h:outputLabel value="#{oComprobante.subtotalGravadoFinal}"/>
+                                            <h:outputLabel value="EXENTO"/>
+                                            <h:outputLabel value="#{oComprobante.subtotalNoGravadoFinal}"/>
+                                            <h:outputLabel value="SUBTOTAL"/>
+                                            <h:outputLabel value="#{oComprobante.subtotalFinal}"/>
+                                            <h:outputLabel value="IMPUESTOS"/>
+                                            <h:outputLabel value="#{oComprobante.impuestosFinal}"/>
+                                            <h:outputLabel value="TOTAL"/>
+                                            <h:outputLabel value="#{oComprobante.totalFinal}"/>
+                                        </p:panelGrid>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column style="width:25%;">
+                                        <h:graphicImage style="  alignment-baseline:  central" url="#{oComprobante.dirCodigoQR}"  height="50px"/>
+                                    </p:column >
+                                    <p:column colspan="3" style="width:75%;">
+                                        CADENA ORIGINAL DEL COMPLEMENTO DIGITAL DEL SAT:<br/>
+                                        <p:inputTextarea  style="width: 70%;white-space: normal" readonly="true" rows="3"   value="#{oComprobante.comprobanteResultante.cadenaOriginal}"/><br/>
+                                        SELLO DIGITAL DEL EMISOR:<br/>
+                                        <p:inputTextarea  style="width: 70%;white-space: normal" readonly="true" rows="3"   value="#{oComprobante.comprobanteResultante.sello}"/><br/>
+                                        SELLO DIGITAL DEL SAT:<br/>
+                                        <p:inputTextarea  style="width: 70%;white-space: normal" readonly="true" rows="3"   value="#{oComprobante.comprobanteResultante.selloSAT}"/><br/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column colspan="4">
+                                        <center>
+                                            <p:outputLabel value="Este documento es una representación impresa de un CFDI."/><br/>
+                                            <p:outputLabel value="La reproducción no autorizada de este comprobante constituye un delito en los términos de las disposiciones fiscales."/><br/>
+                                        </center>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            <h:panelGrid columns="2" style=" float: right;">
+                                <p:button outcome="emitirFactura.xhtml?faces-redirect=true" value="Regresar"  />  
+                                <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" >  
+                                    <p:printer target="rpt" />  
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </p:scrollPanel>
+                    </h:form>
+                </p:dialog>
+
+
+                <!--Despliega los conceptos facturables y la edición de estos (agregando, agrupando, etc.-->
+                <p:dialog id="idDialogConceptos" appendTo="@(body)" 
+                          widgetVar="dialogConceptos" resizable="true" 
+                          showEffect="fade" 
+                          hideEffect="explode" modal="true"> 
+                    <h:form id="formConceptosAElegir">
+                        <h:panelGrid id="despliegaConceptosAElegir"> 
+                            <!--Con los conceptos que vaya a elegir, puede hacer 3 cosas distintas: elegir y agregar uno sólo, elegir uno y agregar varios, elegir muchos y agruparlos-->
+                            <p:selectOneRadio required="true" label="Acción" id="radioAccionConceptos" value="#{oComprobante.accionConceptos}" 
+                                              rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3}">
+                                <p:ajax update=":formConceptosAElegir:detalleCFDI :formConceptosAElegir:despliegaConceptosAElegir"/>
+                                <f:selectItem itemLabel="Agregar uno" itemValue="1"/>
+                                <f:selectItem itemLabel="Agregar más de uno" itemValue="4"/>
+                                <f:selectItem itemLabel="Agrupar" itemValue="3"/>
+                            </p:selectOneRadio >  
+                            <!--Despliega los conceptos facturables que puede elegir el usuario-->
+                            <h:panelGrid columns="2">
+                                <p:dataTable id="conceptosConsultados" value="#{oComprobante.conceptosTodosConsultados}"  
+                                             var="conceptoConsultado" rowKey="#{conceptoConsultado.folioOC}" paginatorPosition="bottom" paginator="true" rows="5" 
+                                             selection="#{oComprobante.conceptosSeleccionados}">
+                                    <p:column selectionMode="multiple" > <f:facet name="header"> Facturar</f:facet></p:column>
+                                    <p:column headerText="Folio" style="width:10%">#{conceptoConsultado.folioOC}</p:column>
+                                    <p:column headerText="Cantidad" style="width:10%">#{conceptoConsultado.cantidad}</p:column>
+                                    <p:column headerText="Unidad" style="width:10%">#{conceptoConsultado.unidad}</p:column>
+                                    <p:column headerText="Descripción" style="width:46%">#{conceptoConsultado.descripcion}</p:column>  
+                                    <p:column headerText="Costo unitario" style="width:15%">#{conceptoConsultado.costoUnitario}</p:column>
+                                </p:dataTable>
+
+                            </h:panelGrid>
+                            <!-- Funciona para particulares, público en general y rentas, estos se agregan uno a uno a la factura-->
+
+                            <p:commandButton value="Agregar" actionListener="#{oComprobante.agregarConceptosSeleccionados()}" update=":formConceptosAElegir:conceptosConsultados 
+                                             :formulario:conceptosParaFacturar :formulario:conceptosSeleccionadosAcumulados :formConceptosAElegir:despliegaConceptosAElegir :formulario:totales" 
+                                             rendered="#{oComprobante.tipoFact==4 or oComprobante.tipoFact==5 or oComprobante.tipoFact==6}"/>
+
+                            <!-- Funciona para los casos de pago de cuentas de particulares, pago de paquetes, pago de cuentas de empresas-->
+                            <!--Edición de conceptos, con tal descripción van a aparecer en la factura-->
+                            <h:panelGrid columns="13">
+                                <h:outputLabel value="Cantidad" for="txtCantidad" 
+                                               rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3)}"/>
+                                <h:outputText value=" * " style="font-weight:bold;color: red" 
+                                              rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3)}"/>
+                                <p:inputText id="txtCantidad" value="#{oComprobante.cantidadDetalleCFDI}" 
+                                             rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2  or oComprobante.tipoFact==3) }"></p:inputText>
+                                <h:outputLabel value="Unidad" for="txtUnidad" 
+                                               rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3)}"/>
+                                <h:outputText value=" * " style="font-weight:bold;color: red" 
+                                              rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3)}"/>
+                                <p:selectOneMenu value="#{oComprobante.unidadDetalleCFDI}" rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2  or oComprobante.tipoFact==3) }">  
+                                    <f:selectItem itemLabel="Selecciona" itemValue="" />  
+                                    <f:selectItem itemLabel="Centímetros" itemValue="cms" />  
+                                    <f:selectItem itemLabel="Kilogramos" itemValue="kgs" />  
+                                    <f:selectItem itemLabel="Litros" itemValue="ls" />
+                                    <f:selectItem itemLabel="Metros cúbicos" itemValue="m3" />
+                                    <f:selectItem itemLabel="Miligramos" itemValue="mg" />
+                                    <f:selectItem itemLabel="Milímetros" itemValue="mms" />
+                                    <f:selectItem itemLabel="No Aplica" itemValue="NA" />
+                                    <f:selectItem itemLabel="Tanque" itemValue="tq" />
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Descripción" for="txtDescripcion" 
+                                               rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3)}"/>
+                                <h:outputText value=" * " style="font-weight:bold;color: red"
+                                              rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3)}"/>
+                                <p:inputText id="txtDescripcion" value="#{oComprobante.descripcionDetalleCFDI}" 
+                                             rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2  or oComprobante.tipoFact==3) }"></p:inputText>
+                                <h:outputLabel value="Monto" for="txtMonto" 
+                                               rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3) }"/>
+                                <h:outputText value=" * " style="font-weight:bold;color: red"
+                                              rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3) }"/>
+                                <p:inputText id="txtMonto" value="#{oComprobante.montoDetalleCFDI}" 
+                                             rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2  or oComprobante.tipoFact==3)}"></p:inputText>
+                                <p:commandButton value="+" actionListener="#{oComprobante.agregarDetalleCFDI}" 
+                                                 update=":formConceptosAElegir:detalleCFDI :formConceptosAElegir:txtCantidad
+                                                 :formConceptosAElegir:txtDescripcion :formConceptosAElegir:txtMonto :formulario:messages" 
+                                                 rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3) and oComprobante.accionConceptos==4}"/>
+                            </h:panelGrid> 
+                            <!--De esta tabla se agregarán en caso de que ponga más de un detalle de cfdi para un solo concepto-->
+                            <p:dataTable id="detalleCFDI" var="concepto" value="#{oComprobante.variasLineasUnConceptoDeServicio.detallesCFDI}" rowKey="#{concepto.id}"
+                                         rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3) and oComprobante.accionConceptos==4}">
+                                <p:column headerText="Id"><h:outputText value="#{concepto.id}" /> </p:column>
+                                <p:column headerText="Cantidad"><h:outputText value="#{concepto.cant}" /></p:column>
+                                <p:column headerText="Descripción"><h:outputText value="#{concepto.descrip}" /></p:column>
+                                <p:column headerText="Monto"><h:outputText value="#{concepto.monto}" /></p:column>
+                                <p:column headerText="Eliminar"><p:commandButton value="X" actionListener="#{oComprobante.eliminarDetalleCFDI(concepto.id)}" 
+                                                                                 update=":formConceptosAElegir:detalleCFDI" 
+                                                                                 rendered="#{oComprobante.accionConceptos==4}"/> </p:column>
+                            </p:dataTable>
+                            <center>
+                                <p:commandButton value="Agregar uno" actionListener="#{oComprobante.agregarUnConceptoSeleccionadoConUnDetalleCFDI()}" 
+                                                 update=":formulario:messages :formConceptosAElegir:conceptosConsultados :formulario:conceptosParaFacturar 
+                                                 :formulario:conceptosSeleccionadosAcumulados :formulario:totales :formConceptosAElegir:despliegaConceptosAElegir" 
+                                                 rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3 ) and oComprobante.accionConceptos==1}"/>
+                                <p:commandButton value="Agregar más de uno" actionListener="#{oComprobante.agregarUnConceptoConVariosDetallesCFDI()}" 
+                                                 update=":formulario:messages :formConceptosAElegir:conceptosConsultados :formulario:conceptosParaFacturar  
+                                                 :formulario:conceptosSeleccionadosAcumulados :formulario:totales :formConceptosAElegir:detalleCFDI :formConceptosAElegir:despliegaConceptosAElegir" 
+                                                 rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3) and oComprobante.accionConceptos==4}"/>      
+                                <p:commandButton value="Agrupar" actionListener="#{oComprobante.agruparVariosConceptosSeleccionadosEnUnDetalleCFDI()}" 
+                                                 update=":formulario:messages :formConceptosAElegir:conceptosConsultados :formulario:conceptosParaFacturar 
+                                                 :formulario:conceptosSeleccionadosAcumulados :formulario:totales :formConceptosAElegir:despliegaConceptosAElegir" 
+                                                 rendered="#{(oComprobante.tipoFact==1 or oComprobante.tipoFact==2 or oComprobante.tipoFact==3) and oComprobante.accionConceptos==3}"/>
+                            </center>
+                        </h:panelGrid>
+                    </h:form>
+                </p:dialog> 
+
+                <p:dialog id="idDialogCuentas" appendTo="@(body)" 
+                          widgetVar="dialogCuentas" resizable="true" 
+                          showEffect="fade" 
+                          hideEffect="explode" modal="true"> 
+                    <h:form id="formCuentasAElegir">
+                        <h:panelGrid id="despliegaCuentasAElegir">
+                            <p:dataTable id="cuentasConsultadas" value="#{oComprobante.cuentasPacientesPorNombre}"  
+                                         var="cuentaConsultada" paginator="true" rows="5" rowKey="#{cuentaConsultada.cveEpisodio}"
+                                         selection="#{oComprobante.cuentaPacienteSeleccionado}">
+                                <p:column selectionMode="single" > <f:facet name="header"> Elegir cuenta</f:facet></p:column>
+                                <p:column headerText="Paquete" style="width:7%" rendered="#{oComprobante.tipoFact==2}">#{cuentaConsultada.numPaquete}</p:column>
+                                <p:column headerText="Episodio médico" style="width:7%">#{cuentaConsultada.cveEpisodio}</p:column>
+                                <p:column headerText="Fecha de inicio" style="width:18%">#{cuentaConsultada.diaInicioCuenta}</p:column>
+                                <p:column headerText="Folio del paciente" style="width:10%">#{cuentaConsultada.folioPaciente}</p:column>
+                                <p:column headerText="Paciente" style="width:24%">#{cuentaConsultada.nombreCompleto}</p:column> 
+                                <p:column headerText="Fecha de nacimiento" style="width:18%">#{cuentaConsultada.diaNacimiento}</p:column>
+                                <p:column headerText="CURP" style="width:18%">#{cuentaConsultada.curp}</p:column>
+                                <f:facet name="footer">
+                                    <p:commandButton value="Conceptos facturables" 
+                                                     actionListener="#{oComprobante.buscarConceptosCuentasEmpresa()}" 
+                                                     update=":formConceptosAElegir:despliegaConceptosAElegir :formulario:messages"  oncomplete="dialogConceptos.show()"
+                                                     rendered="#{oComprobante.tipoFact==1}"/>
+                                    <p:commandButton value="Coaseguros/Deducibles" icon="ui-icon-search"
+                                                     actionListener="#{oComprobante.buscarCoasegurosDeduciblesCuentasEmpresas()}" 
+                                                     update=":formConceptosCoasegurosDeduciblesAElegir:despliegaConceptosCoasegurosDeduciblesAElegir :formulario:messages" oncomplete="dialogConceptosCoasegurosDeduciblesEmpresa.show()"
+                                                     rendered="#{oComprobante.tipoFact==1}"/>
+                                    <p:commandButton value="Mostrar conceptos facturables" 
+                                                     actionListener="#{oComprobante.buscarConceptosPaquetes()}"
+                                                     update=":formConceptosAElegirCuentasPaquetes:despliegaConceptosAElegirCuentasPaquetes :formulario:messages :formulario:datosTipoFactura " oncomplete="dialogConceptosCuentasPaquetes.show()"
+                                                     rendered="#{oComprobante.tipoFact==2}"/>
+                                    <p:commandButton value="Mostrar conceptos facturables" 
+                                                     actionListener="#{oComprobante.buscarConceptosCuentasParticulares()}" 
+                                                     update=":formConceptosAElegirCuentasPaquetes:despliegaConceptosAElegirCuentasPaquetes :formulario:messages :formulario:datosTipoFactura " oncomplete="dialogConceptosCuentasPaquetes.show()"
+                                                     rendered="#{oComprobante.tipoFact==3}"/>
+                                    <p:commandButton value="Coaseguros/Deducibles" icon="ui-icon-search"
+                                                     actionListener="#{oComprobante.buscarCoasegurosDeduciblesCuentasParticulares()}" 
+                                                     update=":formConceptosCoasegurosDeduciblesAElegir:despliegaConceptosCoasegurosDeduciblesAElegir :formulario:messages" oncomplete="dialogConceptosCoasegurosDeduciblesEmpresa.show()"
+                                                     rendered="#{oComprobante.tipoFact==3}"/>
+                                </f:facet>
+                            </p:dataTable>
+
+                        </h:panelGrid>
+                    </h:form>
+                </p:dialog>
+                <p:dialog id="idDialogFolios" appendTo="@(body)" 
+                          widgetVar="dialogFolioParticulares" 
+                          resizable="true" showEffect="fade" 
+                          hideEffect="explode" modal="true"> 
+                    <h:form id="formFoliosAElegir">
+                        <h:panelGrid id="despliegaFoliosAElegir">
+                            <center>
+                                <p:selectOneRadio label="Obtener conceptos por:" id="radioTipoBusquedaParticulares" value="#{oComprobante.tipoBusquedaParticulares}">
+                                    <f:selectItem itemLabel="Por nombre general" itemValue="general"/>
+                                    <f:selectItem itemLabel="Por nombre de servicio" itemValue="servicio"/>
+                                </p:selectOneRadio >
+                            </center>
+                            <p:dataTable id="cuentasConsultadas" value="#{oComprobante.cuentasPacientesPorNombre}"  
+                                         var="cuentaConsultada" paginator="true" rows="5" rowKey="#{cuentaConsultada.folioPaciente}"
+                                         selection="#{oComprobante.cuentaPacienteSeleccionado}">
+                                <p:column selectionMode="single" > <f:facet name="header"> Elegir paciente</f:facet></p:column>
+                                <p:column headerText="Folio del paciente" style="width:20%">#{cuentaConsultada.folioPaciente}</p:column>
+                                <p:column headerText="Paciente" style="width:31%">#{cuentaConsultada.nombreCompleto}</p:column> 
+                                <p:column headerText="Fecha de nacimiento" style="width:22%">#{cuentaConsultada.diaNacimiento}</p:column>
+                                <p:column headerText="CURP" style="width:22%">#{cuentaConsultada.curp}</p:column>
+                                <f:facet name="footer">
+                                    <p:commandButton value="Mostrar conceptos facturables part" icon="ui-icon-search"
+                                                     actionListener="#{oComprobante.buscarConceptosPacientesParticulares()}" 
+                                                     update=":formConceptosAElegir:despliegaConceptosAElegir :formulario:datosTipoFactura :formulario:messages" oncomplete="dialogConceptos.show()"/>
+                                </f:facet>
+                            </p:dataTable>
+
+                        </h:panelGrid>
+                    </h:form>
+                </p:dialog>  
+                <!--Despliega los conceptos facturables y la edición de estos (agregando, agrupando, etc.-->
+                <p:dialog id="idDialogConceptosCoasegurosDeduciblesEmpresa" appendTo="@(body)" widgetVar="dialogConceptosCoasegurosDeduciblesEmpresa" resizable="false" showEffect="fade" 
+                          hideEffect="explode" modal="true"> 
+                    <h:form id="formConceptosCoasegurosDeduciblesAElegir">
+                        <h:panelGrid id="despliegaConceptosCoasegurosDeduciblesAElegir"> 
+                            <!--Despliega los conceptos facturables que puede elegir el usuario-->
+                            <p:dataTable id="conceptosCoasegurosDeduciblesConsultados" value="#{oComprobante.conceptosTodosConsultados}"  
+                                         var="conceptoConsultado" rowKey="#{conceptoConsultado.folioOC}" paginatorPosition="bottom" paginator="true" rows="5" 
+                                         selection="#{oComprobante.conceptoSeleccionado}">
+                                <p:column selectionMode="single" > <f:facet name="header"> Facturar</f:facet></p:column>
+                                <p:column headerText="Folio" style="width:10%">#{conceptoConsultado.folioOC}</p:column>
+                                <p:column headerText="Cantidad" style="width:10%">#{conceptoConsultado.cantidad}</p:column>
+                                <p:column headerText="Unidad" style="width:10%">#{conceptoConsultado.unidad}</p:column>
+                                <p:column headerText="Descripción" style="width:46%">#{conceptoConsultado.descripcion}</p:column>  
+                                <p:column headerText="Costo unitario" style="width:15%">#{conceptoConsultado.costoUnitario}</p:column>
+                            </p:dataTable>
+                            <center>
+                                <p:commandButton value="Agregar" actionListener="#{oComprobante.agregarCoaseguroDeducible()}" update=":formConceptosCoasegurosDeduciblesAElegir:conceptosCoasegurosDeduciblesConsultados 
+                                                 :formulario:conceptosParaFacturar :formulario:conceptosSeleccionadosAcumulados :formConceptosCoasegurosDeduciblesAElegir:despliegaConceptosCoasegurosDeduciblesAElegir :formulario:totales :formulario:messages" 
+                                                 rendered="#{oComprobante.tipoFact==1 or oComprobante.tipoFact==3}"/>
+                            </center>
+                        </h:panelGrid>
+                    </h:form>
+                </p:dialog>
+                <!--Despliega los conceptos facturables y la edición de estos (agregando, agrupando, etc.-->
+                <p:dialog id="idDialogConceptosCuentasPaquetes" appendTo="@(body)" widgetVar="dialogConceptosCuentasPaquetes" resizable="false" showEffect="fade" 
+                          hideEffect="explode" modal="true"> 
+                    <h:form id="formConceptosAElegirCuentasPaquetes">
+                        <h:panelGrid id="despliegaConceptosAElegirCuentasPaquetes"> 
+                            <h:panelGrid columns="2">
+                                <p:panel>
+                                    <h:outputText value="Seleccione los conceptos a facturar" style="font-weight:bold;"/>  
+                                    <p:selectOneRadio required="true" label="Acción" id="radioAccionConceptosCuentasPaquetes" value="#{oComprobante.accionConceptos}">
+                                        <p:ajax update=":formConceptosAElegirCuentasPaquetes:detalleCFDICuentasPaquetes :formConceptosAElegirCuentasPaquetes:despliegaConceptosAElegirCuentasPaquetes"/>
+                                        <f:selectItem itemLabel="Agregar uno" itemValue="1"/>
+                                        <f:selectItem itemLabel="Agregar más de uno" itemValue="4"/>
+                                        <f:selectItem itemLabel="Agrupar" itemValue="3"/>
+                                    </p:selectOneRadio >
+                                    <p:dataTable id="pagosCuentasPaquetes" value="#{oComprobante.conceptosTodosConsultados}"  
+                                                 var="conceptoConsultado" rowKey="#{conceptoConsultado.folioOC}" paginatorPosition="bottom" paginator="true" rows="3" 
+                                                 selection="#{oComprobante.conceptosSeleccionados}">
+                                        <p:column selectionMode="multiple" > <f:facet name="header"> Facturar</f:facet></p:column>
+                                        <p:column headerText="Folio" style="width:10%">#{conceptoConsultado.folioOC}</p:column>
+                                        <p:column headerText="Cantidad" style="width:10%">#{conceptoConsultado.cantidad}</p:column>
+                                        <p:column headerText="Unidad" style="width:10%">#{conceptoConsultado.unidad}</p:column>
+                                        <p:column headerText="Descripción" style="width:46%">#{conceptoConsultado.descripcion}</p:column>  
+                                        <p:column headerText="Costo unitario" style="width:15%">#{conceptoConsultado.costoUnitario}
+
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </p:panel>
+                                <p:panel>
+                                    <h:outputText value="Seleccione los consumos que desee relacionar" style="font-weight:bold;" rendered="#{oComprobante.tipoFact==3}"/>
+                                    <h:outputText value="Seleccione los derechos de paquete que desee relacionar" style="font-weight:bold;" rendered="#{oComprobante.tipoFact==2}"/>
+
+                                    <p:dataTable id="consumosDerechosPaquetes" value="#{oComprobante.conceptosPaquetesCuentas}"  
+                                                 var="conceptoConsultado" rowKey="#{conceptoConsultado.secOCC}#{conceptoConsultado.folioOC}" paginatorPosition="bottom" paginator="true" rows="3" 
+                                                 selection="#{oComprobante.contratosSeleccionados}" rendered="#{oComprobante.tipoFact==2}">
+                                        <p:column selectionMode="multiple"> <f:facet name="header"> Facturar</f:facet></p:column>
+                                        <p:column headerText="Secuencia" style="width:10%">#{conceptoConsultado.secOCC}</p:column>
+                                        <p:column headerText="Folio" style="width:10%">#{conceptoConsultado.folioOC}</p:column>
+                                        <p:column headerText="Cantidad" style="width:10%">#{conceptoConsultado.cantidad}</p:column>
+                                        <p:column headerText="Unidad" style="width:10%">#{conceptoConsultado.unidad}</p:column>
+                                        <p:column headerText="Descripción" style="width:46%">#{conceptoConsultado.descripcion}</p:column>  
+                                        <p:column headerText="Costo unitario" style="width:15%">#{conceptoConsultado.costoUnitario}</p:column>
+                                    </p:dataTable>
+                                    <p:dataTable id="consumosCuentas" value="#{oComprobante.conceptosPaquetesCuentas}"  
+                                                 var="conceptoConsultado" rowKey="#{conceptoConsultado.folioServicio}" paginatorPosition="bottom" paginator="true" rows="3" 
+                                                 selection="#{oComprobante.consumosSeleccionados}" rendered="#{oComprobante.tipoFact==3}">
+                                        <p:column selectionMode="multiple"> <f:facet name="header"> Facturar</f:facet></p:column>
+                                        <p:column headerText="FolioServ" style="width:10%">#{conceptoConsultado.folioServicio}</p:column>
+                                        <p:column headerText="Cantidad" style="width:10%">#{conceptoConsultado.cantidad}</p:column>
+                                        <p:column headerText="Unidad" style="width:10%">#{conceptoConsultado.unidad}</p:column>
+                                        <p:column headerText="Descripción" style="width:46%">#{conceptoConsultado.descripcion}</p:column>  
+                                        <p:column headerText="Costo unitario" style="width:15%">#{conceptoConsultado.costoUnitario}</p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </h:panelGrid>
+                            <!--Edición de conceptos, con tal descripción van a aparecer en la factura-->
+                            <p:panel>
+                                <h:outputText value="Indique la forma en que desea que los conceptos aparezcan en la factura" style="font-weight:bold;"/>
+                                <h:panelGrid columns="13">
+                                    <h:outputLabel value="Cantidad" for="txCantidad" />
+                                    <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    <p:inputText id="txCantidad" value="#{oComprobante.cantidadDetalleCFDI}" ></p:inputText>
+                                    <h:outputLabel value="Unidad"/>
+                                    <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    <p:selectOneMenu id="txtUnidad" value="#{oComprobante.unidadDetalleCFDI}">  
+                                        <f:selectItem itemLabel="Selecciona" itemValue="" />  
+                                        <f:selectItem itemLabel="Centímetros" itemValue="cms" />  
+                                        <f:selectItem itemLabel="Kilogramos" itemValue="kgs" />  
+                                        <f:selectItem itemLabel="Litros" itemValue="ls" />
+                                        <f:selectItem itemLabel="Metros cúbicos" itemValue="m3" />
+                                        <f:selectItem itemLabel="Miligramos" itemValue="mg" />
+                                        <f:selectItem itemLabel="Milímetros" itemValue="mms" />
+                                        <f:selectItem itemLabel="No Aplica" itemValue="NA" />
+                                        <f:selectItem itemLabel="Tanque" itemValue="tq" />
+                                    </p:selectOneMenu>
+                                    <h:outputLabel value="Descripción" for="txDescripcion" />
+                                    <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    <p:inputText id="txDescripcion" value="#{oComprobante.descripcionDetalleCFDI}"/>
+                                    <h:outputLabel value="Monto" for="txMonto" rendered="#{oComprobante.tipoFact==1 or oComprobante.accionConceptos==4}"/>
+                                    <h:outputText value=" * " style="font-weight:bold;color: red" rendered="#{oComprobante.tipoFact==1 or oComprobante.accionConceptos==4}"/>
+                                    <p:inputText id="txMonto" value="#{oComprobante.montoDetalleCFDI}" rendered="#{oComprobante.tipoFact==1 or oComprobante.accionConceptos==4}"/>
+                                    <p:commandButton value="+" actionListener="#{oComprobante.agregarDetalleCFDI}" 
+                                                     update=":formConceptosAElegirCuentasPaquetes:detalleCFDICuentasPaquetes :formConceptosAElegirCuentasPaquetes:txCantidad 
+                                                     :formConceptosAElegirCuentasPaquetes:txDescripcion :formConceptosAElegirCuentasPaquetes:txMonto :formulario:messages" 
+                                                     rendered="#{oComprobante.accionConceptos==4}"/>
+
+                                </h:panelGrid> 
+                                <!--De esta tabla se agregarán en caso de que ponga más de un detalle de cfdi para un solo concepto-->
+                                <p:dataTable id="detalleCFDICuentasPaquetes" var="concepto" value="#{oComprobante.variasLineasUnConceptoDeServicio.detallesCFDI}" rowKey="#{concepto.id}"
+                                             rendered="#{oComprobante.accionConceptos==4}">
+                                    <p:column headerText="Id"><h:outputText value="#{concepto.id}" /> </p:column>
+                                    <p:column headerText="Cantidad"><h:outputText value="#{concepto.cant}" /></p:column>
+                                    <p:column headerText="Descripción"><h:outputText value="#{concepto.descrip}" /></p:column>
+                                    <p:column headerText="Monto"><h:outputText value="#{concepto.monto}" /></p:column>
+                                        #{conceptoConsultado.costoUnitario}
+                                    <p:column headerText="Eliminar"><p:commandButton value="X" actionListener="#{oComprobante.eliminarDetalleCFDI(concepto.id)}" 
+                                                                                     update=":formConceptosAElegirCuentasPaquetes:detalleCFDICuentasPaquetes" 
+                                                                                     rendered="#{oComprobante.accionConceptos==4}"/> </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                            <center>
+                                <p:commandButton value="Agregar uno" actionListener="#{oComprobante.agregarUnConceptoSeleccionadoConUnDetalleCFDI()}" 
+                                                 update=":formulario:messages :formConceptosAElegirCuentasPaquetes:pagosCuentasPaquetes :formulario:conceptosParaFacturar 
+                                                 :formulario:consumosSeleccionadosAcumulados :formulario:conceptosSeleccionadosAcumulados :formulario:totales :formConceptosAElegirCuentasPaquetes:despliegaConceptosAElegirCuentasPaquetes" 
+                                                 rendered="#{oComprobante.accionConceptos==1}"/>
+                                <p:commandButton value="Agregar más de uno" actionListener="#{oComprobante.agregarUnConceptoConVariosDetallesCFDI()}" 
+                                                 update=":formulario:messages :formConceptosAElegirCuentasPaquetes:pagosCuentasPaquetes :formulario:conceptosParaFacturar  
+                                                 :formulario:consumosSeleccionadosAcumulados :formulario:conceptosSeleccionadosAcumulados :formulario:totales :formConceptosAElegirCuentasPaquetes:detalleCFDICuentasPaquetes :formConceptosAElegirCuentasPaquetes:despliegaConceptosAElegirCuentasPaquetes" 
+                                                 rendered="#{oComprobante.accionConceptos==4}"/>      
+                                <p:commandButton value="Agrupar" actionListener="#{oComprobante.agruparVariosConceptosSeleccionadosEnUnDetalleCFDI()}" 
+                                                 update=":formulario:messages :formConceptosAElegirCuentasPaquetes:pagosCuentasPaquetes :formulario:conceptosParaFacturar 
+                                                 :formulario: :formulario:consumosSeleccionadosAcumulados :formulario:conceptosSeleccionadosAcumulados :formulario:totales :formConceptosAElegirCuentasPaquetes:despliegaConceptosAElegirCuentasPaquetes" 
+                                                 rendered="#{oComprobante.accionConceptos==3}"/>
+                            </center>
+                        </h:panelGrid>
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog id="idDialogEmitirFactura" appendTo="@(body)" widgetVar="dialogEmitirFactura" resizable="true" showEffect="fade" hideEffect="explode" modal="true"> 
+                    <h:form id="formEmitirFactura">
+                        <h:panelGrid  columns="2" id="generacionFactura">
+                            <h:outputLabel value="Contraseña del CSD" for="txtContrasenia"/>
+                            <p:inputText id="txtContrasenia" value="#{oComprobante.emisorSeleccionado.contrasenia}"></p:inputText>
+                            <p:commandButton value="Facturar" actionListener="#{oComprobante.generarFactura()}" icon="ui-icon-print"
+                                             update=":formulario:messages
+                                             :formulario:busquedaEmisor :formulario:datosEmisor 
+                                             :formulario:busquedaReceptor :formulario:datosReceptor 
+                                             :formulario:datosComprobante 
+                                             :formulario:tipoFactura :formulario:datosTipoFactura 
+                                             :formulario:panelGridConsumosSeleccionadosAcumulados
+                                             :formulario:panelGridConceptosSeleccionadosAcumulados 
+                                             :formulario:datosParaFacturar
+                                             :formulario:totales 
+                                             :formVistaPrevia:rpt"  
+                                             oncomplete="cfdiDialog.show()"
+                                             rendered="#{oComprobante.comprobanteValido==true}"></p:commandButton>
+                        </h:panelGrid>
+                    </h:form>
+                </p:dialog>
+            </h:body>
+        </ui:define> 
+    </ui:composition>
+</html>

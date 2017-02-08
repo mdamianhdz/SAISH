@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Consultar Detalle Corte de Caja por Forma de Pago</title>
+            <h:body>
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    
+                    <center>
+                        <h2>Consultar Detalle de Corte de Caja por Forma de Pago</h2>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column><!--Fecha-->
+                                    <p:outputLabel value="Fecha:" style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column colspan="3">&nbsp;&nbsp;
+                                    <p:calendar value="#{oConsFrmPago.fechaCorte}" showOn="button">
+                                        <p:ajax event="dateSelect"/>
+                                    </p:calendar>&nbsp;&nbsp;al&nbsp;&nbsp;
+                                </p:column>
+                                <p:column><!--Escoger Forma Pago-->
+                                    <h:outputText style="font-weight: bold;" value="Forma de Pago: " />
+                                    <p:selectOneMenu required="true" requiredMessage="Se requiere una Forma de Pago" 
+                                                     value="#{oConsFrmPago.forma}">
+                                        <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                        <f:selectItems value="#{oFormaDePago.formasDePago}" var="dFP"  itemLabel="#{dFP.descripcion}" itemValue="#{dFP.cveFrmPago}"/>
+                                        <p:ajax listener="#{oConsFrmPago.validaForma()}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Consultar">
+                                        <p:ajax update="dtCortesFrmPago" 
+                                                listener="#{oConsFrmPago.buscarDetalleFP()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/>
+                        
+                        <!--Tabla de Datos con sus respectivos campos del Detalle-->
+                        <c:choose>
+                            <c:when test="${dFP.cveFrmPago=='TDC' || dFP.cveFrmPago=='TDD'}"><!--Vouchers-->
+                                <p:dataTable id="dtCortesFrmPago" var="oCorte" value="#{oConsFrmPago.listaVouchers}" paginator="true" paginatorPosition="bottom" rows="10" 
+                                                 emptyMessage="No hay registros" style="width:800px" selection="#{oConsFrmPago.vouchers}">
+                                    <p:column headerText="Fecha">
+                                        <p:outputLabel value="#{oVouchers.fecha}"/>
+                                    </p:column>
+                                    <p:column headerText="Nombre">
+                                        <p:outputLabel value="#{oVouchers.nombre}"/>
+                                    </p:column>
+                                    <p:column headerText="Monto">
+                                        <p:outputLabel value="#{oVouchers.monto}"/>
+                                    </p:column>
+                                    <p:column headerText="Concepto de Pago">
+                                        <p:outputLabel value="#{oVouchers.concepto}"/>
+                                    </p:column>
+                                    <p:column headerText="Titular de Tarjeta">
+                                        <p:outputLabel value="#{oVouchers.titularTarjeta}"/>
+                                    </p:column>
+                                    <p:column headerText="Hora">
+                                        <p:outputLabel value="#{oVouchers.hora}"/>
+                                    </p:column>
+                                    <p:column headerText="Factura">
+                                        <p:outputLabel value="#{oVouchers.factura}"/>
+                                    </p:column>
+                                    <p:column headerText="Datos Tarjeta">
+                                        <p:outputLabel value="#{oVouchers.datosTarjeta}"/>
+                                    </p:column>
+                                    <p:column headerText="Tipo Tarjeta">
+                                        <p:outputLabel value="#{oVouchers.tipoTarjeta}"/>
+                                    </p:column>
+                                    <p:column headerText="Folio Sistema">
+                                        <p:outputLabel value="#{oVouchers.folio}"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </c:when><!--Cheques-->
+                            <c:when test="${dFP.cveFrmPago=='CHQ'}">
+                                <p:dataTable id="dtCortesFrmPago" var="oCorte" value="#{oConsFrmPago.listaCheque}" paginator="true" paginatorPosition="bottom" rows="10" 
+                                                 emptyMessage="No hay registros" style="width:800px" selection="#{oConsFrmPago.cheque}">
+                                    <p:column headerText="Fecha">
+                                        <p:outputLabel value="#{oCheque.fecha}"/>
+                                    </p:column>
+                                    <p:column headerText="Nombre">
+                                        <p:outputLabel value="#{oCheque.nombre}"/>
+                                    </p:column>
+                                    <p:column headerText="Monto">
+                                        <p:outputLabel value="#{oCheque.monto}"/>
+                                    </p:column>
+                                    <p:column headerText="Concepto de Pago">
+                                        <p:outputLabel value="#{oCheque.concepto}"/>
+                                    </p:column>
+                                    <p:column headerText="Cuentahabiente del cheque">
+                                        <p:outputLabel value="#{oCheque.cuentaHabiente}"/>
+                                    </p:column>
+                                    <p:column headerText="Num. Cheque">
+                                        <p:outputLabel value="#{oCheque.numCheque}"/>
+                                    </p:column>
+                                    <p:column headerText="Factura">
+                                        <p:outputLabel value="#{oCheque.factura}"/>
+                                    </p:column>
+                                    <p:column headerText="Banco">
+                                        <p:outputLabel value="#{oCheque.banco}"/>
+                                    </p:column>
+                                    <p:column headerText="Folio Sistema">
+                                        <p:outputLabel value="#{oCheque.folio}"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </c:when>
+                            <c:when test="${dFP.cveFrmPago=='TRE'}"><!--Transferencia-->
+                                <p:dataTable id="dtCortesFrmPago" var="oCorte" value="#{oConsFrmPago.listaTransferencia}" paginator="true" paginatorPosition="bottom" rows="10" 
+                                                 emptyMessage="No hay registros" style="width:800px" selection="#{oConsFrmPago.transferencia}">
+                                    <p:column headerText="Fecha">
+                                        <p:outputLabel value="#{oTransferencia.fecha}"/>
+                                    </p:column>
+                                    <p:column headerText="Nombre">
+                                        <p:outputLabel value="#{oTransferencia.nombre}"/>
+                                    </p:column>
+                                    <p:column headerText="Monto">
+                                        <p:outputLabel value="#{oTransferencia.monto}"/>
+                                    </p:column>
+                                    <p:column headerText="Concepto de Transferencia">
+                                        <p:outputLabel value="#{oTransferencia.concepto}"/>
+                                    </p:column>
+                                    <p:column headerText="Part/Empresa">
+                                        <p:outputLabel value="#{oTransferencia.cuentaHabiente}"/>
+                                    </p:column>
+                                    <p:column headerText="Factura">
+                                        <p:outputLabel value="#{oTransferencia.factura}"/>
+                                    </p:column>
+                                    <p:column headerText="Banco Receptor">
+                                        <p:outputLabel value="#{oTransferencia.banco}"/>
+                                    </p:column>
+                                    <p:column headerText="Folio Sistema">
+                                        <p:outputLabel value="#{oTransferencia.folio}"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </c:when>
+                            <c:otherwise><!--FichaDeposito-->
+                                <p:dataTable id="dtCortesFrmPago" var="oCorte" value="#{oConsFrmPago.listaFichaDeposito}" paginator="true" paginatorPosition="bottom" rows="10" 
+                                                 emptyMessage="No hay registros" style="width:800px" selection="#{oConsFrmPago.fichaDeposito}">
+                                    <p:column headerText="Fecha">
+                                        <p:outputLabel value="#{oFD.fecha}"/>
+                                    </p:column>
+                                    <p:column headerText="Nombre">
+                                        <p:outputLabel value="#{oFD.nombre}"/>
+                                    </p:column>
+                                    <p:column headerText="Monto">
+                                        <p:outputLabel value="#{oFD.monto}"/>
+                                    </p:column>
+                                    <p:column headerText="Concepto de Transferencia">
+                                        <p:outputLabel value="#{oFD.concepto}"/>
+                                    </p:column>
+                                    <p:column headerText="Part/Empresa">
+                                        <p:outputLabel value="#{oFD.cuentaHabiente}"/>
+                                    </p:column>
+                                    <p:column headerText="Factura">
+                                        <p:outputLabel value="#{oFD.factura}"/>
+                                    </p:column>
+                                    <p:column headerText="Banco Receptor">
+                                        <p:outputLabel value="#{oFD.banco}"/>
+                                    </p:column>
+                                    <p:column headerText="Folio Sistema">
+                                        <p:outputLabel value="#{oFD.folio}"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </c:otherwise>
+                        </c:choose>
+                    </center>
+                </h:form>
+            </h:body>
+        </ui:define>
+    </ui:composition>
+</html>

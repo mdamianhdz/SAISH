@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inicio</title>
+            <h:body>
+    
+                <h:form id="formulario2">
+                    <p:growl id="msgs2" showDetail="true"/> 
+                    <br/><br/>
+                    <p:dataTable  id="tb2" value="#{oPlantilla.listElementosPlant}" rows="6" editable="true" paginator="true" paginatorPosition="bottom" var="plantilla">
+                        
+                        <p:ajax event="rowEdit" listener="#{oPlantilla.actualiza}" update=":formulario2:msgs2" />
+                           
+                        
+                        <p:column headerText="Variable">
+                            
+                            <h:outputText value="#{plantilla.variable}" />
+                            <p:commandButton rendered="#{oPlantilla.validaImg(plantilla.valor)}" value="Actualiza el logo" icon="ui-icon-search" update=":form3:dialogCabecera" oncomplete="dlg1.show()" />
+                            <p:commandButton rendered="#{oPlantilla.validaTema(plantilla.variable)}" value="Actualiza el tema" icon="ui-icon-search" update=":form4:dialogTema" oncomplete="dlg2.show()" />
+                    
+                        </p:column>
+                        <p:column headerText="Descripción">
+                            
+                            <p:cellEditor>
+                                    <f:facet name="output">  
+                                        <h:outputText value="#{plantilla.descripcion}" />  
+                                    </f:facet>  
+                                    <f:facet name="input">  
+                                        <p:inputText value="#{plantilla.descripcion}" style="width:100%"/>  
+                                    </f:facet>  
+                            </p:cellEditor>
+                            
+                        </p:column>
+                        <p:column headerText="Valor" style=" ">
+                            <p:cellEditor>
+                                <f:facet name="output">  
+                                    <h:outputText value="#{plantilla.valor}" rendered="#{oPlantilla.validaTextImg(plantilla.valor)}" />
+                                    <p:graphicImage width="150" url="../#{plantilla.valor}" rendered="#{oPlantilla.validaImg(plantilla.valor)}" /> 
+                                </f:facet>  
+                                <f:facet name="input">  
+                                    <p:inputText value="#{plantilla.valor}" rendered="#{plantilla.variable eq oPlantilla.valorPie}" style="width:100%"/>  
+                                </f:facet>  
+                            </p:cellEditor>
+                            
+                        </p:column>
+                        
+                        <p:column style="width:6%">  
+                                <p:rowEditor />  
+                        </p:column> 
+                        
+                    </p:dataTable>
+                    
+                    <p:confirmDialog styleClass="text-align: center;" widgetVar="confirm" global="true" showEffect="clip" hideEffect="fold">  
+                            <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+                    </p:confirmDialog> 
+                    
+                    <br/>
+                    <center>
+                            </center>
+                    
+                    </h:form>
+                                
+                    
+                <p:dialog resizable="false" modal="true" appendTo="@(body)" maximizable="flase" minimizable="false" draggable="false" id="basicDialog" header="Actualiza el logo"  widgetVar="dlg1" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                            <h:form id="form3" enctype="multipart/form-data">
+                            <p:growl id="msgs3" showDetail="true"/> 
+                                <p:panel id="dialogCabecera" style=" width: 700px"  >
+
+                                    <p:fileUpload fileLimitMessage="Solo se permite agregar una imagen" dragDropSupport="false" fileLimit="1"  label="Seleccionar" cancelLabel="Cancelar" uploadLabel="Cargar" fileUploadListener="#{oPlantilla.handleFileUpload}" mode="advanced" previewWidth="80" 
+                                                  update=":form3:msgs3 :cb:cabecera" sizeLimit="100000" allowTypes="/(\.|\/)(gif|jpe?g|png)$/"/>  
+                                </p:panel>
+                            </h:form>
+                        </p:dialog>  
+                    
+                
+                   <p:dialog closable="false" modal="true" appendTo="@(body)" resizable="false" maximizable="flase" minimizable="false" draggable="false" id="basicDialog2" header="Actualiza el tema"  widgetVar="dlg2" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                       <h:form id="form4" enctype="multipart/form-data">
+                       <p:growl id="msgs4" showDetail="true"/>
+                                <p:panel id="dialogTema" style=" width: 700px"  >
+                                    
+                                    <h:panelGrid columns="2" cellpadding="10">
+                                        
+                                    <h:outputText value="Elige un tema:" />   
+                                    <p:themeSwitcher value="#{oPlantilla.tema2}" style="width:165px" effect="fade" id="statefulSwitcher">  
+                                            <f:selectItem itemLabel="Elige un tema" itemValue="" />  
+                                            <f:selectItems value="#{oTheme.themes}" />  
+                                            <p:ajax listener="#{oTheme.saveTheme}" />  
+                                        </p:themeSwitcher>
+
+                                    </h:panelGrid>
+
+                                    <p:commandButton actionListener="#{oPlantilla.guardaTema()}" value="Guarda el tema seleccionado" />
+                                     <p:commandButton actionListener="#{oPlantilla.cancelar}" value="Cancelar" />
+                                </p:panel>
+                         </h:form>        
+                   </p:dialog>
+                   
+                    
+                
+                    
+    </h:body>
+    </ui:define>
+    </ui:composition>
+</html>

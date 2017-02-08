@@ -1,0 +1,322 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"> 
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Registrar Contratación de Paquete</title>
+            <h:body>      
+
+                <center><h3>Registrar Contratación de Paquete</h3></center>
+                    #{RegistraContraPaqJB.limpia()}
+
+                <p:dialog closable="false" dynamic="true" height="550" width="900"  appendTo="@(body)" modal="true" id="dlgCompBusq" header="Busqueda de paciente"  widgetVar="dlgCompBusqVar" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+
+                    <h:form id="form">
+                        <p:growl id="grow3" sticky="true" /> 
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include> 
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar"  action="#{RegistraContraPaqJB.pacienteExistente()}"  oncomplete="dlgCompBusqVar.hide()" update=":formulario :formulario:grow1" icon="ui-icon-search"/>               
+                        <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" action="#{RegistraContraPaqJB.limpia()}" update=":formulario" icon="ui-icon-circle-close" />
+                    </h:form> 
+                </p:dialog>  
+                <br/>
+                <h:form>
+                    <p:growl id="grow2" sticky="true" />        
+                    <center>
+                        <p:commandButton value="Seleccionar paciente"  action="#{oPacienteJB.limpiaSelectedPaciente()}" update=":formulario :form:dtPacientes" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+                    </center>
+                </h:form>
+                <br/>
+                <center>
+                    <h:form id="formulario">                     
+                        <p:growl id="grow1" sticky="true" />
+                        <p:panel rendered="#{RegistraContraPaqJB.panelActivo}" style="width:90%">                        
+                            <p:panelGrid columns="8">
+                                Folio Paciente:<h:outputText value="#{RegistraContraPaqJB.paciente.folioPac}" />
+                                Nombre del paciente:<h:outputText value="#{RegistraContraPaqJB.paciente.nombreCompleto}" />
+                                Edad:<h:outputText value="#{RegistraContraPaqJB.paciente.edad}"/>
+                                Sexo:<h:outputText value="#{RegistraContraPaqJB.paciente.genero}"/>
+                            </p:panelGrid>
+                            <p:separator/>
+                            <h:panelGrid id="datos" columns="2">
+                                Tipo de paquete:
+                                <p:selectOneMenu label="Tipo de Paquete" value="#{RegistraContraPaqJB.paquete.tipoPaquete.cve}">
+                                    <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                    <f:selectItem itemLabel="Pediátrico" itemValue="0" />  
+                                    <f:selectItem itemLabel="Maternidad" itemValue="1" />
+                                    <f:selectItem itemLabel="Quirúrgico" itemValue="2" />
+                                    <p:ajax listener="#{RegistraContraPaqJB.buscaPaquetes()}" update="datos facturable paquete costo promotor tb tb3 tb4 panel3 panel4 " />
+                                </p:selectOneMenu>
+                                Paquete:
+                                <p:selectOneMenu id="paquete" label="Paquete" converter="#{RegistraContraPaqJB}" value="#{RegistraContraPaqJB.paqueteSeleccionado}">
+                                    <f:selectItem itemLabel="Seleccione" />
+                                    <f:selectItems value="#{RegistraContraPaqJB.paquetes}" var="oPaq" itemLabel="#{oPaq.nombre}" itemValue="#{oPaq}" />
+                                    <p:ajax update="costo promotor tb tb3 tb4 panel3 panel4 facturable" listener="#{RegistraContraPaqJB.buscaInfoPaquete()}" />               
+                                </p:selectOneMenu>
+                                Costo:<h:outputText id="costo" value="#{RegistraContraPaqJB.paqueteSeleccionado.costo}" />
+                                Promotor:
+                                <p:selectOneMenu id="promotor" label="Promotor" converter="#{RegistraContraPaqJB}" value="#{RegistraContraPaqJB.paqueteContratado.personalPromo}">
+                                    <f:selectItem itemLabel="Seleccione" />
+                                    <f:selectItems value="#{RegistraContraPaqJB.promotores}" var="oPromotor" itemLabel="#{oPromotor.nombreCompleto}" itemValue="#{oPromotor}"/>
+                                </p:selectOneMenu>
+                                ¿Desea Factura?<p:selectBooleanCheckbox id="facturable" value="#{RegistraContraPaqJB.paqueteContratado.facturable}" />
+                                <h:outputText value="Médico Tratante:*"/>
+                                <p:selectOneMenu required="true" 
+                                                 label="Médico que recomienda" 
+                                                 converter="#{oConverterMedico}" 
+                                                 filter="true"
+                                                 value="#{RegistraContraPaqJB.episodioMedico.medTratante}" >
+                                    <f:selectItem  itemLabel="Selecciona" itemValue="" />
+                                    <f:selectItems  value="#{RegistraContraPaqJB.medicos}"  var="oMed" 
+                                                    itemLabel="#{oMed.nombreCompleto}" 
+                                                    itemValue="#{oMed}" /> 
+                                </p:selectOneMenu>
+                                <h:outputText rendered="#{RegistraContraPaqJB.paquete.tipoPaquete.cve=='1'}" value="Fecha probable de Parto:*"/>
+                                <p:calendar  rendered="#{RegistraContraPaqJB.paquete.tipoPaquete.cve=='1'}" locale="es" label="Fecha probable de Parto"  required="true" navigator="true"  pattern="yyyy-MM-dd HH:mm:ss"    yearRange="c-100:c+0" showOn="button" value="#{RegistraContraPaqJB.paqueteContratado.probableparto}"/>                              
+                                <h:outputText rendered="#{RegistraContraPaqJB.paquete.tipoPaquete.cve=='1'}" value="¿Parto de Alto Riesgo?:"/>
+                                <p:selectBooleanCheckbox rendered="#{RegistraContraPaqJB.paquete.tipoPaquete.cve=='1'}" value="#{RegistraContraPaqJB.paqueteContratado.altoriesgo}" />
+                                <h:outputText rendered="#{RegistraContraPaqJB.paquete.tipoPaquete.cve=='1'}"  value="Importe de urgencia por Cesárea:"/><p:inputText rendered="#{RegistraContraPaqJB.paquete.tipoPaquete.cve=='1'}" label="Importe de urgencia por Cesárea" required="true" value="#{RegistraContraPaqJB.paqueteContratado.cesareaUrgencia}" />
+                                <h:outputText rendered="#{RegistraContraPaqJB.paquete.tipoPaquete.cve=='1'}" value="Costo del bloqueo en Parto Normal:"/><p:inputText rendered="#{RegistraContraPaqJB.paquete.tipoPaquete.cve=='1'}" label="Costo del bloqueo en Parto Normal" required="true" value="#{RegistraContraPaqJB.paqueteContratado.bloqueo}" />
+
+                            </h:panelGrid>
+                            <p:panel id="panel" >
+                                <h4>Servicios que incluye</h4>
+
+                                <p:dataTable emptyMessage="Sin servicios registrados" sortBy="conceptoIngreso.descripcion" id="tb" value="#{RegistraContraPaqJB.carritoServicios}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoServicios">
+                                    <f:facet name="header">
+                                        <h:outputText value="Servicios Registrados"/>
+                                    </f:facet> 
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Servicio
+                                        </f:facet>  
+                                        <h:outputText value="#{carritoServicios.conceptoIngreso.descripcion}" />
+                                    </p:column>                                   
+                                    <p:column width="50%!important"  >
+                                        <f:facet name="header"> 
+                                            <h:outputText value="Cantidad" />
+                                        </f:facet> 
+                                        <h:outputText value="#{carritoServicios.conceptoIngreso.cantidad}" /> 
+                                    </p:column>                                        
+                                    <p:column width="50%!important"  >
+                                        <f:facet name="header"> 
+                                            Unidad de medida
+                                        </f:facet>
+                                        <h:outputText value="#{carritoServicios.conceptoIngreso.unidadMedida.descrip}" />                               
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Monto
+                                        </f:facet> 
+                                        <h:outputText value="#{carritoServicios.conceptoIngreso.montoNuevo}"/>   
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Observaciones
+                                        </f:facet> 
+                                        <h:outputText value="#{carritoServicios.obs}" />
+                                    </p:column>                                        
+
+                                    <p:summaryRow >  
+                                        <p:column colspan="4"  style="text-align:right">  
+                                            Total:  
+                                        </p:column>  
+                                        <p:column>  
+                                            <h:outputText value="#{carritoServicios.conceptoIngreso.montoNuevo*carritoServicios.conceptoIngreso.cantidad}">
+                                                <f:convertNumber pattern="#.##"/>
+                                            </h:outputText>
+                                        </p:column>  
+                                    </p:summaryRow>
+                                    <p:columnGroup type="footer">
+                                        <p:row >
+                                            <p:column colspan="4" style="text-align:right" footerText="Costo total:" />
+                                            <p:column footerText="$#{RegistraContraPaqJB.totalCarrito}" />
+                                        </p:row>
+                                    </p:columnGroup>
+
+
+                                </p:dataTable>
+                            </p:panel>
+                            <p:panel id="panel2" >
+                                <h4>Descuentos que incluye</h4>
+
+                                <p:dataTable emptyMessage="Sin descuentos registrados" id="tb3" value="#{RegistraContraPaqJB.carritoDescuentos}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoDescuentos">
+                                    <f:facet name="header">
+                                        <h:outputText value="Descuentos Registrados"/>
+                                    </f:facet> 
+                                    <p:column>
+                                        <f:facet name="header"> 
+                                            Línea
+                                        </f:facet>  
+                                        <h:outputText value="#{carritoDescuentos.lineaIngreso.descrip}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Descuento
+                                        </f:facet>  
+                                        <h:outputText value="#{carritoDescuentos.pctDscto}" />
+                                    </p:column> 
+                                </p:dataTable>
+                            </p:panel>
+                            <p:panel id="panel3" >
+                                <h4>Otras observaciones</h4>
+                                <h:outputText value="#{RegistraContraPaqJB.paqueteSeleccionado.obs}" />
+                            </p:panel>
+                            <p:panel id="panel4" >
+                                <h4>Pago</h4>
+                                <p:panelGrid id="pagoTotal" columns="2" rendered="#{RegistraContraPaqJB.panelTotal}" >
+                                    Autorizar Abonos:
+
+                                    <p:selectBooleanCheckbox value="#{RegistraContraPaqJB.autorizarAbono}">
+                                        <p:ajax update="pagoTotal" />
+                                    </p:selectBooleanCheckbox>                                    
+                                    <h:outputText value="Quien autoriza:" rendered="#{RegistraContraPaqJB.autorizarAbono}"/>
+                                    <p:selectOneMenu id="personalAutoriza" 
+                                                     required="true" 
+                                                     rendered="#{RegistraContraPaqJB.autorizarAbono}" 
+                                                     label="Personal que Autoriza" 
+                                                     converter="#{RegistraContraPaqJB}" 
+                                                     value="#{RegistraContraPaqJB.paqueteContratado.personalAutoriza}">
+                                        <f:selectItem itemLabel="Seleccione" />
+                                        <f:selectItems value="#{RegistraContraPaqJB.personalAutorizacion}" 
+                                                       var="oPersAut" 
+                                                       itemLabel="#{oPersAut.nombreCompleto}" 
+                                                       itemValue="#{oPersAut}"/>
+                                    </p:selectOneMenu>
+                                    <h:outputText rendered="#{RegistraContraPaqJB.autorizarAbono}" value="Monto de primer pago:"/>
+                                    <p:inputText rendered="#{RegistraContraPaqJB.autorizarAbono}" required="true" label="Monto de primer pago" value="#{RegistraContraPaqJB.montoPrimerPago}" />
+                                    <h:outputText rendered="#{RegistraContraPaqJB.paquete.tipoPaquete.cve=='0'}" value="Padre o Tutor que firma el contrato:"/><p:inputText required="true" label="Padre o Tutor que firma el contrato" rendered="#{RegistraContraPaqJB.paquete.tipoPaquete.cve=='0'}" value="#{RegistraContraPaqJB.paqueteContratado.padreoTutor}"/> 
+                                    <h:outputText rendered="#{RegistraContraPaqJB.autorizarAbono}" value="Clave de autorización:"/>
+                                    <p:inputText rendered="#{RegistraContraPaqJB.autorizarAbono}" required="true" label="Clave de autorización" type="password" value="#{RegistraContraPaqJB.paqueteContratado.contraniaAutorizacion}" />
+                                </p:panelGrid>
+                                <p:panel id="pagoParcial" rendered="#{RegistraContraPaqJB.panelParcialidades}" >
+                                    <p:panelGrid columns="4">
+                                        Anticipo:
+                                        <p:inputText readonly="true" value="#{RegistraContraPaqJB.paqueteSeleccionado.anticipo}" />
+                                        Parcialidades:
+                                        <p:inputText readonly="true" value="#{RegistraContraPaqJB.paqueteSeleccionado.cantParcial}" />
+                                    </p:panelGrid>
+                                    <p:dataTable emptyMessage="Sin parcilidades registradas" editable="true"  id="tb4" rowIndexVar="rowIndex" value="#{RegistraContraPaqJB.carnetsPagos}" rows="6" paginator="true" paginatorPosition="bottom" var="carnetPago">
+                                        <f:facet name="header">
+                                            <h:outputText value="Carnet de Pagos"/>
+                                        </f:facet> 
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Pago
+                                            </f:facet>  
+                                            <h:outputText value="#{rowIndex + 1}" />
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Monto
+                                            </f:facet>  
+                                            <h:outputText value="#{carnetPago.monto}" />
+                                        </p:column> 
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Pagar al
+                                            </f:facet>  
+                                            <p:inputText required="true" label="Pagar Al" value="#{carnetPago.pagarAl}" />
+                                        </p:column> 
+                                    </p:dataTable>
+                                </p:panel>
+                            </p:panel>
+                            <p:separator/>
+                            <p:commandButton value="Contratar" action="#{RegistraContraPaqJB.registrarContratacionPaquete()}"  icon="ui-icon-disk"  update=":formulario:grow1" />  
+
+                        </p:panel>
+                    </h:form>
+
+                    <p:dialog id="dialogExito" closable="false" dynamic="true"  modal="true" appendTo="@(body)" header="¡Contratación exitosa!"  widgetVar="dlg" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="formExito"> 
+                            <p:panel styleClass="text-align: center;" style="" id="panelDialog" > 
+                                <center>
+                                    <p:panel>
+                                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                    </p:panel>
+                                </center>                                                           
+                                <p:panelGrid styleClass="text-align: center;" columns="2">
+                                    Folio del paciente:<h:outputText value="#{RegistraContraPaqJB.registraContraPaqJB2.paciente.folioPac}"/>
+                                    Nombre del paciente:<h:outputText value="#{RegistraContraPaqJB.registraContraPaqJB2.paciente.nombreCompleto}"/>
+                                    Paquete contratado:<h:outputText value="#{RegistraContraPaqJB.registraContraPaqJB2.paqueteSeleccionado.nombre}"/>
+                                    Folio de contratación de Paquete:<h:outputText value="#{RegistraContraPaqJB.registraContraPaqJB2.paqueteContratado.idpaqcont}"/>
+                                    Folio para pago de anticipo:<h:outputText value="#{RegistraContraPaqJB.registraContraPaqJB2.paqueteContratado.folioServ}"/>
+                                </p:panelGrid>                                
+                            </p:panel>
+                            <p:separator/>                      
+                            <p:commandButton  value="Imprimir" type="button" icon="ui-icon-print" >
+                                <p:printer target="panelDialog" />
+                            </p:commandButton>
+                            <p:commandButton  value="Imprimir Contrato" update=":formDocContrt" oncomplete="dlgContrtPaq.show()" icon="ui-icon-document"/>
+                            <p:commandButton rendered="#{RegistraContraPaqJB.registraContraPaqJB2.carnetsPagos.size()>0}" value="Imprimir carnet de pagos" update=":formCarnetPagos" oncomplete="dlgcarnetPagos.show()" icon="ui-icon-document"/> 
+                            <p:commandButton value="Regresar" icon="ui-icon-arrowreturnthick-1-w"  >
+                                <p:ajax listener="#{RegistraContraPaqJB.regresaRegistraPaq()}"/>
+                            </p:commandButton>
+                        </h:form>    
+                    </p:dialog>                    
+
+                    <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="contraPaq" header="Contrato de Paquete"  widgetVar="dlgContrtPaq" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="formDocContrt">       
+                            <p:media id="contr" value="/resources/#{RegistraContraPaqJB.registraContraPaqJB2.rutaContrPaquete}" width="800" height="500">  
+                                Tu navegador no puede abrir el PDF, <h:outputLink value="/resources/#{RegistraContraPaqJB.registraContraPaqJB2.rutaContrPaquete}">click</h:outputLink> para descargar el PDF.  
+                            </p:media>  
+                            <p:separator />
+                            <center>                                        
+                                <p:commandButton value="Regresar"  oncomplete="dlgContrtPaq.hide()" icon="ui-icon-arrowreturnthick-1-w"/>
+                            </center>
+                        </h:form> 
+                    </p:dialog>
+
+                    <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="carnetPagos" header="Carnet de Pagos"  widgetVar="dlgcarnetPagos" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="formCarnetPagos"> 
+                            <p:panel id="panelCarnet">
+                                <center>
+                                    <p:panel>
+                                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                    </p:panel>
+                                </center>
+                                <h:outputText value="Anticipo:"/><h:outputText value="#{RegistraContraPaqJB.registraContraPaqJB2.paqueteContratado.anticipo}"/>
+                                <p:dataTable emptyMessage="Sin parcilidades registradas" editable="true"  id="tb5" rowIndexVar="rowIndex" value="#{RegistraContraPaqJB.registraContraPaqJB2.carnetsPagos}" rows="6" paginator="true" paginatorPosition="bottom" var="carnetPago">
+                                    <f:facet name="header">
+                                        <h:outputText value="Descuentos Registrados"/>
+                                    </f:facet> 
+                                    <p:column>
+                                        <f:facet name="header"> 
+                                            Pago
+                                        </f:facet>  
+                                        <h:outputText value="#{rowIndex + 1}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Monto
+                                        </f:facet>  
+                                        <h:outputText value="#{carnetPago.monto}" />
+                                    </p:column> 
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Pagar al
+                                        </f:facet>  
+                                        <h:outputText value="#{carnetPago.pagarAl}" />
+                                    </p:column> 
+                                </p:dataTable>
+                            </p:panel>
+                            <p:separator />
+                            <center> 
+                                <p:commandButton  value="Imprimir" type="button" icon="ui-icon-print" >
+                                    <p:printer target="panelCarnet" />
+                                </p:commandButton>
+                                <p:commandButton value="Regresar"  oncomplete="dlgcarnetPagos.hide()" icon="ui-icon-arrowreturnthick-1-w"/>
+                            </center>
+                        </h:form> 
+                    </p:dialog> 
+
+
+                </center>        
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Municipios</title>
+            <h:body>
+                <center>
+                    <h2>Administraci&oacute;n de municipios</h2>
+                    <h:form id="formulario">
+                        <p:growl id="msg" sticky="true" showDetail="true"/>
+                        <p:dialog id="dlgMunicipio" widgetVar="dlgMun"  position="center" closable="false" dynamic="true" resizable="false"
+                                  appendTo="@(body)" modal="true">
+                            <center>
+                                <h3>Administraci&oacute;n de municipios</h3>
+                                <h:form>
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Clave Estado:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtClaveEdo" value="#{oMunicipio.currentMunicipio.edo.cve}" disabled="true">
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Clave Municipio:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtClave" value="#{oMunicipio.currentMunicipio.cve}" disabled="#{oMunicipio.disDatosCveMun}" maxlength="3">
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Descripci&oacute;n:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtDescrip" value="#{oMunicipio.currentMunicipio.descrip}" disabled="#{oMunicipio.disDatos}">
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                    <br/><br/><p:commandButton value="#{oMunicipio.nomButton}">
+                                        <p:ajax listener="#{oMunicipio.guarda}" update=":formulario:msg :formulario:dtMunicipios"/>
+                                    </p:commandButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <p:commandButton value="Regresar" oncomplete="PF('dlgMun').hide()"/>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        <p:selectOneMenu id="cmbEstados" value="#{oMunicipio.cveEdo}" style="width: 300px;">  
+                                <p:ajax update=":formulario:dtMunicipios" listener="#{oMunicipio.mostrarMunicipios()}"/>
+                                <f:selectItems value="#{oEstado.listaEstados}" var="oEdo"
+                                               itemLabel="#{oEdo.descrip}" itemValue="#{oEdo.cve}"/>
+                        </p:selectOneMenu>                       
+                        <br/><br/>
+                            <p:dataTable id="dtMunicipios" value="#{oMunicipio.listaMunicipios}" rows="5" editable="true" paginator="true" 
+                                                 paginatorPosition="bottom" var="oM" emptyMessage="Seleccione un estado."
+                                                 style="width: 900px"  selection="#{oMunicipio.selectedMunicipio}" rowKey="#{oM.cve}">
+                                        <p:ajax event="rowSelectRadio"/>
+                                        <p:column selectionMode="single" width="25"/>
+                                        <p:column headerText="Clave:" width="10" >
+                                            <h:outputText value="#{oM.cve}"/>
+                                        </p:column>
+                                        <p:column headerText="Descripci&oacute;n:">
+                                            <h:outputText value="#{oM.descrip}"/>
+                                        </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Modificar municipio" icon="ui-icon-pencil">
+                                    <p:ajax update=":formulario:msg :formulario:dlgMunicipio" listener="#{oMunicipio.confModMunicipio()}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Eliminar municipio" icon="ui-icon-pencil">
+                                    <p:ajax update=":formulario:msg :formulario:dlgMunicipio" listener="#{oMunicipio.confDelMunicipio()}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Agregar Municipio" icon="ui-icon-pencil" oncomplete="dlgMun.show()">
+                                    <p:ajax update=":formulario:msg :formulario:dlgMunicipio" listener="#{oMunicipio.confNuevoMunicipio()}"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>     
+                    </h:form>
+                </center>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

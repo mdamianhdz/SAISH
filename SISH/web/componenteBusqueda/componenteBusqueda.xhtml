@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+     #{oPacienteJB.limpia()}      
+            <p:panel header="Buscar paciente" style="margin-bottom:10px;">  
+            <p:panelGrid id="datos" columns="6" >
+                <h:outputText value="Folio:" id="outFolio" />
+                <p:inputText id="txtFolio" value="#{oPacienteJB.paciente.folioPac}">
+                    <p:ajax/>
+                </p:inputText>
+                <h:outputText value="CURP:" id="outCurp" />
+                <p:inputText id="txtCurp" value="#{oPacienteJB.paciente.CURP}" >
+                    <p:ajax/>
+                </p:inputText>
+                <h:outputText value="RFC:" id="outRFC" />
+                <p:inputText id="txtRFC" value="#{oPacienteJB.paciente.RFC}" >
+                    <p:ajax/>
+                </p:inputText>
+                <h:outputText value="Nombre:" id="outNombre" />
+                <p:inputText id="txtNombre" style="text-transform: uppercase"
+                             value="#{oPacienteJB.paciente.nombre}" >
+                    <p:ajax/>
+                </p:inputText>
+                <h:outputText value="Apellido Paterno:" id="outApPaterno" />
+                <p:inputText id="txtApPaterno" style="text-transform: uppercase"
+                             value="#{oPacienteJB.paciente.apellidoPaterno}" >
+                    <p:ajax/>
+                </p:inputText>
+                <h:outputText value="Apellido Materno:" id="outApMaterno" />
+                <p:inputText id="txtApMaterno" style="text-transform: uppercase"
+                             value="#{oPacienteJB.paciente.apellidoMaterno}" >
+                    <p:ajax/>
+                </p:inputText>
+            </p:panelGrid>
+                <br/>
+                    <p:commandButton id="btn" update="dtPacientes" 
+                                     value="Buscar" icon="ui-icon-search"> 
+                        <p:ajax listener="#{oPacienteJB.datos}"
+                                update="dtPacientes"/>
+                    </p:commandButton>
+                <br/><br/>
+            <p:dataTable  id="dtPacientes" value="#{oPacienteJB.listaPaciente}" 
+                          paginator="true" paginatorPosition="bottom" var="oPac"
+                          selection="#{oPacienteJB.selectedPaciente}" 
+                          rowKey="#{oPac.folioPac}" rows="6">
+                <p:ajax event="rowSelectRadio" />
+                <p:column selectionMode="single"/>
+                <p:column headerText="Folio">
+                    <h:outputText value="#{oPac.folioPac}"/>
+                </p:column>
+                <p:column headerText="CURP">
+                    <h:outputText value="#{oPac.CURP}"/>
+                </p:column>
+                <p:column headerText="RFC">
+                    <h:outputText value="#{oPac.RFC}"/>
+                </p:column>
+                <p:column headerText="Fecha de nacimiento">
+                    <h:outputText value="#{oPac.nac}"/>
+                </p:column>
+                <p:column headerText="Apellido paterno">
+                    <h:outputText value="#{oPac.apellidoPaterno}"/>
+                </p:column>
+                <p:column headerText="Apellido materno">
+                    <h:outputText value="#{oPac.apellidoMaterno}"/>
+                </p:column>
+                <p:column headerText="Nombre">
+                    <h:outputText value="#{oPac.nombre}"/>
+                </p:column>
+                <p:column headerText="Edad">
+                    <h:outputText value="#{oPac.edad}"/>
+                </p:column>                
+            </p:dataTable>
+        </p:panel>  
+    
+</html>

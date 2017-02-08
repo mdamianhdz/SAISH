@@ -1,0 +1,236 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+<ui:define name="cuerpo">
+<title>Autorizar pago de honorarios</title>
+<h:body>
+    
+    <h:form id="form">  
+        
+       <p:growl id="msgs" showDetail="true"/>
+       <p:panel header="Autorizar pago de honorarios" style="margin-bottom:10px;">  
+           #{oAutPHon.buscarHonorarosPorAutorizar()}
+           <br/>
+           <p:dataTable id="regaliasDT"  rows="7" paginator="true" var="cr1" 
+                        value="#{oAutPHon.dist}" paginatorPosition="bottom"
+                        emptyMessage="No hay registro de honorarios calculados">
+               <f:facet name="header"> Honorarios </f:facet>
+               <p:columns value="#{oAutPHon.nameColumnas}"  var="column" >  
+                    <f:facet name="header">  
+                        #{column}  
+                    </f:facet>  
+               </p:columns>
+               <p:subTable var="cr" value="#{oAutPHon.distribucion}" >
+                    <p:column>
+                        <h:outputText value="#{cr.personal.nombreCompleto}" />
+                        <ui:repeat value="#{cr.numConceptos}" var="nums">
+                            <td>
+                                <h:outputText value="#{nums}">
+                                    <f:convertNumber integerOnly="true"/>
+                                </h:outputText>
+                            </td>
+                        </ui:repeat>
+                    </p:column>
+                   <p:column>
+                       <h:outputText value="#{cr.situacion}"/>
+                   </p:column>
+                   <p:column style="width:32px;text-align: center">
+                        <p:commandButton update=":form:autorizar :form:msgs " oncomplete="PF('autorizarDialog').show()" icon="ui-icon-calculator" >
+                            <f:setPropertyActionListener value="#{cr}" target="#{oAutPHon.selectedDistribucionRegalias}" />
+                        </p:commandButton>
+                   </p:column>
+               </p:subTable>  
+           </p:dataTable>
+       </p:panel>
+
+       <p:dialog header="Autorizar pago de honorarios" appendTo="@(body)" widgetVar="autorizarDialog" modal="true" showEffect="fade" hideEffect="fade" resizable="false" closable="false" >
+        <p:panel id="autorizar" style="width:100%;">
+             <p:scrollPanel style="width:100%;height:500px">
+                #{oAutPHon.obtenerDatos()}
+                 <h:panelGrid id="autorizarPagoHonVista">
+                     <p:panel>
+                    <center>
+                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                    </center>
+                </p:panel>
+                <div align="center"><h:outputText value="AUTORIZAR PAGO DE HONORARIOS" style="font-weight: bold;"/></div>
+               <p:separator />
+                 <br/>
+                    <h:panelGrid columns="4" width="100%">
+                        <h:outputText value="Personal: "/>
+                        <h:outputText value="#{oAutPHon.selectedDistribucionRegalias.personal.folioPers}" style="font-weight: bold"/>  
+                        <h:outputText value="#{oAutPHon.selectedDistribucionRegalias.personal.nombreCompleto}" style="font-weight: bold"/>
+                    </h:panelGrid>
+                
+                <br/>
+                <h:form>
+                    <p:dataTable id="dtServicios"  rows="7" paginator="true" var="spPer" value="#{oAutPHon.serviciosPers}" editable="true" paginatorPosition="bottom">
+                        <f:facet name="header"> Conceptos </f:facet>
+                        <p:ajax event="rowEdit" listener="#{oAutPHon.onRowEdit}" update=":form:msgs :form:formTotal:calcularTotal" />
+                        <p:column headerText="Fecha">
+                            <h:outputText value="#{spPer.servicioPrestado.realizado}" style=" text-transform: capitalize;">
+                                <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Folio del paciente">
+                            <h:outputText value="#{spPer.servicioPrestado.paciente.folioPac}"/>
+                        </p:column>
+                        <p:column headerText="Paciente">
+                            <h:outputText value="#{spPer.servicioPrestado.paciente.nombreCompleto}"/>
+                        </p:column>
+                        <p:column headerText="Folio del servicio">
+                            <h:outputText value="#{spPer.servicioPrestado.idFolio}"/>
+                        </p:column>
+                        <p:column headerText="Concepto">
+                            <h:outputText value="#{spPer.servicioPrestado.concepPrestado.descripConcep}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">Monto cobrado</f:facet>
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{spPer.servicioPrestado.costoCobrado}" style="float:right;">
+                                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                    </h:outputText>
+                                </f:facet>  
+                                <f:facet name="input">  
+                                    <p:inputText value="#{spPer.servicioPrestado.costoCobrado}" style="width:100%"/>  
+                                </f:facet>  
+                            </p:cellEditor> 
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">Monto a pagar</f:facet>
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{spPer.autorizado}" style="float:right;">
+                                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                    </h:outputText>
+                                </f:facet>  
+                                <f:facet name="input">  
+                                    <p:inputText value="#{spPer.autorizado}" style="width:100%"/>  
+                                </f:facet>  
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="Situacion del servicio">
+                            <h:outputText value="#{spPer.servicioPrestado.situacion}" />
+                        </p:column>
+                        <p:column style="width:32px">
+                            <p:rowEditor />
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+                <br/>
+                 <h:form>
+                    <p:dataTable id="dtHonorarios"  rows="7" paginator="true" var="hon" value="#{oAutPHon.serviciosHon}" editable="true" paginatorPosition="bottom">
+                        <f:facet name="header"> Honorarios </f:facet>
+                        <p:ajax event="rowEdit" listener="#{oAutPHon.onRowEdit}" update=":form:msgs :form:formTotal:calcularTotal" />
+                        <p:column headerText="Fecha">
+                            <h:outputText value="#{hon.servicioPrestado.realizado}" style=" text-transform: capitalize;">
+                                <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                            </h:outputText>
+                        </p:column>
+                         <p:column headerText="Folio del Paciente">
+                            <h:outputText value="#{hon.servicioPrestado.paciente.folioPac}"/>
+                        </p:column>
+                        <p:column headerText="Paciente">
+                            <h:outputText value="#{hon.servicioPrestado.paciente.nombreCompleto}"/>
+                        </p:column>
+                        <p:column headerText="Folio del servicio">
+                            <h:outputText value="#{hon.servicioPrestado.idFolio}"/>
+                        </p:column>
+                        <p:column headerText="Concepto">
+                            <h:outputText value="#{hon.servicioPrestado.concepPrestado.descripConcep}"/>
+                        </p:column>
+                        <p:column headerText="Fecha/Hora Inicio">
+                            <h:outputText value="#{hon.servicioPrestado.procedimientoRealizado.ini}" style=" text-transform: capitalize;">
+                                <f:convertDateTime pattern="dd-MMMM-yyyy hh:mm" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Fecha/Hora Fin">
+                            <h:outputText value="#{hon.servicioPrestado.procedimientoRealizado.fin}" style=" text-transform: capitalize;">
+                                <f:convertDateTime pattern="dd-MMMM-yyyy hh:mm" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Duración (hr:mm:ss)">
+                            <h:outputText value="#{hon.servicioPrestado.procedimientoRealizado.duracion}"/>
+                        </p:column>
+                        <p:column headerText="Tipo de programación">
+                            <h:outputText value="#{hon.servicioPrestado.procedimientoRealizado.tipoProg}"/>
+                        </p:column>
+                        <p:column headerText="Procedimiento">
+                            <h:outputText value="#{hon.servicioPrestado.procedimientoRealizado.tipoProcQx.descripcion}"/>
+                        </p:column>
+                        <p:column headerText="Nota Medica">
+                            <h:outputText value="#{hon.servicioPrestado.procedimientoRealizado.notaMedica}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">Monto cobrado</f:facet>
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{hon.servicioPrestado.costoCobrado}" style="float:right;">
+                                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                    </h:outputText>
+                                </f:facet>  
+                                <f:facet name="input">  
+                                    <p:inputText value="#{hon.servicioPrestado.costoCobrado}" style="width:100%"/>  
+                                </f:facet>  
+                            </p:cellEditor> 
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">Monto a pagar</f:facet>
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{hon.autorizado}" style="float:right;">
+                                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                    </h:outputText>
+                                </f:facet>  
+                                <f:facet name="input">  
+                                    <p:inputText value="#{hon.autorizado}" style="width:100%"/>  
+                                </f:facet>  
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="Situación del servicio">
+                            <h:outputText value="#{hon.servicioPrestado.situacion}"/>
+                        </p:column>
+                        <p:column style="width:32px">
+                            <p:rowEditor />
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+                <br/>
+                <h:form id="formTotal">
+                    <h:panelGrid id="calcularTotal" columns="4" style="float:right;width:40%;" width="90%">
+                        <h:outputText value="Total a pagar por honorarios:" style="float:right;font-weight: bold"/>
+                        <h:outputText value="#{oAutPHon.totalHonorarios}" style="float:right;">
+                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                        </h:outputText>
+                        <h:outputText value="&#160;" />
+                        <h:outputText value="." />
+                    </h:panelGrid>
+                </h:form>
+                 </h:panelGrid>
+                <br/><br/>
+                <h:form>
+                    <h:panelGrid columns="3" style="float:right;">
+                        <p:button outcome="autorizarPagoHonorarios.xhtml?faces-redirect=true" value="Regresar"  />  
+                        <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" >  
+                            <p:printer target=":form:autorizarPagoHonVista"/>  
+                        </p:commandButton>
+                        <p:commandButton id="btn" actionListener="#{oAutPHon.autorizarPagoHonorarios()}" value="Autorizar" process="@parent" update=":form:msgs"  />
+                    </h:panelGrid>
+                </h:form>
+                   
+             </p:scrollPanel>
+        </p:panel>
+        </p:dialog>
+        
+    </h:form>     
+</h:body>
+</ui:define> 
+</ui:composition> 
+</html>

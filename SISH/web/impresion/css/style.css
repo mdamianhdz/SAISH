@@ -1,0 +1,27 @@
+body {
+    font-family: Lucida Grande, Lucida Sans, Arial, sans-serif;
+    font-size: 12px;
+    background-color: #F0EEEE;
+    background-repeat: initial;
+}
+tr{
+    vertical-align: baseline !important;
+}
+table{
+    font-size: 12px !important;
+}
+.print{
+    padding: .3em 1em;
+    line-height: 1.4;
+    border: 1px solid #aed0ea;
+    background: #d7ebf9 url("/SISH/faces/javax.faces.resource/images/ui-bg_glass_80_d7ebf9_1x400.png?ln=primefaces-cupertino") 50% 50% repeat-x;
+    font-weight: bold;
+    color: #2779aa;
+    font-family: Lucida Grande, Lucida Sans, Arial, sans-serif;
+}
+.msj{
+    font-weight: bold;
+    line-height: 1.4;
+    color: #2779aa;
+    font-family: Lucida Grande, Lucida Sans, Arial, sans-serif;
+}

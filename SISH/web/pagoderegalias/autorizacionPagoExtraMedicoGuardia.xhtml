@@ -1,0 +1,247 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+<ui:define name="cuerpo">
+<title>Autorización de pagos extras a médicos de guardia</title>
+<h:body>
+    
+    #{oRGuardia.limpiar()}
+       <h:form id="form">  
+        
+       <p:growl id="msgs" showDetail="true"/>
+       <p:panel header="Autorización de pagos extras a Médicos de Guardia" style="margin-bottom:10px;">  
+           
+           <h:panelGrid id="dato" columns="8"  style="width: 45%;">
+                <h:outputText value="Seleccionar: " style="font-weight: bold" />
+                <h:outputText value="Mes: "/>
+                <p:selectOneMenu id="txtMes" value="#{oRGuardia.mes}" >  
+                    <f:selectItem itemLabel="Seleccionar mes" itemValue="" />  
+                    <f:selectItems value="#{oRGuardia.meses}" />  
+                </p:selectOneMenu>
+                <h:outputText value="&#160;" />
+                <h:outputText value="Año: "/>
+                <p:selectOneMenu id="txtAnio" value="#{oRGuardia.anio}" >  
+                    <f:selectItem itemLabel="Seleccionar año" itemValue="" />  
+                    <f:selectItems value="#{oRGuardia.anios}" />  
+                </p:selectOneMenu>
+                <h:outputText value="&#160;" />
+                <p:commandButton actionListener="#{oRGuardia.obtieneMedicos()}" value="Buscar" update=":form:regaliasDT :form:msgs" />  
+           </h:panelGrid>
+           <br/>
+           <p:dataTable id="regaliasDT" var="cReg" 
+                        value="#{oRGuardia.regaliasPorMedico}" rows="7" 
+                        paginator="true" paginatorPosition="bottom" 
+                        selection="#{oRGuardia.selectedPagoRegalias}" 
+                        emptyMessage="No hay información">
+                <f:facet name="header"> Pagos extras a médicos de guardia</f:facet>
+                <p:column headerText="Médico">
+                    <h:outputText value="#{cReg.personalHospitalario.nombreCompleto}" />
+                </p:column>
+                <p:column headerText="Total por Autorizar">
+                    <h:outputText value="#{cReg.montoTotal}" style="float:right;">
+                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                    </h:outputText>
+                </p:column>
+                <p:column style="width:32px;text-align: center">
+                    <p:commandButton update=":form:regaliasDetail" oncomplete="PF('regaliasDialog').show()" icon="ui-icon-search" title="View">
+                        <f:setPropertyActionListener value="#{cReg}" target="#{oRGuardia.selectedPagoRegalias}" />
+                    </p:commandButton>
+                </p:column>
+           </p:dataTable>
+               
+       </p:panel>
+       
+       
+       <p:dialog header="Pagos extras a médico de guardia"  appendTo="@(body)" widgetVar="regaliasDialog" modal="true" showEffect="fade" hideEffect="fade" resizable="false" closable="false" >
+           <h:panelGrid id="regaliasDetail" style="width: 100%;">
+               <p:scrollPanel style="width:100%;height:500px">
+             #{oRGuardia.llena()}
+               <p:panel id="datosMed">
+                   <h:outputText value="Médico: " />
+                   <h:outputText value="#{oRGuardia.selectedPagoRegalias .personalHospitalario.nombreCompleto}" style="font-weight: bold"/><br/>
+                   <h:outputText value="Periodo: "/>
+                   <h:outputText value="&#160;"/>
+                   <h:outputText value="#{oRGuardia.selectedPagoRegalias.fechaInicio}" style="font-weight: bold; text-transform: capitalize;">
+                        <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                   </h:outputText>
+                   <h:outputText value=" al "/>
+                   <h:outputText value="&#160;"/>
+                   <h:outputText value="#{oRGuardia.selectedPagoRegalias.fechaFin}" style="font-weight: bold; text-transform: capitalize;">
+                        <f:convertDateTime pattern="dd-MMM-/yyyy" />
+                   </h:outputText>
+               </p:panel>
+               <br/>
+               <h:form id="form2">
+               <p:dataTable  id="dtRegalias2" value="#{oRGuardia.serviciosDelMedico}" paginator="true" paginatorPosition="bottom" var="oRM"
+                             rowKey="#{oRM.idFolio}"  selection="#{oRGuardia.selectedServiciosReg}"  rows="10">
+                   <p:ajax event="rowSelectCheckbox" listener="#{oRGuardia.calculaTotalAutorizado()}" update=":form:form2:dtRegalias2:totalAut"/>
+                   <p:ajax event="rowUnselectCheckbox" listener="#{oRGuardia.calculaTotalAutorizado()}" update=":form:form2:dtRegalias2:totalAut"/>
+                   <p:column selectionMode="multiple"/>
+                   <p:column headerText="Fecha">
+                       <h:outputText value="#{oRM.realizado}" style=" text-transform: capitalize;">
+                            <f:convertDateTime type="date" pattern="dd-MMMM-yyyy"/>
+                       </h:outputText>
+                   </p:column>
+                   <p:column headerText="Folio del paciente">
+                       <h:outputText value="#{oRM.paciente.folioPac}"/>
+                   </p:column>
+                   <p:column headerText="Paciente">
+                       <h:outputText value="#{oRM.paciente.nombreCompleto}"/>
+                   </p:column>
+                   <p:column headerText="Tipo de paciente">
+                       <h:outputText value="#{oRM.paciente.tipo}"/>
+                   </p:column>
+                   <p:column headerText="Concepto">
+                       <h:outputText value="#{oRM.concepPrestado.descripConcep}"/>
+                   </p:column>
+                   <p:column headerText="Importe">
+                       <h:outputText value="#{oRM.costoCobrado}" style="float: right;"> 
+                           <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                       </h:outputText>
+                   </p:column>
+                   <p:column headerText="Monto para pago extra" >
+                       <h:outputText value="#{oRM.costoCobrado*(oRM.concepPrestado.pctRegalGuard/100)}" style="float: right;">
+                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                       </h:outputText>
+                   </p:column>
+                   <p:columnGroup type="footer">
+                       <p:row>
+                        <p:column colspan="6" footerText="Total:" style="text-align:right" />
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputText value ="#{oRGuardia.totalImporte}">
+                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="footer">
+                                <h:outputText value ="#{oRGuardia.totalRegalias}">
+                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+                       </p:row>
+                       <p:row>
+                           <p:column colspan="7" footerText="Total de pagos extra autorizados:" style="text-align: right"/>
+                           <p:column>
+                            <f:facet name="footer">
+                                <h:outputText id="totalAut" value ="#{oRGuardia.totalAut}">
+                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+                       </p:row>
+                   </p:columnGroup>
+               </p:dataTable>
+                   <center>
+                   <h:panelGrid columns="3" style="float: right;">
+                       <p:button outcome="autorizacionPagoExtraMedicoGuardia.xhtml?faces-redirect=true" value="Regresar"  />  
+                       <p:commandButton update=":form:rpt" value="Imprimir" icon="ui-icon-print" oncomplete="PF('rptDialog').show()" process="@parent" >
+                       </p:commandButton>
+                       <p:commandButton value="Autorizar">
+                           <p:ajax listener="#{oRGuardia.autorizacionPago()}" update=":form:msgs"/>
+                       </p:commandButton> 
+                   </h:panelGrid>
+               </center>
+               </h:form>
+               <br/>
+               
+               </p:scrollPanel>
+           </h:panelGrid>
+        </p:dialog>
+       
+       <p:dialog header="Autorización de pagos extra a medicos de guardia" appendTo="@(body)" widgetVar="rptDialog" modal="true" showEffect="fade" hideEffect="fade" resizable="false" >
+        <p:panel id="rpt" style="width:100%;">
+            <p:scrollPanel style="width:100%;height:100%">
+             
+            <h:panelGrid id="rptVista" width="100%">
+                <p:panel>
+                    <center>
+                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                    </center>
+                </p:panel>
+                <div align="center"><h:outputText value="AUTORIZACIÓN DE PAGOS EXTRA A MÉDICOS DE GUARDIA" style="font-weight: bold;"/></div>
+                <p:separator />
+                <h:panelGrid>
+                    <h:panelGrid columns="2">
+                        <h:outputText value="Médico: "/>
+                        <h:outputText value="#{oRGuardia.selectedPagoRegalias.personalHospitalario.nombreCompleto}" style="font-weight: bold"/>  
+                    </h:panelGrid>
+                    <h:panelGrid columns="6">
+                        <h:outputText value="Pediodo del:  "/>
+                        <h:outputText value="&#160;"/>
+                        <h:outputText value="#{oRGuardia.selectedPagoRegalias.fechaInicio}" style="font-weight: bold; text-transform: capitalize;">
+                            <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                        </h:outputText>
+                        <h:outputText value="Al: "/>
+                        <h:outputText value="&#160;"/>
+                        <h:outputText value="#{oRGuardia.selectedPagoRegalias.fechaFin}" style="font-weight: bold; text-transform: capitalize;">
+                            <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                        </h:outputText>
+                    </h:panelGrid>
+                </h:panelGrid>
+                <br/>
+                <p:dataTable  id="dtRegalias2" value="#{oRGuardia.selectedServiciosReg}" var="oRMP">
+                   <p:column headerText="Fecha">
+                       <h:outputText value="#{oRMP.realizado}" style=" text-transform: capitalize;">
+                            <f:convertDateTime type="date" pattern="dd-MMMM-yyyy"/>
+                       </h:outputText>
+                   </p:column>
+                   <p:column headerText="Folio del paciente">
+                       <h:outputText value="#{oRMP.paciente.nombreCompleto}"/>
+                   </p:column>
+                   <p:column headerText="Paciente">
+                       <h:outputText value="#{oRMP.paciente.nombreCompleto}"/>
+                   </p:column>
+                   <p:column headerText="Tipo de paciente">
+                       <h:outputText value="#{oRMP.paciente.tipo}"/>
+                   </p:column>
+                   <p:column headerText="Concepto">
+                       <h:outputText value="#{oRMP.concepPrestado.descripConcep}"/>
+                   </p:column>
+                   <p:column headerText="Importe">
+                       <h:outputText value="#{oRMP.costoCobrado}" style="float: right;"> 
+                           <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                       </h:outputText>
+                   </p:column>
+                   <p:column headerText="Monto para pago extra (%)" >
+                       <h:outputText value="#{oRMP.costoCobrado*(oRMP.concepPrestado.pctRegalGuard/100)}" style="float: right;">
+                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                       </h:outputText>
+                   </p:column>
+                   <p:columnGroup type="footer">
+                       <p:row>
+                           <p:column colspan="6" footerText="Total de pagos extra autorizado:" style="text-align: right"/>
+                           <p:column>
+                            <f:facet name="footer">
+                                <h:outputText id="totalAut" value ="#{oRGuardia.totalAut}">
+                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+                       </p:row>
+                   </p:columnGroup>
+               </p:dataTable>
+            </h:panelGrid>
+            <br/>
+            <h:panelGrid style="float: right;">
+                <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" >  
+                    <p:printer target="rptVista" />  
+                </p:commandButton>
+            </h:panelGrid>
+             
+            </p:scrollPanel>
+        </p:panel>
+        </p:dialog>
+       </h:form>     
+</h:body>
+</ui:define> 
+</ui:composition> 
+</html>

@@ -1,0 +1,161 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inicio</title>
+            <h:body> 
+                <center><h2>Marcar Casos No Facturables</h2></center>
+                <p:dialog closable="false" dynamic="true"  appendTo="@(body)" modal="true" id="dlgCompBusq" 
+                            header="Búsqueda de paciente"  widgetVar="dlgCompBusqVar" style="font-size:12px" 
+                            styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                      <h:form id="formDlg">
+                          <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"/> 
+                          <p:separator/>
+                          <p:commandButton value="Seleccionar" action="#{oNoFact.selPaciente()}" oncomplete="dlgCompBusqVar.hide()" icon="ui-icon-search" update=":form:txtFolioPac"/>
+                          <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()"/>
+                      </h:form> 
+                </p:dialog>
+                <p:dialog closable="false" dynamic="true" appendTo="@(body)" modal="true" id="dlgConfirmar" header="Marcar como No Facturable"
+                          widgetVar="dlgConf">
+                    <h:form id="formConf">
+                        <p:panel id="panelHosp" style="display: #{oNoFact.displayHosp}">
+                            <p:outputLabel style="font-weight: bold" value="Folio del Servicio: "/>
+                            <p:outputLabel value="#{oNoFact.selectedHosp.servPrest.idFolio}"/><br/>
+                            <p:outputLabel style="font-weight: bold" value="Paciente: "/>
+                            <p:outputLabel value="#{oNoFact.selectedHosp.servPrest.paciente.nombreCompleto}"/><br/>
+                            <p:outputLabel style="font-weight: bold" value="Monto: $"/>
+                            <p:outputLabel value="#{oNoFact.selectedHosp.monto}"/>
+                        </p:panel>
+                        <p:panel id="panelExt" style="display: #{oNoFact.displayExt}">
+                            <p:outputLabel style="font-weight: bold" value="Folio del Servicio: "/>
+                            <p:outputLabel value="#{oNoFact.selectedExt.servPrest.idFolio}"/><br/>
+                            <p:outputLabel style="font-weight: bold" value="Paciente: "/>
+                            <p:outputLabel value="#{oNoFact.selectedExt.servPrest.paciente.nombreCompleto}"/><br/>
+                            <p:outputLabel style="font-weight: bold" value="Monto: $"/>
+                            <p:outputLabel value="#{oNoFact.selectedExt.monto}"/>
+                        </p:panel>
+                        <p:panel id="panelRentas" style="display: #{oNoFact.displayRentas}">
+                            <p:outputLabel style="font-weight: bold" value="Folio de la Operacion: "/>
+                            <p:outputLabel value="#{oNoFact.selectedRentas.opeCaja.folio}"/><br/>
+                            <p:outputLabel style="font-weight: bold" value="Cliente: "/>
+                            <p:outputLabel value="#{oNoFact.selectedRentas.servPrest.paciente.nombre}"/><br/>
+                            <p:outputLabel style="font-weight: bold" value="Monto: $"/>
+                            <p:outputLabel value="#{oNoFact.selectedRentas.monto}"/>
+                        </p:panel>
+                        <br/>
+                        <p:panelGrid columns="2">
+                            <p:outputLabel style="font-weight: bold" value="Quién Autoriza: "/>
+                            <p:inputText value="#{oNoFact.quienAut}" size="42"><p:ajax/></p:inputText>
+                            <p:outputLabel style="font-weight: bold" value="Motivo: "/>
+                            <p:inputTextarea value="#{oNoFact.motivo}" rows="4" cols="30"><p:ajax/></p:inputTextarea>
+                        </p:panelGrid><br/>
+
+                        <p:commandButton value="Marcar como No Facturable" oncomplete="PF('dlgConf').hide()">
+                            <p:ajax listener="#{oNoFact.marcarNoFact()}" update=":form:txtFolioPac :form:dtHosp :form:dtExternos :form:dtRentas :form:msg"/>
+                        </p:commandButton>&nbsp;&nbsp;
+                        <p:commandButton value="Cancelar" oncomplete="PF('dlgConf').hide()"/>
+                    </h:form>
+                </p:dialog>
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true"/>
+                    <h:panelGrid columns="2">
+                        <p:outputLabel value="Tipo:&nbsp;"/>
+                        <p:selectOneMenu id="selFiltro" value="#{oNoFact.selectedFiltro}">
+                            <f:selectItem noSelectionOption="true" itemLabel="Seleccione" itemValue=""/>
+                            <f:selectItem itemLabel="Pagos por Pacientes  - Cargos de Hospital" itemValue="1"/>
+                            <f:selectItem itemLabel="Pagos por Pacientes  - Servicios Externos" itemValue="2"/>
+                            <f:selectItem itemLabel="Pago de Particulares - Rentas" itemValue="3"/>
+                            <p:ajax event="valueChange" listener="#{oNoFact.habilitaPaciente()}" update="btnBusqPac txtFolioPac"/>
+                        </p:selectOneMenu>
+                    </h:panelGrid><br/>
+                    <h:panelGrid columns="4">
+                        <p:outputLabel value="&nbsp;Paciente:&nbsp;"/>
+                        <p:inputText id="txtFolioPac" value="#{oNoFact.paciente.nombreCompleto}" readonly="true" size="37" disabled="#{oNoFact.disPaciente}"/>
+                        <p:commandButton id="btnBusqPac" value="..." oncomplete="dlgCompBusqVar.show()" disabled="#{oNoFact.disPaciente}"/>
+                    </h:panelGrid><br/>
+                    <p:commandButton ajax="false" value="Buscar" action="#{oNoFact.buscar()}" update="txtFolioPac dtHosp dtExternos dtRentas"/><br/><br/><br/>
+                    
+                    
+                    <p:dataTable  id="dtHosp" var="oHosp" value="#{oNoFact.listHospital}" paginator="true" paginatorPosition="bottom" rows="5" 
+                                  selection="#{oNoFact.selectedHosp}" rowKey="#{oHosp.servPrest.idFolio}" emptyMessage="No hay registros" style="display: #{oNoFact.displayHosp}">
+                        <p:ajax event="rowSelectRadio" />
+                        <p:column selectionMode="single"/>
+                        <p:column headerText="Folio Servicio">
+                            <p:outputLabel value="#{oHosp.servPrest.idFolio}"/>
+                        </p:column>
+                        <p:column headerText="Fecha Ingreso">
+                            <p:outputLabel value="#{oHosp.servPrest.episodioMedico.inicio}"/>
+                        </p:column>
+                        <p:column headerText="Fecha Alta">
+                            <p:outputLabel value="#{oHosp.servPrest.episodioMedico.alta}"/>
+                        </p:column>
+                        <p:column headerText="Monto Cuenta">
+                            <p:outputLabel value="#{oHosp.monto}"/>
+                        </p:column>
+                        <p:column headerText="Folio Pago">
+                            <p:outputLabel value="#{oHosp.opeCaja.folio}"/>
+                        </p:column>
+                        <p:column headerText="Paciente">
+                            <p:outputLabel value="#{oHosp.servPrest.paciente.nombreCompleto}"/>
+                        </p:column>
+                        <f:facet name="footer">
+                            <p:commandButton value="Marcar como No Facturable" oncomplete="dlgConf.show()" update=":formConf:panelHosp"/>
+                        </f:facet>
+                    </p:dataTable>
+                    <p:dataTable id="dtExternos" var="oExt" value="#{oNoFact.listExternos}" paginator="true" paginatorPosition="bottom" rows="5" 
+                                 selection="#{oNoFact.selectedExt}" rowKey="#{oExt.servPrest.idFolio}" emptyMessage="No hay registros" style="display: #{oNoFact.displayExt}">
+                        <p:ajax event="rowSelectRadio" />
+                        <p:column selectionMode="single"/>
+                        <p:column headerText="Folio Servicio">
+                            <p:outputLabel value="#{oExt.servPrest.idFolio}"/>
+                        </p:column>
+                        <p:column headerText="Fecha Servicio">
+                            <p:outputLabel value="#{oExt.servPrest.realizado}"/>
+                        </p:column>
+                        <p:column headerText="Servicio Otorgado">
+                            <p:outputLabel value="#{oExt.servPrest.concepPrestado.descripConcep}"/>
+                        </p:column>
+                        <p:column headerText="Monto Cuenta">
+                            <p:outputLabel value="#{oExt.monto}"/>
+                        </p:column>
+                        <p:column headerText="Folio Pago">
+                            <p:outputLabel value="#{oExt.opeCaja.folio}"/>
+                        </p:column>
+                        <p:column headerText="Paciente">
+                            <p:outputLabel value="#{oExt.servPrest.paciente.nombreCompleto}"/>
+                        </p:column>
+                        <f:facet name="footer">
+                            <p:commandButton value="Marcar como No Facturable" oncomplete="dlgConf.show()" update=":formConf:panelExt"/>
+                        </f:facet>
+                    </p:dataTable>
+                    <p:dataTable id="dtRentas" var="oRenta" value="#{oNoFact.listRentas}" paginator="true" paginatorPosition="bottom" rows="5" 
+                                 selection="#{oNoFact.selectedRentas}" rowKey="#{oRenta.opeCaja.folio}" emptyMessage="No hay registros" style="display: #{oNoFact.displayRentas}">
+                        <p:ajax event="rowSelectRadio" />
+                        <p:column selectionMode="single"/>
+                        <p:column headerText="Folio Pago">
+                            <p:outputLabel value="#{oRenta.opeCaja.folio}"/>
+                        </p:column>
+                        <p:column headerText="Fecha">
+                            <p:outputLabel value="#{oRenta.opeCaja.fechaOp}"/>
+                        </p:column>
+                        <p:column headerText="Monto">
+                            <p:outputLabel value="#{oRenta.monto}"/>
+                        </p:column>
+                        <p:column headerText="Cliente">
+                            <p:outputLabel value="#{oRenta.servPrest.paciente.nombre}"/>
+                        </p:column>
+                        <f:facet name="footer">
+                            <p:commandButton value="Marcar como No Facturable" oncomplete="dlgConf.show()" update=":formConf:panelRentas"/>
+                        </f:facet>
+                    </p:dataTable>
+                </h:form>             
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

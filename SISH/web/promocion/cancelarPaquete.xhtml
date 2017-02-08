@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"> 
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Cancelar Paquete</title>
+            <h:body>      
+
+                <center><h3>Cancelar Paquete</h3></center>
+                    #{CancelarPaqueteJB.limpia()}
+
+                <p:dialog closable="false" dynamic="true" height="550" width="900"  appendTo="@(body)" modal="true" id="dlgCompBusq" header="Busqueda de paciente"  widgetVar="dlgCompBusqVar" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+
+                    <h:form id="form">
+                        <p:growl id="grow3" sticky="true" /> 
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include> 
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar"  action="#{CancelarPaqueteJB.pacienteExistente()}"  oncomplete="dlgCompBusqVar.hide()" update=":formulario :formulario:grow1" icon="ui-icon-search"/>               
+                        <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" action="#{CancelarPaqueteJB.limpia()}" update=":formulario" icon="ui-icon-circle-close" />
+                    </h:form> 
+                </p:dialog>  
+                <br/>
+                <h:form>
+                    <p:growl id="grow2" sticky="true" />        
+                    <center>
+                        <p:commandButton value="Seleccionar paciente"  action="#{oPacienteJB.limpiaSelectedPaciente()}" update=":formulario :form:dtPacientes" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+                    </center>
+                </h:form>
+                <br/>
+                <center>
+                    <h:form id="formulario">                     
+                        <p:growl id="grow1" sticky="true" />
+                        <p:panel rendered="#{CancelarPaqueteJB.panelActivo}" style="width:90%">                        
+                            <p:panelGrid columns="2">
+                                <h:outputText value="Folio Paciente:"/> 
+                                <h:outputText value="#{CancelarPaqueteJB.paciente.folioPac}" />
+                                <h:outputText value="Nombre del paciente:"/>
+                                <h:outputText value="#{CancelarPaqueteJB.paciente.nombreCompleto}"/>
+                                <h:outputText value="Sexo:"/>
+                                <h:outputText value="#{CancelarPaqueteJB.paciente.genero}" />
+                                Tipo de paquete:<h:outputText value="#{CancelarPaqueteJB.paqueteContratado.paquete.tipoPaquete.descrip}" />
+                                Paquete: <h:outputText value="#{CancelarPaqueteJB.paqueteContratado.paquete.nombre}"/>
+                                Costo:  <h:outputText value="#{CancelarPaqueteJB.paqueteContratado.paquete.costo}"/>
+                                Fecha de Contratación:  <h:outputText value="#{CancelarPaqueteJB.paqueteContratado.registro}">
+                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
+                                </h:outputText>
+                                Monto Pagado:  <h:outputText value="#{CancelarPaqueteJB.montoPagado}"/>
+                            </p:panelGrid>
+
+                            <p:panel id="panel" >
+                                <h4>Servicios que incluye</h4>
+
+                                <p:dataTable emptyMessage="Sin servicios registrados" sortBy="conceptoIngreso.descripcion" id="tb" value="#{CancelarPaqueteJB.carritoServicios}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoServicios">
+                                    <f:facet name="header">
+                                        <h:outputText value="Servicios Registrados"/>
+                                    </f:facet> 
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Servicio
+                                        </f:facet>  
+                                        <h:outputText value="#{carritoServicios.conceptoIngreso.descripcion}" />
+                                    </p:column>                                   
+                                    <p:column width="50%!important"  >
+                                        <f:facet name="header"> 
+                                            <h:outputText value="Cantidad" />
+                                        </f:facet> 
+                                        <h:outputText value="#{carritoServicios.conceptoIngreso.cantidad}" /> 
+                                    </p:column>                                        
+                                    <p:column width="50%!important"  >
+                                        <f:facet name="header"> 
+                                            Unidad de medida
+                                        </f:facet>
+                                        <h:outputText value="#{carritoServicios.conceptoIngreso.unidadMedida.descrip}" />                               
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Monto
+                                        </f:facet> 
+                                        <h:outputText value="#{carritoServicios.conceptoIngreso.montoNuevo}"/>   
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Observaciones
+                                        </f:facet> 
+                                        <h:outputText value="#{carritoServicios.obs}" />
+                                    </p:column>                                        
+
+                                    <p:summaryRow >  
+                                        <p:column colspan="4"  style="text-align:right">  
+                                            Total:  
+                                        </p:column>  
+                                        <p:column>  
+                                            <h:outputText value="#{carritoServicios.conceptoIngreso.montoNuevo*carritoServicios.conceptoIngreso.cantidad}">
+                                                <f:convertNumber pattern="#.##"/>
+                                            </h:outputText>
+                                        </p:column>  
+                                    </p:summaryRow>
+                                    <p:columnGroup type="footer">
+                                        <p:row >
+                                            <p:column colspan="4" style="text-align:right" footerText="Costo total:" />
+                                            <p:column footerText="$#{CancelarPaqueteJB.totalCarrito}" />
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+                            </p:panel>
+                            <p:panel id="panel2" >
+                                <h4>Descuentos que incluye</h4>
+
+                                <p:dataTable emptyMessage="Sin descuentos registrados" id="tb3" value="#{CancelarPaqueteJB.carritoDescuentos}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoDescuentos">
+                                    <f:facet name="header">
+                                        <h:outputText value="Descuentos Registrados"/>
+                                    </f:facet> 
+                                    <p:column>
+                                        <f:facet name="header"> 
+                                            Línea
+                                        </f:facet>  
+                                        <h:outputText value="#{carritoDescuentos.lineaIngreso.descrip}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Descuento
+                                        </f:facet>  
+                                        <h:outputText value="#{carritoDescuentos.pctDscto}" />
+                                    </p:column> 
+                                </p:dataTable>
+                            </p:panel>
+                            <p:panel id="panelServCons" >
+                                <h4>Servicios Consumidos</h4>
+
+                                <p:dataTable emptyMessage="Sin servicios consumidos" id="tb5" value="#{CancelarPaqueteJB.listaServCons}" rows="6" paginator="true" paginatorPosition="bottom" var="serviciosCons">
+                                    <f:facet name="header">
+                                        <h:outputText value="Servicios Consumidos"/>
+                                    </f:facet> 
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Folio
+                                        </f:facet>  
+                                        <h:outputText value="#{serviciosCons.idFolio}"/>
+                                    </p:column>  
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Fecha
+                                        </f:facet>  
+                                        <h:outputText value="#{serviciosCons.registro}">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
+                                        </h:outputText>
+                                    </p:column>                                   
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Servicio
+                                        </f:facet> 
+                                        <h:outputText value="#{serviciosCons.concepPrestado.descripcion}" /> 
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Cantidad
+                                        </f:facet> 
+                                        <h:outputText value="#{serviciosCons.concepPrestado.cantidad}" /> 
+                                    </p:column>   
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Unidad de medida
+                                        </f:facet>
+                                        <h:outputText value="#{serviciosCons.concepPrestado.unidadMedida.descrip}" />             
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                            <p:panel>
+                                <p:panelGrid columns="2">
+                                    Motivo de Cancelación:
+                                    <p:inputTextarea value="#{CancelarPaqueteJB.paqueteContratado.razonCanc}" required="true" />
+                                    Quien autoriza:
+                                    <p:selectOneMenu id="personalAutoriza" required="true" label="Personal que Autoriza" converter="#{CancelarPaqueteJB}" value="#{CancelarPaqueteJB.paqueteContratado.personalAutorizCanc}">
+                                        <f:selectItem itemLabel="Seleccione" />
+                                        <f:selectItems value="#{CancelarPaqueteJB.personalAutorizacion}" var="oPersAut" itemLabel="#{oPersAut.nombreCompleto}" itemValue="#{oPersAut}"/>
+                                    </p:selectOneMenu>
+                                    Clave de autorización:
+                                    <p:inputText required="true" label="Clave de autorización" type="password" value="#{CancelarPaqueteJB.paqueteContratado.contraniaAutorizacion}" />
+                              
+                                </p:panelGrid>    
+                                
+                            </p:panel>
+                            
+
+                            <p:separator/>
+                            <p:commandButton value="Cancelar Paquete" action="#{CancelarPaqueteJB.cancelarPaquete()}"  icon="ui-icon-disk"  update=":formulario:grow1" />  
+
+                        </p:panel>
+                    </h:form>
+                </center>        
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Consultar Abonos de Pr&eacute;stamos</title>
+            <h:body>
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    <center>
+                        <h2>Consultar Abonos de Pr&eacute;stamos</h2>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Seleccionar Fecha" 
+                                                   style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column >
+                                    <p:calendar id="txtFecNac" value="#{oRptPagoDePrestJB.fecha}" 
+                                                pattern="yyyy-MM-dd" 
+                                                locale="es" showOn="button">
+                                    </p:calendar>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Buscar">
+                                    <p:ajax update="dtRpt" 
+                                            listener="#{oRptPagoDePrestJB.buscar()}"/>
+                                    <p:ajax update="pgRpt" 
+                                            listener="#{oRptPagoDePrestJB.buscar()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid>
+                        <br/>
+                        <p:dataTable id="dtRpt" var="oRpt" 
+                                     value="#{oRptPagoDePrestJB.lista}" 
+                                     paginator="true" 
+                                     paginatorPosition="bottom" 
+                                     rows="10" 
+                                     emptyMessage="No hay datos" 
+                                     style="width:1150px">
+                            <p:column  style="width: 120px;font-size: 15px" >
+                                <f:facet name="header" > <h:outputText value="Hora" style="font-size: 15px"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.opeCaja}"/>
+                            </p:column>
+                            <p:column style="font-size: 15px">
+                                <f:facet name="header" > <h:outputText value="Folio" style="font-size: 15px"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.folio}"/>
+                            </p:column>
+                            <p:column style="font-size: 15px">
+                                <f:facet name="header"> <h:outputText value="Folio del Personal" style="font-size: 15px"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.folioPers}"/>
+                            </p:column>
+                            <p:column  style="width: 200px;font-size: 15px">
+                                <f:facet name="header"> <h:outputText value="Nombre del Empleado" style="font-size: 15px"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.nombreCompleto}"/>
+                            </p:column>
+                            <p:column  style="width: 60px;font-size: 15px">
+                                <f:facet name="header"> <h:outputText value="Departamento" style="font-size: 15px"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.departamento}"/>
+                            </p:column>
+                            <p:column style="font-size: 15px">
+                                <f:facet name="header" > <h:outputText value="Total del Pr&eacute;stamo" style="font-size: 15px"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.monto}">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width: 80px;font-size: 15px" >
+                                <f:facet name="header"> <h:outputText value="Fecha del Pr&eacute;stamo" style="font-size: 15px"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.regPrestamo}"/>
+                            </p:column>
+                            <p:column style="width: 50px;font-size: 15px">
+                                <f:facet name="header"> <h:outputText value="Folio del Pr&eacute;stamo" style="font-size: 15px"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.folioPres}"/>
+                            </p:column>
+                            <p:column  style="width: 50px;font-size: 15px">
+                                <f:facet name="header"> <h:outputText value="Pagos Realizados" style="font-size: 15px"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.pagosRealizados}">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="width: 50px;font-size: 15px">
+                                <f:facet name="header"> <h:outputText value="Condici&oacute;n" style="font-size: 15px"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.situacion}"/>
+                            </p:column>
+                            <p:column style="font-size: 15px">
+                                <f:facet name="header"> <h:outputText value="Pago del D&iacute;a" style="font-size: 15px"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.montoEgreOtroIngr}">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column  style="font-size: 15px">
+                                <f:facet name="header"> <h:outputText value="Saldo por pagar" style="font-size: 15px"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.saldoPorPagar}">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="font-size: 15px">
+                                <f:facet name="header"> <h:outputText value="Forma de Pago" style="font-size: 15px"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.cveFrmPago}"/>
+                            </p:column>
+                        </p:dataTable>
+                        <p:panelGrid id="pgRpt" >
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Total Pago de Pr&eacute;stamos"/>
+                                </p:column>
+                                <p:column >
+                                    <p:outputLabel value="#{oRptPagoDePrestJB.totalPagosPrestamos}" style="font-size: 15px">
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid>
+                        <p:commandButton value="PDF" ajax="false">
+                            <p:dataExporter type="pdf" target="dtRpt"  
+                                            fileName="ReportePagosDePrestamos" preProcessor="#{oRptPagoDePrestJB.preProcessPDF}"/>
+                        </p:commandButton>
+                    </center>
+                </h:form>
+                <p:dialog modal="true" widgetVar="statusDialog" header="Status" 
+                          draggable="false" closable="false" resizable="false">
+                    <p:graphicImage name="/imgs/ajax-loader.gif" />
+                </p:dialog>
+            </h:body>
+        </ui:define>
+    </ui:composition>
+</html>

@@ -1,0 +1,1089 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"> 
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Ingresar al hospital</title>
+            <h:body>      
+                <center><h3>Ingresar al hospital</h3></center>
+                    #{oIngrHosp.limpia()}
+                <p:dialog closable="false" dynamic="true" height="550" 
+                          width="900" appendTo="@(body)" modal="true" 
+                          id="dlgCompBusq" header="Busqueda de paciente"  
+                          widgetVar="dlgCompBusqVar" style="font-size:12px" 
+                          styleClass="text-align: center;"  position="center" 
+                          showEffect="clip" hideEffect="fold" >  
+                    <h:form id="form">
+                        <p:growl id="grow3" sticky="true" /> 
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include> 
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar"  action="#{oIngrHosp.pacienteExistente()}"  oncomplete="dlgCompBusqVar.hide()" update=":formulario :formulario:grow1 :formPaq" icon="ui-icon-search"/>
+                        <p:commandButton value="Nueva hospitalización" oncomplete="dlgCompBusqVar.hide()" update=":formulario" action="#{oIngrHosp.pacienteNuevo()}" icon="ui-icon-pencil" />
+                        <p:commandButton value="Modificar hospitalización existente" oncomplete="dlgCompBusqVar.hide()" update=":formulario" action="#{oIngrHosp.selectPacienteHospExi()}" icon="ui-icon-refresh" />                
+                        <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" action="#{oIngrHosp.limpia()}" update=":formulario" icon="ui-icon-circle-close" />
+                    </h:form> 
+                </p:dialog>  
+                <br/>
+                <h:form>
+                    <p:growl id="grow2" sticky="true" />        
+                    <center>
+                        <p:commandButton value="Seleccionar paciente" action="#{oPacienteJB.limpiaSelectedPaciente()}" update=":formulario :form:dtPacientes" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+                        <p:commandButton value="Nueva hospitalización"  update=":formulario" action="#{oIngrHosp.pacienteNuevo()}" icon="ui-icon-pencil" />
+                    </center>
+                </h:form>
+                <br/>
+                <center>
+                    <h:form id="formulario">                     
+                        <p:growl id="grow1" sticky="true" />
+                        <p:panel id="panelPacExiHosp" rendered="#{oIngrHosp.pacienteExistente || oIngrHosp.pacienteHospExis }"  style="width:90%">                        
+                            <p:panelGrid columns="2">
+                                Folio Paciente:<h:outputText value="#{oIngrHosp.paciente.folioPac}"/>
+                                CURP:<h:outputText value="#{oIngrHosp.paciente.CURP}" />
+                                RFC:<h:outputText value="#{oIngrHosp.paciente.RFC}" />
+                                Nombre del paciente:<h:outputText value="#{oIngrHosp.paciente.nombreCompleto}" />
+                                Sexo:<h:outputText value="#{oIngrHosp.paciente.genero}" />
+                                <h:outputText rendered="#{oIngrHosp.ingresaHospital.episodioMedico.medTratante!=null }" value="Médico tratante:"/><h:outputText rendered="#{oIngrHosp.ingresaHospital.episodioMedico.medTratante!=null}" value="#{oIngrHosp.ingresaHospital.episodioMedico.medTratante.nombreCompleto}"/>
+                                <h:outputText rendered="#{oIngrHosp.ingresaHospital.episodioMedico.medRecom!=null}" value="Médico que recomienda:"/><h:outputText rendered="#{oIngrHosp.ingresaHospital.episodioMedico.medRecom!=null}" value="#{oIngrHosp.ingresaHospital.episodioMedico.medRecom.nombreCompleto}"/>
+                            </p:panelGrid>
+                        </p:panel>
+                        <p:panel id="panelNvoIngrHosp" style="width:90%" rendered="#{oIngrHosp.isPacienteNuevo}" >  
+                            #{oIngrHosp.ODatosHC.nuevoPac()}    
+                            <p:panelGrid id="pgDatosGenerales" >
+                                <p:row> 
+                                    <p:column>
+                                        <h:outputText value="Apellido Paterno:"/> <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText  id="ApellidoPaterno"
+                                                    label="Apellido Paterno"
+                                                    maxlength="50"
+                                                    size="52"
+                                                    style="text-transform: uppercase"
+                                                    required="true"  
+                                                    value="#{oIngrHosp.ODatosHC.historiaClinica.paciente.apellidoPaterno}" />
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="Apellido Materno:"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText id="ApellidoMaterno"
+                                            maxlength="50"
+                                            size="52"
+                                            style="text-transform: uppercase"
+                                            value="#{oIngrHosp.ODatosHC.historiaClinica.paciente.apellidoMaterno}" />
+                                    </p:column>
+                                </p:row>  
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText value="Nombre(s):"/><h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText id="Nombre" label="Nombre"
+                                            maxlength="50"
+                                            size="52"
+                                            style="text-transform: uppercase"
+                                             required="true" value="#{oIngrHosp.ODatosHC.historiaClinica.paciente.nombre}" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Fecha de Nacimiento:"/><h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    </p:column> 
+                                    <p:column>
+                                        <p:calendar locale="es" label="FechaNacimiento"
+                                                    required="true" id="cal" navigator="true"
+                                                    yearRange="c-100:c+0" showOn="button" value="#{oIngrHosp.ODatosHC.historiaClinica.paciente.nac}">
+                                            <p:ajax event="dateSelect" update="txtEdad" listener="#{oIngrHosp.ODatosHC.calculaEdad()}"/>
+                                        </p:calendar>  
+                                    </p:column>
+                                </p:row>                                     
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText value="Edad: "/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText id="txtEdad" readonly="true" size="4"  value="#{oIngrHosp.ODatosHC.edad}" />&nbsp;&nbsp;
+                                        <p:outputLabel value=" años"/>
+                                    </p:column>  
+                                    <p:column>
+                                        <h:outputText value="Sexo: "/><h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu required="true" label="Sexo" id="selGenero" value="#{oIngrHosp.ODatosHC.historiaClinica.paciente.genero}"> 
+                                            <f:selectItem itemLabel="Seleccione" />
+                                            <f:selectItem itemLabel="Masculino" itemValue="M" />  
+                                            <f:selectItem itemLabel="Femenino" itemValue="F" />  
+                                        </p:selectOneMenu> 
+                                    </p:column>                                        
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText value="Tipo de Paciente:"/><h:outputText value=" * " style="font-weight:bold;color: red"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneRadio required="true" label="Tipo de Paciente" id="radioTipoPac" value="#{oIngrHosp.ODatosHC.historiaClinica.paciente.tipo}">
+                                            <f:selectItem itemLabel="PSH" itemValue="PSH "/>
+                                            <f:selectItem itemLabel="PNSH" itemValue="PNSH"/>
+                                        </p:selectOneRadio> 
+                                    </p:column>
+                                        <p:column>
+                                            <h:outputText value="Correo Electrónico"/>
+                                        </p:column>
+                                    <p:column>
+                                        <p:inputText size="40" 
+                                                     value="#{oIngrHosp.ODatosHC.historiaClinica.paciente.correoElectronico}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row> 
+                                <p:row>
+                                    <p:column colspan="4">
+                                        <h:outputText 
+                                            value="Datos del Familiar que Acompa&ntilde;a"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText 
+                                            value="Domicilio"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText size="40" 
+                                                     style="text-transform: uppercase"
+                                                     value="#{oIngrHosp.ingresaHospital.episodioMedico.domicilioFamiliar}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText 
+                                            value="Tel&eacute;fono"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText size="40" 
+                                                     value="#{oIngrHosp.ingresaHospital.episodioMedico.telefonoFamiliar}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row>  
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText 
+                                            value="Empresa donde trabaja"/>
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:inputText size="60" 
+                                                     style="text-transform: uppercase"
+                                                     value="#{oIngrHosp.ingresaHospital.episodioMedico.empresaFamiliar}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText 
+                                            value="Domicilio Empresa"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText size="40" 
+                                                     style="text-transform: uppercase"
+                                                     value="#{oIngrHosp.ingresaHospital.episodioMedico.domicilioEmpresaFamiliar}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText 
+                                            value="Tel&eacute;fono Empresa"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText size="40" 
+                                                     value="#{oIngrHosp.ingresaHospital.episodioMedico.telefonoEmpresaFamiliar}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>  
+
+                        </p:panel>
+                        <p:panel style="width:90%" id="panelIngresar" rendered="#{oIngrHosp.panelActivo}" >     
+                            <center>
+                                <h:panelGrid columns="2">
+
+                                    <h:outputText rendered="#{!oIngrHosp.facturaRegistrada and (oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente)}" value="¿Desea Factura?:" /><p:selectBooleanCheckbox rendered="#{!oIngrHosp.facturaRegistrada and (oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente)}" value="#{oIngrHosp.ingresaHospital.episodioMedico.servicioPrestado.facturable}" />
+                                    Observaciones: 
+                                    <p:inputTextarea label="Observaciones" 
+                                                     autoResize="false" 
+                                                     style="text-transform: uppercase"
+                                                     value="#{oIngrHosp.ingresaHospital.episodioMedico.servicioPrestado.obs}" />
+                                    <h:outputText value="Diagnóstico de ingreso*:" rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" />
+                                    <p:autoComplete size="50" scrollHeight="300" minQueryLength="4" 
+                                        itemtipMyPosition="left center" itemtipAtPosition="right center"  
+                                        label="Diagnóstico de ingreso" required="true" 
+                                        rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" 
+                                        value="#{oIngrHosp.ingresaHospital.episodioMedico.dxIngreso.cve}" 
+                                        completeMethod="#{oListaDiag.obtenerDiagnostico}" 
+                                        var="oDiag1" itemLabel="#{oDiag1.descrip2}" 
+                                        itemValue="#{oDiag1.cve}">
+                                        <p:ajax/>
+                                    </p:autoComplete>
+
+                                    <h:outputText rendered="#{!oIngrHosp.tieneMedTra}" value="Médico tratante*:"/>
+                                    <p:selectOneMenu rendered="#{!oIngrHosp.tieneMedTra}" 
+                                                     required="true" 
+                                                     label="Médico tratante" 
+                                                     converter="#{oConverterMedico}" 
+                                                     filter="true"
+                                                     filterMatchMode="contains"
+                                                     value="#{oIngrHosp.ingresaHospital.episodioMedico.medTratante}" >
+                                        <f:selectItem rendered="#{oIngrHosp.tieneMedTra}" itemLabel="#{oIngrHosp.ingresaHospital.episodioMedico.medTratante.nombreCompleto}" itemValue="#{oIngrHosp.ingresaHospital.episodioMedico.medTratante}" />
+                                        <f:selectItems value="#{oIngrHosp.medicos}"  var="oMed" 
+                                                       itemLabel="#{oMed.nombreCompleto}" 
+                                                       itemValue="#{oMed}" /> 
+                                    </p:selectOneMenu>
+                                    <h:outputText rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" 
+                                                  value="Médico que recomienda:"/>
+                                    <p:selectOneMenu rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" 
+                                                     label="Médico que recomienda" converter="#{oConverterMedico}" 
+                                                     value="#{oIngrHosp.ingresaHospital.episodioMedico.medRecom}" 
+                                                     filter="true"
+                                                     filterMatchMode="contains">
+                                        <f:selectItem rendered="#{oIngrHosp.tieneMedRecom}" itemLabel="#{oIngrHosp.ingresaHospital.episodioMedico.medRecom.nombreCompleto}" itemValue="#{oIngrHosp.ingresaHospital.episodioMedico.medRecom}" />
+                                        <f:selectItems  value="#{oIngrHosp.medicos}"  var="oMed" 
+                                                        itemLabel="#{oMed.nombreCompleto}" 
+                                                        itemValue="#{oMed}" /> 
+                                    </p:selectOneMenu>
+                                    <h:outputText rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" 
+                                                  value="Médico que hospitaliza:*"/>
+                                    <p:selectOneMenu rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" 
+                                                     required="true" label="Médico que hospitaliza" 
+                                                     converter="#{oConverterMedico}" 
+                                                     filter="true"
+                                                     filterMatchMode="contains"
+                                                     value="#{oIngrHosp.ingresaHospital.episodioMedico.medRecibe}" >
+                                        <f:selectItem rendered="#{oIngrHosp.ingresaHospital.episodioMedico.medRecibe!=null}" itemLabel="#{oIngrHosp.ingresaHospital.episodioMedico.medRecibe.nombreCompleto}" itemValue="#{oIngrHosp.ingresaHospital.episodioMedico.medRecibe}" />
+                                        <f:selectItems value="#{oIngrHosp.medicos}"  var="oMed" 
+                                                       itemLabel="#{oMed.nombreCompleto}" 
+                                                       itemValue="#{oMed}" /> 
+                                    </p:selectOneMenu>
+
+                                    <h:outputText rendered="#{!oIngrHosp.isPaquete}" value="Tipo:*"/>
+                                    <p:selectOneRadio required="true" 
+                                                      rendered="#{!oIngrHosp.isPaquete}" 
+                                                      label="Tipo" value="#{oIngrHosp.tipo}">  
+                                        <f:selectItem itemLabel="Particular" itemValue="0" />
+                                        <f:selectItems value="#{oIngrHosp.listaTiposEmpresa}"
+                                                       var="oTipEmp1"
+                                                       itemValue="#{oTipEmp1.tipo}"
+                                                       itemLabel="#{oTipEmp1.descripcion}"/>
+                                        <p:ajax listener="#{oIngrHosp.validaTipo()}" update="pg2 panelAnticipo" />
+                                    </p:selectOneRadio>
+                                    <h:outputText rendered="#{oIngrHosp.isPaquete}" value="Tipo: Paquete: #{oIngrHosp.paqueteContratado.paquete.nombre}" />
+                                    <p:commandButton rendered="#{oIngrHosp.isPaquete}" value="ver detalle del paquete" oncomplete="dlgPaquete.show()" icon="ui-icon-search"  />
+
+                                    <h:outputText value=" " />
+                                    <h:panelGrid columns="3" id="pg2">
+
+                                        <h:outputText id="textempresa" 
+                                                      rendered="#{oIngrHosp.isEmpresa}" 
+                                                      value="Empresa:" />
+                                        <p:selectOneMenu id="listaempre"  
+                                                         rendered="#{oIngrHosp.isEmpresa}" 
+                                                         converter="#{oIngrHosp}"  
+                                                         label="Empresa" 
+                                                         value="#{oIngrHosp.compañia}">  
+                                            <f:selectItem itemLabel="Selecciona una empresa" itemValue="" />  
+                                            <f:selectItems value="#{oIngrHosp.compañias}"  var="oComp" 
+                                                           itemLabel="#{oComp.nombreCorto}" 
+                                                           itemValue="#{oComp}"/> 
+                                            <p:ajax update=":form3:panelDialog" listener="#{oIngrHosp.eligeBancoAutorizar()}" />
+                                        </p:selectOneMenu>
+
+                                        <h:outputText id="textaseg" rendered="#{oIngrHosp.isAseg}" value="Aseguradora:" />
+                                        <p:selectOneMenu id="listaAseg"  rendered="#{oIngrHosp.isAseg}" converter="#{oIngrHosp}"  label="Empresa" value="#{oIngrHosp.compañia}">  
+                                            <f:selectItem itemLabel="Selecciona una aseguradora" itemValue="" />  
+                                            <f:selectItems value="#{oIngrHosp.compañias}"  var="oComp" 
+                                                           itemLabel="#{oComp.nombreCorto}" 
+                                                           itemValue="#{oComp}"/>
+                                            <p:ajax update=":form3:panelDialog" listener="#{oIngrHosp.eligeBancoAutorizar()}" />
+                                        </p:selectOneMenu>
+
+                                        <h:outputText id="textbanc" rendered="#{oIngrHosp.isBanco}" value="Banco:" />
+                                        <p:selectOneMenu id="listaBan"  rendered="#{oIngrHosp.isBanco}" converter="#{oIngrHosp}"  label="Banco" value="#{oIngrHosp.compañia}">  
+                                            <f:selectItem itemLabel="Selecciona un banco" itemValue="" />  
+                                            <f:selectItems value="#{oIngrHosp.compañias}"  var="oComp" 
+                                                           itemLabel="#{oComp.nombreCorto}" 
+                                                           itemValue="#{oComp}"/>
+                                            <p:ajax update=":form3:panelDialog" listener="#{oIngrHosp.eligeBancoAutorizar()}" />
+                                        </p:selectOneMenu>
+
+                                        <h:outputText id="textmuni" rendered="#{oIngrHosp.isMun}" value="Municipio:" />
+                                        <p:selectOneMenu id="listaMun"  rendered="#{oIngrHosp.isMun}" converter="#{oIngrHosp}"  label="Municipio" value="#{oIngrHosp.compañia}">  
+                                            <f:selectItem itemLabel="Selecciona un municipio" itemValue="" />  
+                                            <f:selectItems value="#{oIngrHosp.compañias}"  var="oComp" 
+                                                           itemLabel="#{oComp.nombreCorto}" 
+                                                           itemValue="#{oComp}"/>
+                                            <p:ajax update=":form3:panelDialog" listener="#{oIngrHosp.eligeBancoAutorizar()}" />
+                                        </p:selectOneMenu>
+
+                                        <h:outputText id="textotro" rendered="#{oIngrHosp.isOtro}" value="Otro:" />
+                                        <p:selectOneMenu id="listaOtro"  
+                                                         rendered="#{oIngrHosp.isOtro}" 
+                                                         converter="#{oIngrHosp}"  
+                                                         label="Otro" value="#{oIngrHosp.compañia}">  
+                                            <f:selectItem itemLabel="Selecciona compa&ntilde;&iacute;a" itemValue="" />  
+                                            <f:selectItems value="#{oIngrHosp.compañias}"  var="oComp" 
+                                                           itemLabel="#{oComp.nombreCorto}" 
+                                                           itemValue="#{oComp}"/>
+                                            <p:ajax update=":form3:panelDialog" 
+                                                    listener="#{oIngrHosp.eligeBancoAutorizar()}" />
+                                        </p:selectOneMenu>
+
+                                        <p:commandButton id="buttonAutori" value="Autorización" rendered="#{oIngrHosp.isEmpresa || oIngrHosp.isAseg || oIngrHosp.isBanco }" icon="ui-icon-unlocked">
+                                            <p:ajax update="grow1 panelauto"  listener="#{oIngrHosp.autorizarBanco()}" />
+                                        </p:commandButton>
+                                    </h:panelGrid>
+
+                                    <h:outputText value=" " />
+                                    <h:panelGrid  id="panelauto">  
+                                        <br/>    
+                                        <p:dataTable rendered="#{ oIngrHosp.compañiasautorizadas.size()>0 and oIngrHosp.pacienteHospExis}" id="dtca"  value="#{oIngrHosp.compañiasautorizadas}" var="ca" paginator="true" paginatorPosition="bottom" rows="2" >
+                                            <f:facet name="header">
+                                                <h:outputText value="Compañías autorizadas ya registradas "/>
+                                            </f:facet> 
+
+                                            <p:column rendered="#{!ca.compañiaNueva and ca.compCred.idEmp!=1}">
+                                                <f:facet name="header"> 
+                                                    Empresa
+                                                </f:facet>  
+                                                <h:outputText value="#{ca.compCred.nombreCorto}" />
+                                            </p:column>
+                                            <p:column rendered="#{!ca.compañiaNueva and ca.compCred.idEmp!=1 }">
+                                                <f:facet name="header"> 
+                                                    Número de autorización
+                                                </f:facet>  
+                                                <h:outputText value="#{ca.numAuto2}" />
+                                            </p:column>
+                                            <p:column rendered="#{!ca.compañiaNueva and ca.compCred.idEmp!=1 }" >
+                                                <f:facet name="header"> 
+                                                    Eliminar
+                                                </f:facet>
+                                                <p:selectBooleanCheckbox label="Eliminar empresa" value="#{ca.eliminaEmpresa}">
+                                                    <p:ajax update=":formulario:panelauto :formulario:grow1" 
+                                                            listener="#{oIngrHosp.eliminaCompañiaAutorizada(ca.compCred.idEmp)}" />
+                                                </p:selectBooleanCheckbox>    
+                                            </p:column>
+                                            <p:column rendered="#{!ca.compañiaNueva and ca.compCred.idEmp!=1 }"  >
+                                                <f:facet name="header"> 
+                                                    Actualiza autorización
+                                                </f:facet>
+                                                <p:commandButton value=" " icon="ui-icon-refresh" style=" height: 25px; width: 25px" >
+                                                    <p:ajax update=":formdialogAutorzupdate:panelDialogAutorzupdate" listener="#{oIngrHosp.seleccionaEmprUpdat(ca)}" />
+                                                </p:commandButton>    
+                                            </p:column>
+                                        </p:dataTable> 
+                                        <br/>    
+                                        <p:dataTable rendered="#{oIngrHosp.compañiasautorizadas.size()>0 }" id="dtca2"  value="#{oIngrHosp.compañiasautorizadas}" var="ca">
+                                            <f:facet name="header">
+                                                <h:outputText value="Compa&ntilde;&iacute;as nuevas para autorizar"/>
+                                            </f:facet> 
+
+                                            <p:column rendered="#{ca.compCred.idEmp!=1 and !ca.compañiaRegAuto  }">
+                                                <f:facet name="header"> 
+                                                    Empresa
+                                                </f:facet>  
+                                                <h:outputText value="#{ca.compCred.nombreCorto}" />
+                                            </p:column>
+                                            <p:column rendered="#{ca.compCred.idEmp!=1 and !ca.compañiaRegAuto}">
+                                                <f:facet name="header"> 
+                                                    Número de autorización
+                                                </f:facet>  
+                                                <h:outputText value="#{ca.numAuto2}" />
+                                            </p:column>
+                                            <p:column rendered="#{ca.compCred.idEmp!=1 and !ca.compañiaRegAuto }" >
+                                                <f:facet name="header"> 
+                                                    Eliminar
+                                                </f:facet>
+                                                <p:commandButton value=" " icon="ui-icon-trash" style=" height: 25px; width: 25px" >
+                                                    <p:ajax listener="#{oIngrHosp.eliminaCompañiaAutorizada(ca.compCred.idEmp)}" update=":formulario:panelauto"/>
+                                                </p:commandButton>    
+                                            </p:column>
+                                            <p:column rendered="#{ca.compCred.idEmp!=1 and !ca.compañiaRegAuto }"  >
+                                                <f:facet name="header"> 
+                                                    Actualiza autorización
+                                                </f:facet>
+                                                <p:commandButton value=" " icon="ui-icon-refresh" style=" height: 25px; width: 25px" >
+                                                    <p:ajax update=":formdialogAutorzupdate:panelDialogAutorzupdate" listener="#{oIngrHosp.seleccionaEmprUpdat(ca)}" />
+                                                </p:commandButton>    
+                                            </p:column>
+                                        </p:dataTable>    
+                                    </h:panelGrid>
+
+                                    <h:outputText value=" " />
+                                    <h:outputText value=" " />
+
+                                    <h:outputText value="Documentación:* " />
+                                    <p:commandButton value="Documentación del paciente" update=":form4:panelDialog2" oncomplete="dlg2.show()" icon="ui-icon-circle-check"  />
+
+                                    <h:outputText value="Habitación:*"/>
+                                    <p:selectOneMenu required="true" label="Habitación" converter="#{oConverterHabitacion}"  value="#{oIngrHosp.ingresaHospital.episodioMedico.hab}" >
+                                        <f:selectItem itemLabel="#{oIngrHosp.ingresaHospital.episodioMedico.hab.habnumDesp}" itemValue="#{oIngrHosp.ingresaHospital.episodioMedico.hab}"  />
+                                        <f:selectItems  value="#{oIngrHosp.habitaciones}"  var="oHab" 
+                                                        itemLabel="#{oHab.habnumDesp}" 
+                                                        itemValue="#{oHab}" />
+                                    </p:selectOneMenu>   
+
+                                    <h:outputText 
+                                        rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" 
+                                        value="Responsable de la cuenta*:"/>
+                                    <p:inputTextarea style="text-transform: uppercase"
+                                        rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" 
+                                        label="Responsable de la cuenta" 
+                                        autoResize="false" required="true" 
+                                        value="#{oIngrHosp.ingresaHospital.episodioMedico.responsableCuenta}" /> 
+                                    <h:outputText 
+                                        rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" 
+                                        value="Familiar que lo acompaña*:"/>
+                                    <p:inputTextarea style="text-transform: uppercase"
+                                                     rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" label="Familiar que lo acompaña" autoResize="false" required="true" value="#{oIngrHosp.ingresaHospital.episodioMedico.familiaracompana}" />
+                                    <h:outputText 
+                                        rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" 
+                                        value="Familiar que recibe información*:"/>
+                                    <p:inputTextarea style="text-transform: uppercase"
+                                                     rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" label="Familiar que recibe información:" autoResize="false" required="true" value="#{oIngrHosp.ingresaHospital.episodioMedico.familiarinformacion}" /> 
+                                    <h:outputText value="¿Desea el control de TV pagando depósito en Caja?:" rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" /><p:selectBooleanCheckbox value="#{oIngrHosp.ingresaHospital.episodioMedico.servicioPrestado.controlTv}" rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" />
+                                    <h:outputText value="¿Desea el control de clima pagando depósito en Caja?:" rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" /><p:selectBooleanCheckbox value="#{oIngrHosp.ingresaHospital.episodioMedico.servicioPrestado.controlClima}" rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" />
+
+                                </h:panelGrid>
+                            </center>
+                            <h:panelGrid columns="2" id="panelAnticipo">
+                                <h:outputText value="Anticipo:"/> 
+                                <p:inputText disabled="#{!(oIngrHosp.ispac and oIngrHosp.compañiasautorizadas.size()==0 and (oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente))}" label="Anticipo" required="true" value="#{oIngrHosp.ingresaHospital.episodioMedico.servicioPrestado.anticipo}" />
+                            </h:panelGrid>
+                            <p:separator/>
+                            <p:commandButton rendered="#{oIngrHosp.isPacienteNuevo || oIngrHosp.pacienteExistente}" value="Ingresa paciente al hospital " update="grow1" actionListener="#{oIngrHosp.ingresarHospital()}" icon="ui-icon-disk" />
+                            <p:commandButton rendered="#{oIngrHosp.pacienteHospExis}" value="Actualiza el ingresar paciente al hospital  " update="grow1" actionListener="#{oIngrHosp.actualizaIngresarHospital()}" icon="ui-icon-refresh" />
+                        </p:panel>   
+                    </h:form>   
+
+                    <p:dialog id="dialogAutorz" width="500" dynamic="true"  modal="true" appendTo="@(body)" header="Autorización "  widgetVar="dlg1" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="form3">  
+                            <p:growl id="msgs3" showDetail="true"/>
+                            <p:panel id="panelDialog" >  
+                                Autorización para:<h:outputText value=" #{oIngrHosp.bancoAAutorizar.nombreCorto}"/>
+                                <h:panelGrid columns="2" >  
+
+                                    Número de autorización*: 
+                                    <p:inputText label="Número de autorización" 
+                                                 style="text-transform: uppercase"
+                                                 required="true" 
+                                                 value="#{oIngrHosp.compañiasAutorizada.numAuto2}" />
+                                    Nombre de quien autorizó*: 
+                                    <p:inputText label="Número de quien autorizó"
+                                                 required="true"  
+                                                 style="text-transform: uppercase"
+                                                 value="#{oIngrHosp.compañiasAutorizada.nombreQuienAuto2}" />
+                                    Número de siniestro*: 
+                                    <p:inputText label="Número de siniestro" 
+                                                 required="true"  
+                                                 style="text-transform: uppercase"
+                                                 value="#{oIngrHosp.compañiasAutorizada.numSiniestro}" />
+                                    Número de póliza*:
+                                    <p:inputText disabled="#{oIngrHosp.bancoAAutorizar.tipoCia!=2}" 
+                                                 label="Número de póliza" 
+                                                 required="true" 
+                                                 value="#{oIngrHosp.compañiasAutorizada.numPoliza}" />
+                                    Medio de autorización*: 
+                                    <p:inputText label="Medio de autorización"
+                                                 required="true" 
+                                                 style="text-transform: uppercase"
+                                                 value="#{oIngrHosp.compañiasAutorizada.SMedioAuto}" />
+                                    Observaciones*: 
+                                    <p:inputTextarea label="Observaciones" 
+                                                     autoResize="false" 
+                                                     required="true" cols="40" 
+                                                 style="text-transform: uppercase"
+                                                 value="#{oIngrHosp.compañiasAutorizada.SObsAuto}"  />
+
+                                </h:panelGrid>  
+                                <p:separator />
+                                <p:commandButton value="Agregar" 
+                                                 icon="ui-icon-disk" 
+                                                 update="msgs3 :form4:panelDocs :formulario:panelauto" 
+                                                 action="#{oIngrHosp.guardaCompañiaautorizada()}" />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+
+                    <p:dialog id="dialogAutorzupdate" dynamic="true"  modal="true" appendTo="@(body)" header="Autorización "  widgetVar="dlgEmpUpdate" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="formdialogAutorzupdate" >  
+                            <p:growl id="msgs3" showDetail="true"/>
+                            <p:panel id="panelDialogAutorzupdate" >  
+                                Autorización para:<h:outputText value=" #{oIngrHosp.empresaUpdate.compCred.nombreCorto}"/>
+                                <h:panelGrid columns="2" >  
+
+                                    Número de autorización*: 
+                                    <p:inputText label="Número de autorización" 
+                                                 required="true"  
+                                                 style="text-transform: uppercase"
+                                                 value="#{oIngrHosp.empresaUpdate.numAuto2}" />
+                                    Nombre de quien autorizó*: 
+                                    <p:inputText label="Número de quien autorizó"
+                                                 required="true"  
+                                                 style="text-transform: uppercase"
+                                                 value="#{oIngrHosp.empresaUpdate.nombreQuienAuto2}" />
+                                    Número de siniestro*: 
+                                    <p:inputText label="Número de siniestro" 
+                                                 required="true" 
+                                                 value="#{oIngrHosp.empresaUpdate.numSiniestro}" />
+                                    Número de póliza*:
+                                    <p:inputText disabled="#{oIngrHosp.empresaUpdate.compCred.idEmp!=2}"
+                                                 label="Número de póliza" 
+                                                 required="true"  
+                                                 style="text-transform: uppercase"
+                                                 value="#{oIngrHosp.compañiasAutorizada.numPoliza}" />
+                                    Medio de autorización*: 
+                                    <p:inputText label="Medio de autorización" 
+                                                 required="true"  
+                                                 style="text-transform: uppercase"
+                                                 value="#{oIngrHosp.empresaUpdate.SMedioAuto}" />
+                                    Observaciones*: 
+                                    <p:inputTextarea label="Observaciones" 
+                                                     autoResize="false" 
+                                                     required="true" cols="40"
+                                                 style="text-transform: uppercase"
+                                                 value="#{oIngrHosp.empresaUpdate.SObsAuto}"  />
+
+                                </h:panelGrid>  
+                                <p:separator />
+                                <p:commandButton update="msgs3 :form4:panelDocs :formulario:panelauto" 
+                                                 value="Actualiza" 
+                                                 icon="ui-icon-refresh" 
+                                                 action="#{oIngrHosp.guardaCompañiaautorizadaActualizada()}" />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>    
+
+                    <p:dialog dynamic="true" draggable="false" id="dialogDocumentacion" minHeight="200"   height="200" closable="false"  modal="true" appendTo="@(body)" header="Documentación del paciente "  widgetVar="dlg2" style="font-size:12px; " styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="form4">   
+                            <p:growl id="msgs4" showDetail="true"/>
+                            <p:panel id="panelDialog2" style=" width: 140%" >  
+                                <h:panelGrid>  
+                                    <p:dataTable value="#{oIngrHosp.empresaSH.formatos}" var="fmt">
+                                        <p:column>                                                 
+                                            <p:selectBooleanCheckbox itemLabel="#{fmt.nomFmt}" value="#{fmt.documento}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </h:panelGrid> 
+                                <h:panelGrid id="panelDocs">  
+                                    <br/>    
+                                    <p:dataTable rendered="#{oIngrHosp.compañiasautorizadas.size()>0 and oIngrHosp.pacienteHospExis}" editMode="cell" editable="true" rows="2"   id="tbdocs2" value="#{oIngrHosp.compañiasautorizadas}" var="ca">
+                                        <f:facet name="header">
+                                            <h:outputText value="Compañías autorizadas ya registradas "/>
+                                        </f:facet> 
+                                        <p:column rendered="#{!ca.compañiaNueva and ca.compCred.idEmp!=1}">
+                                            <f:facet name="header"> 
+                                                Empresa
+                                            </f:facet>  
+                                            <h:outputText  value="#{ca.compCred.nombreCorto}" />
+                                        </p:column>
+                                        <p:column rendered="#{!ca.compañiaNueva and ca.compCred.idEmp!=1}" >
+                                            <f:facet name="header"> 
+                                                Documentos del paciente
+                                            </f:facet>
+                                            <p:dataTable rendered="#{oIngrHosp.compañiasautorizadas.size()>0}" editMode="cell" editable="true"  id="tbdocs" value="#{ca.formatos}"  var="fmt">
+                                                <p:column>                                                 
+                                                    <p:selectBooleanCheckbox itemLabel="#{fmt.nomFmt}" value="#{fmt.documento}" />
+                                                </p:column>
+                                            </p:dataTable>
+                                        </p:column> 
+                                    </p:dataTable>
+
+                                    <p:dataTable rendered="#{oIngrHosp.compañiasautorizadas.size()>0}" editMode="cell" editable="true"  id="tbdocs" value="#{oIngrHosp.compañiasautorizadas}"  var="ca">
+                                        <f:facet name="header">
+                                            <h:outputText value="Compañías nuevas para autorizar"/>
+                                        </f:facet> 
+
+                                        <p:column rendered="#{ca.compCred.idEmp!=1 and !ca.compañiaRegAuto}">
+                                            <f:facet name="header"> 
+                                                Empresa
+                                            </f:facet>  
+                                            <h:outputText  value="#{ca.compCred.nombreCorto}" />
+                                        </p:column>
+                                        <p:column rendered="#{ca.compCred.idEmp!=1 and !ca.compañiaRegAuto}" >
+                                            <f:facet name="header"> 
+                                                Documentos del paciente
+                                            </f:facet>
+                                            <p:dataTable rendered="#{oIngrHosp.compañiasautorizadas.size()>0}" editMode="cell" editable="true"  id="tbdocs" value="#{ca.formatos}" var="fmt">
+                                                <p:column>                                                 
+                                                    <p:selectBooleanCheckbox itemLabel="#{fmt.nomFmt}" value="#{fmt.documento}" />
+                                                </p:column>
+                                            </p:dataTable>
+                                        </p:column>                                    
+                                        <p:column rendered="#{ca.compCred.idEmp!=1 and !ca.compañiaRegAuto}" >
+                                            <f:facet name="header"> 
+                                                Eliminar
+                                            </f:facet>
+                                            <p:commandButton  value=" " icon="ui-icon-trash" style=" height: 25px; width: 25px" actionListener="#{oIngrHosp.eliminaCompañiaAutorizada(ca.compCred.idEmp)}" update=":form4:panelDocs :formulario:panelauto"/>
+                                        </p:column>  
+
+                                    </p:dataTable>                              
+
+                                </h:panelGrid>  
+
+                                <p:separator />
+
+                                <p:commandButton value="Guardar"  icon="ui-icon-disk" actionListener="#{oIngrHosp.guardaDocsCompAut()}" update=":form4:msgs4 :formulario:panelauto" />  
+                                <br/><br/>
+                            </p:panel>
+
+                        </h:form>
+                    </p:dialog>     
+
+                    <p:dialog id="dialogExitoIngresa" closable="false" 
+                              dynamic="true"  modal="true" 
+                              appendTo="@(body)" header="#{oIngrHosp.msjHeadDialog}"  
+                              widgetVar="dlg3" 
+                              style="font-size:12px" styleClass="text-align: center;"  
+                              position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form> 
+                            <p:panel styleClass="text-align: center;" style="" id="panelDialog6" >
+                                <center>
+                                    <p:panel>
+                                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                    </p:panel>
+                                </center>
+                                <p:panelGrid styleClass="text-align: center;" columns="2">
+                                    Habitación:
+                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.hab.tipoHab.descrip}, habitación:#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.hab.hab}"/>
+                                    Folio del paciente:<h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.folioPac}"/>
+                                    Nombre del paciente:<h:outputText
+                                        style="text-transform: uppercase;"
+                                        value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.nombreCompleto}"/>
+                                </p:panelGrid>                                     
+                            </p:panel>
+                            <p:separator/> 
+
+                            <p:commandButton  value="Imprimir" type="button" icon="ui-icon-print" >
+                                <p:printer target="panelDialog6" />
+                            </p:commandButton>
+                            <p:commandButton  value="Ver contrato de ingreso" 
+                                              oncomplete="dlgContrtIngHosp.show()" 
+                                              icon="ui-icon-document" />
+                            <p:commandButton  value="Ver hoja de ingreso a hospital" 
+                                              oncomplete="dlgOtroContrato.show()" 
+                                              icon="ui-icon-document" />
+                            <p:commandButton  value="Ver información de ingreso" oncomplete="dlgDocInfoIngr.show()" icon="ui-icon-document" />
+                            <p:commandButton value="Regresar" icon="ui-icon-arrowreturnthick-1-w" >
+                                <p:ajax listener="#{oIngrHosp.ingresaHospitalJB2.regresarIngresar()}"/>
+                            </p:commandButton>
+                        </h:form>    
+                    </p:dialog>
+                    
+                    <p:dialog closable="true" appendTo="@(body)" dynamic="true" 
+                              modal="true"
+                              id="dlgOtro" header="Registro de Hospitalización"  
+                              widgetVar="dlgOtroContrato" 
+                              style="font-size:12px; width: 200px;" 
+                              styleClass="text-align: center;" position="center"
+                              showEffect="clip" hideEffect="fold">
+                        <p:panelGrid columns="1" styleClass="text-align: center;">
+                            <p:row>
+                                <p:panelGrid id="mipanel" columns="1" styleClass="text-align: center;">
+                                    <p:row>
+                                        <p:panelGrid columns="3" styleClass="text-align: center;" style="text-align: center; margin-left: 8%;">
+
+                                            <p:column>
+                                                <h:graphicImage id="logo" 
+                                                                height="80px"
+                                                                url="#{oPlantilla.logo2}"/>
+                                            </p:column>
+                                            <p:column style="text-align: center;">
+                                                <h:outputText value="RFC SHU-930116-L51" style="font-style: oblique"/><br/>
+                                                <h:outputText value="Calle 11 No.231 TELS.(271) 712-25-99, 714-05-99"/><br/>
+                                                <h:outputText value="CORDOBA, VER."/>
+                                            </p:column>
+                                            <p:column style="text-align: center;">
+                                                <h:outputText value="FOLIO"/><br/>
+                                                <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.cveepisodio}" />
+                                            </p:column>
+                                        </p:panelGrid>
+                                    </p:row>
+                                    <p:row>
+                                        <h:outputText value="CONTRATO DE INGRESO A HOSPITALIZACIÓN" style="margin-left: 27%; font-size: 15px;"/>
+
+                                        <p:panelGrid styleClass="text-align: center;">
+                                            <p:row>
+                                                <p:column>
+                                                    EMPRESA/PARTICULAR:
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputText
+                                                        style="text-transform: uppercase"
+                                                        value="#{oIngrHosp.empresaPart}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    NO.HAB.:
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputText value=" #{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.hab.hab}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    CÓDIGO:
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.folioPac}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    NOMBRE:
+                                                </p:column>
+                                                <p:column colspan="3">
+                                                    <h:outputText style="text-transform:uppercase;"
+                                                        value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.nombreCompleto}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    EDAD:
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.edad}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    FECHA DE NACIMIENTO:
+                                                </p:column>
+                                                <p:column colspan="5">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.nac}">
+                                                        <f:convertDateTime locale="es-MX" pattern="dd/MMM/yyyy"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    EDO. CIVIL:
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.edoCiv.descrip}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    SEXO:
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.genero}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    ALERGIAS:
+                                                </p:column>
+                                                <p:column colspan="5">
+                                                    <h:outputText 
+                                                        style="text-transform: uppercase"
+                                                        value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.historiaClinica.alergias}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    OCUPACIÓN:
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText 
+                                                        style="text-transform: uppercase"
+                                                        value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.ocupacion}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    NOMBRE DE LA EMPRESA:
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText style="text-transform:uppercase;"
+                                                        value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.datosLaborales.empresa.nombreCorto}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    DOMICILIO: 
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText style="text-transform:uppercase;"
+                                                        value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.calleYNum}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    TELÉFONO: 
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.telCasa}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    CURP: 
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.CURP}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    RFC:
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText style="text-transform:uppercase;"
+                                                        value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.RFC}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    CORREO ELECTRÓNICO:
+                                                </p:column>
+                                                <p:column colspan="5">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.paciente.correoElectronico}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    FAMILIAR CERCANO: 
+                                                </p:column>
+                                                <p:column colspan="5">
+                                                    <h:outputText style="text-transform:uppercase;"
+                                                                  value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.familiarinformacion}"/>
+
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    DOMICILIO: 
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText  style="text-transform:uppercase;"
+                                                        value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.domicilioFamiliar}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    TELÉFONO: 
+                                                </p:column >
+                                                <p:column colspan="2">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.telefonoFamiliar}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    EMPRESA DONDE TRABAJA: 
+                                                </p:column>
+                                                <p:column colspan="5">
+                                                    <h:outputText 
+                                                        style="text-transform: uppercase"
+                                                        value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.empresaFamiliar}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    DOMICILIO: 
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText 
+                                                        style="text-transform: uppercase"
+                                                        value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.domicilioEmpresaFamiliar}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    TELÉFONO
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.telefonoEmpresaFamiliar}"/>
+                                                </p:column>
+                                            </p:row>
+
+                                            <p:row>
+                                                <p:column>
+                                                    DIAGNÓSTICO DE INGRESO: 
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.dxIngreso.descrip}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    DIAGNÓSTICO DE EGRESO: 
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.dxEgreso.descrip}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    FECHA DE INGRESO: 
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.inicio}">
+                                                        <f:convertDateTime locale="es-MX" pattern="dd/MMM/yyyy"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column>
+                                                    FECHA DE ALTA: 
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.alta}">
+                                                        <f:convertDateTime locale="es-MX" pattern="dd/MMM/yyyy"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    MÉDICO QUE ENVÍA: 
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.medRecom.nombreCompleto}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    MÉDICO QUE RECIBE: 
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.medRecibe.nombreCompleto}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    MÉDICO TRATANTE: 
+                                                </p:column>
+                                                <p:column colspan="5">
+                                                    <h:outputText value="#{oIngrHosp.ingresaHospitalJB2.ingresaHospital.episodioMedico.medTratante.nombreCompleto}"/>
+                                                </p:column>
+                                            </p:row>
+                                        </p:panelGrid>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:row>
+                            <p:row>
+                                <p:commandButton  value="Imprimir" type="button" icon="ui-icon-print" >
+                                    <p:printer target="mipanel" />
+                                </p:commandButton>
+                            </p:row>
+
+                        </p:panelGrid>
+                    </p:dialog>
+                    
+                    <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="basicDialog2" header="Contrato de ingreso al hospital"  widgetVar="dlgContrtIngHosp" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="formDocContrt">       
+                            <p:media id="contr" value="/resources/#{oIngrHosp.ingresaHospitalJB2.rutaPDFContratoIngrPac}" width="800" height="500">  
+                                Su navegador no puede abrir el PDF, <h:outputLink value="/resources/#{oIngrHosp.ingresaHospitalJB2.rutaPDFContratoIngrPac}">click</h:outputLink> para descargar el PDF.  
+                            </p:media>  
+                            <p:separator />
+                            <center>                                        
+                                <p:commandButton value="Regresar" icon="ui-icon-arrowreturnthick-1-w" oncomplete="dlgContrtIngHosp.hide()"/>
+                            </center>
+                        </h:form> 
+                    </p:dialog> 
+
+                    <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="basicInfoIngreHosp" header="Información de ingreso para el paciente"  widgetVar="dlgDocInfoIngr" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="formDocInfoIngre">       
+                            <p:media id="contr" value="/resources/#{oIngrHosp.ingresaHospitalJB2.rutaPDFDocInfoIngr}" width="800" height="500">  
+                                Su navegador no puede abrir el PDF, <h:outputLink value="/resources/#{oIngrHosp.ingresaHospitalJB2.rutaPDFDocInfoIngr}">click</h:outputLink> para descargar el PDF.  
+                            </p:media>  
+                            <p:separator />
+                            <center>                                        
+                                <p:commandButton value="Regresar" icon="ui-icon-arrowreturnthick-1-w" oncomplete="dlgDocInfoIngr.hide()"/>
+                            </center>
+                        </h:form> 
+                    </p:dialog>  
+
+                    <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="iddlgPaquete" header="Detalle del Paquete "  widgetVar="dlgPaquete" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="formPaq">   
+                            <center>
+                                <p:panel id="panelPaq" >
+                                    <center>
+                                        <p:panel>
+                                            <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                        </p:panel>
+                                    </center>
+                                    <p:panel>
+                                        <h4>Servicios que incluye el Paquete: #{oIngrHosp.paqueteContratado.paquete.nombre}</h4>
+                                        <h:outputText rendered="#{oIngrHosp.paqueteContratado.situacionPago=='0'}" value="Situación de Pago del Paquete: Pendiente de Pago"/>
+                                        <h:outputText rendered="#{oIngrHosp.paqueteContratado.situacionPago=='1'}" value="Situación de Pago del Paquete: Pago parcial"/>
+                                        <h:outputText rendered="#{oIngrHosp.paqueteContratado.situacionPago=='2'}" value="Situación de Pago del Paquete: Pagado"/>
+                                        <br/><br/>
+                                        <p:dataTable emptyMessage="Sin servicios registrados" sortBy="conceptoIngreso.descripcion" id="tbPaq" value="#{oIngrHosp.carritoServiciosPaq}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoServicios">
+                                            <f:facet name="header">
+                                                <h:outputText value="Servicios que incluye el Paquete: #{oIngrHosp.paqueteContratado.paquete.nombre}"/>
+                                            </f:facet> 
+                                            <p:column >
+                                                <f:facet name="header"> 
+                                                    Servicio
+                                                </f:facet>  
+                                                <h:outputText value="#{carritoServicios.conceptoIngreso.descripcion}" />
+                                            </p:column>                                   
+                                            <p:column width="50%!important"  >
+                                                <f:facet name="header"> 
+                                                    <h:outputText value="Cantidad" />
+                                                </f:facet> 
+                                                <h:outputText value="#{carritoServicios.conceptoIngreso.cantidad}" /> 
+                                            </p:column>                                        
+                                            <p:column width="50%!important"  >
+                                                <f:facet name="header"> 
+                                                    Unidad de medida
+                                                </f:facet>
+                                                <h:outputText value="#{carritoServicios.conceptoIngreso.unidadMedida.descrip}" />                               
+                                            </p:column>
+                                            <p:column >
+                                                <f:facet name="header"> 
+                                                    Monto
+                                                </f:facet> 
+                                                <p:inputText size="5" readonly="true" value="#{carritoServicios.conceptoIngreso.montoNuevo}"/>   
+                                            </p:column>
+                                            <p:column >
+                                                <f:facet name="header"> 
+                                                    Observaciones
+                                                </f:facet> 
+                                                <h:outputText value="#{carritoServicios.obs}" />
+                                            </p:column>                                        
+
+                                            <p:summaryRow >  
+                                                <p:column colspan="4"  style="text-align:right">  
+                                                    Total:  
+                                                </p:column>  
+                                                <p:column>  
+                                                    <h:outputText value="#{carritoServicios.conceptoIngreso.montoNuevo*carritoServicios.conceptoIngreso.cantidad}">
+                                                        <f:convertNumber pattern="#.##"/>
+                                                    </h:outputText>
+                                                </p:column>  
+                                            </p:summaryRow>
+                                            <p:columnGroup type="footer">
+                                                <p:row >
+                                                    <p:column colspan="4" style="text-align:right" footerText="Costo total:" />
+                                                    <p:column footerText="$#{oIngrHosp.totalCarrito2}" />
+                                                </p:row>
+                                            </p:columnGroup>
+                                        </p:dataTable>
+                                    </p:panel>
+                                    <p:panel>
+                                        <h4>Descuentos que incluye</h4>
+                                        <p:dataTable emptyMessage="Sin descuentos registrados" id="tbPaq2" value="#{oServcPrest2.carritoDescuentos}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoDescuentos">
+                                            <f:facet name="header">
+                                                <h:outputText value="Descuentos que incluye"/>
+                                            </f:facet> 
+                                            <p:column>
+                                                <f:facet name="header"> 
+                                                    Línea
+                                                </f:facet>  
+                                                <h:outputText value="#{carritoDescuentos.lineaIngreso.descrip}" />
+                                            </p:column>
+                                            <p:column >
+                                                <f:facet name="header"> 
+                                                    Descuento
+                                                </f:facet>  
+                                                <h:outputText value="#{carritoDescuentos.pctDscto}" />
+                                            </p:column> 
+                                        </p:dataTable>
+                                    </p:panel>
+
+                                    <p:separator />
+                                    <center>                          
+                                        <p:commandButton oncomplete="dlgPaquete.hide()" value="Regresar" icon="ui-icon-arrowreturnthick-1-w"/>
+                                    </center>
+
+                                </p:panel> 
+                            </center>
+                        </h:form>
+                    </p:dialog>
+
+
+                </center>        
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

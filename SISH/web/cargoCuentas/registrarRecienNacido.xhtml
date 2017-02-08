@@ -1,0 +1,256 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo"> 
+            <title>Registrar Recién Nacido</title>
+            <h:body>      
+                <center><h3>Registrar Recién Nacido</h3></center>
+                    #{oRegRecNac.limpia()}
+                <p:dialog closable="false" dynamic="true" height="550" 
+                          width="900"  appendTo="@(body)" modal="true" 
+                          id="dlgCompBusq" header="Busqueda de paciente"  
+                          widgetVar="dlgCompBusqVar" style="font-size:12px" 
+                          styleClass="text-align: center;"  position="center" 
+                          showEffect="clip" hideEffect="fold" >  
+                    <h:form id="form">
+                        <p:growl id="grow3" sticky="true" /> 
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include> 
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar"  action="#{oRegRecNac.selectPacienteHospExi()}"  oncomplete="dlgCompBusqVar.hide()" update=":formulario :formulario:grow1" icon="ui-icon-search"/>               
+                        <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" action="#{oRegRecNac.limpia()}" update=":formulario" />
+                    </h:form> 
+                </p:dialog>  
+                <br/>
+                <h:form>
+                    <p:growl id="grow2" sticky="true" />        
+                    <center>
+                        <p:commandButton value="Seleccionar paciente"  action="#{oPacienteJB.limpiaSelectedPaciente()}" update=":formulario :form:dtPacientes" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+                    </center>
+                </h:form>
+                <br/>
+                <center>
+                    <h:form id="formulario">                     
+                        <p:growl id="grow1" sticky="true" />
+                        <p:panel id="panelPacEgre" rendered="#{oRegRecNac.panelActivo}" style="width:97%">                        
+                            <p:panelGrid columns="2">
+                                Folio Paciente: <h:outputText  value="#{oRegRecNac.paciente.folioPac}"/>
+                                Nombre de la madre:<h:outputText value="#{oRegRecNac.paciente.nombreCompleto}" />
+                                Médico tratante:<h:outputText value="#{oRegRecNac.ingresaHospital.episodioMedico.medTratante.nombreCompleto}" />
+                                Habitación:<h:outputText value="#{oRegRecNac.ingresaHospital.episodioMedico.hab.hab}" />
+                            </p:panelGrid>
+                            <p:separator/>
+                            <p:panelGrid columns="2">
+                                Número de recién nacidos:<p:inputText label="Número de recién nacidos"  value="#{oRegRecNac.cantidadNacidos}"  required="true">
+                                    <f:validateRegex pattern="[0-9]+" />
+                                    <p:ajax listener="#{oRegRecNac.actualizaListaNacidos()}" oncomplete="" update=":formulario:panelNacidos"/>
+                                </p:inputText>
+                                Apellido Paterno:
+                                <p:inputText label="Apellido Paterno"  
+                                             value="#{oRegRecNac.apellidoPat}" 
+                                             style="text-transform: uppercase"
+                                             required="true"/>
+                                Apellido Materno:
+                                <p:inputText label="Apellido Materno" 
+                                             value="#{oRegRecNac.paciente.apellidoPaterno}" 
+                                             style="text-transform: uppercase"
+                                             required="true"/>
+                            </p:panelGrid>
+                            <br/>
+                            <h:panelGrid  id="panelNacidos">  
+                                <p:scrollPanel style="width:825px;height:210px" >
+                                    <p:dataTable rendered="#{oRegRecNac.nacidos.size()>0}" style="width:100%"  emptyMessage="Sin servicios agregados"  id="tb2" value="#{oRegRecNac.nacidos}" rows="9"  var="nacido">
+                                        <f:facet name="header">
+                                            <h:outputText value="Niños recién nacidos"/>
+                                        </f:facet>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Sano
+                                            </f:facet>
+                                            <p:selectBooleanCheckbox label="Sano" value="#{nacido.antecedPerinatales.sano}">
+                                                <p:ajax update="autoComplDiag" />
+                                            </p:selectBooleanCheckbox>
+                                            <p:panel style="border-style: hidden !important" id="autoComplDiag">
+                                                <p:autoComplete minQueryLength="4" 
+                                                                itemtipMyPosition="left center" 
+                                                                itemtipAtPosition="right center"  
+                                                                label="Diagnóstico de ingreso" 
+                                                                required="true" rendered="#{!nacido.antecedPerinatales.sano}" 
+                                                                value="#{nacido.antecedPerinatales.diag.cve}" 
+                                                                scrollHeight="300" 
+                                                                completeMethod="#{oListaDiag.obtenerDiagnostico}" 
+                                                                var="oDiagRN" 
+                                                                itemLabel="#{oDiagRN.descrip2}" 
+                                                                itemValue="#{oDiagRN.cve}" />
+                                            </p:panel>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Nombre(*)
+                                            </f:facet>  
+                                            <h:outputText value="#{nacido.paciente.nombre}" />
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Sexo(*)
+                                            </f:facet>  
+                                            <p:selectOneMenu required="true" label="Sexo" id="selGenero" value="#{nacido.paciente.genero}"> 
+                                                <f:selectItem itemLabel="Seleccione" />
+                                                <f:selectItem itemLabel="Masculino" itemValue="M" />  
+                                                <f:selectItem itemLabel="Femenino" itemValue="F" />  
+                                            </p:selectOneMenu> 
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Fecha de nacimiento(*)
+                                            </f:facet>  
+                                            <p:calendar  locale="es" label="Fecha de Nacimiento"  required="true" navigator="true"  pattern="yyyy-MM-dd HH:mm:ss"    yearRange="c-100:c+0" showOn="button" value="#{nacido.paciente.nac}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Peso en gramos(*)
+                                            </f:facet>  
+                                            <p:inputText required="true" size="5" label="Nombre del nacido" value="#{nacido.antecedPerinatales.peso}" />
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Talla en centímetros(*)
+                                            </f:facet>  
+                                            <p:inputText required="true" size="5" label="Nombre del nacido" value="#{nacido.antecedPerinatales.talla}" />
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Fallecido
+                                            </f:facet>
+                                            <p:selectBooleanCheckbox label="Vivo" value="#{nacido.paciente.fallecido}">
+                                                <p:ajax update="autoComplDiag" />
+                                            </p:selectBooleanCheckbox>
+                                        </p:column>                              
+                                        <p:column  styleClass=" ">
+                                            <f:facet name="header"> 
+                                                Tipo de parto(*)
+                                            </f:facet>
+                                            <p:selectOneMenu required="true" label="Tipo de parto" value="#{nacido.antecedPerinatales.tipoparto}"> 
+                                                <f:selectItem itemLabel="Seleccione" />
+                                                <f:selectItem itemLabel="Pélvico" itemValue="p" />  
+                                                <f:selectItem itemLabel="Cesárea" itemValue="c" />
+                                                <f:selectItem itemLabel="Distócico" itemValue="d" />
+                                            </p:selectOneMenu> 
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Apgar (n,n)(*)
+                                            </f:facet>
+                                            <p:inputText required="true" 
+                                                         size="5" label="Apgar" 
+                                                         value="#{nacido.antecedPerinatales.apgar}">
+                                                <f:validateRegex pattern="[0-9]{1}[,][0-9]{1}" />
+                                            </p:inputText>  
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Perímetro cefálico(cm)(*)
+                                            </f:facet>
+                                            <p:inputText required="true" 
+                                                         size="5" 
+                                                         label="Perímetro cefálico" 
+                                                         value="#{nacido.antecedPerinatales.perimcefal}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Cunero(*)
+                                            </f:facet>
+                                            <p:selectOneMenu required="true" label="Habitación" converter="#{oConverterHabitacion}"  value="#{nacido.episodioMedico.hab}" >
+                                                <f:selectItem itemLabel="" itemValue=""  />
+                                                <f:selectItems  value="#{oRegRecNac.habitaciones}"  var="oHab" 
+                                                                itemLabel="#{oHab.habnumDesp}" 
+                                                                itemValue="#{oHab}" />
+                                            </p:selectOneMenu>         
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Observaciones(*)
+                                            </f:facet>
+                                            <p:inputTextarea 
+                                                required="true" 
+                                                label="Observaciones" 
+                                                value="#{nacido.antecedPerinatales.obs}"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:scrollPanel> 
+                            </h:panelGrid> 
+                            <p:separator/>
+                            <p:commandButton value="Guardar" 
+                                             actionListener="#{oRegRecNac.registrarRecienNacido}" 
+                                             icon="ui-icon-disk"  
+                                             update=":dialogExito :formulario:grow1" />  
+                        </p:panel>
+                    </h:form>       
+
+                    <p:dialog id="dialogExitoIngresa" closable="false" 
+                              modal="true" appendToBody="true" 
+                              header="Registro exitoso"  widgetVar="dlg" 
+                              style="font-size:12px" 
+                              styleClass="text-align: center;"  
+                              position="center" showEffect="clip" 
+                              hideEffect="fold" >  
+                        <h:form id="dialogExito"> 
+                            <p:panel id="panelDialog" >   
+                                <center>
+                                    <p:panel>
+                                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                    </p:panel>
+                                </center>
+                                <p:panelGrid styleClass="text-align: center;" columns="2">
+                                    Folio del paciente:<h:outputText value="#{oRegRecNac.registrarRecienNacidoJB2.paciente.folioPac}"/>
+                                    Nombre del paciente:<h:outputText value="#{oRegRecNac.registrarRecienNacidoJB2.paciente.nombreCompleto}"/>
+                                    Habitación:<h:outputText value="#{oRegRecNac.registrarRecienNacidoJB2.ingresaHospital.episodioMedico.hab.hab}"/>                                   
+                                </p:panelGrid> 
+                                <p:separator/>
+                                Con hijos registrados:
+                                <p:dataTable rendered="#{oRegRecNac.registrarRecienNacidoJB2.nacidos.size()>0}" style="width:100%"  emptyMessage="Sin servicios agregados"  id="tb3" value="#{oRegRecNac.registrarRecienNacidoJB2.nacidos}" rows="9"  var="nacido">
+                                    <f:facet name="header">
+                                        <h:outputText value="Niño/s registrado/s"/>
+                                    </f:facet>                             
+                                    <p:column>
+                                        <f:facet name="header"> 
+                                            Nombre
+                                        </f:facet>  
+                                        <h:outputText value="#{nacido.paciente.nombreCompleto}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header"> 
+                                            Folio de servicio
+                                        </f:facet>  
+                                        <h:outputText value="#{nacido.episodioMedico.servicioPrestado.idFolio}" />
+                                    </p:column>                                   
+                                    <p:column>
+                                        <f:facet name="header"> 
+                                            Cunero
+                                        </f:facet>
+                                        <h:outputText value="#{nacido.episodioMedico.hab.hab}" />  
+                                    </p:column>
+                                </p:dataTable>
+
+                            </p:panel>
+                            <p:separator/>                      
+                            <p:commandButton  value="Imprimir" type="button" icon="ui-icon-print" >
+                                <p:printer target="panelDialog" />
+                            </p:commandButton>
+                            <p:commandButton value="Regresar" icon="ui-icon-arrowreturnthick-1-w" >
+                                <p:ajax listener="#{oRegRecNac.regresarRegRecnNac()}"/>
+                            </p:commandButton>
+                        </h:form>    
+                    </p:dialog>
+
+
+
+                </center>        
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

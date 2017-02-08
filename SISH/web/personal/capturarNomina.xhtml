@@ -1,0 +1,374 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"> 
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Capturar Nómina</title>
+            <h:body>
+                    <center>
+                        <h2>Capturar Nómina</h2>
+                    </center>
+                    <h:form id="form">
+                        <p:growl id="msg" showDetail="true" sticky="true"/>
+                         <p:dialog id="dlgNomina" widgetVar="dlgNom" appendTo="@(body)" closable="false" resizable="false" dynamic="true" modal="true">
+                             <center>
+                                 <h3>Capturar Nómina</h3>
+                             </center>
+                             <h:form id="formDlg">
+                                <p:panelGrid>
+                                    <p:row>
+                                        <p:column>
+                                            <p:outputLabel value="Folio Empleado: " style="font-weight: bold"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="#{oCaptNom.selectedPersonal.folioPers}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="Nombre: " style="font-weight: bold"/>
+                                        </p:column>
+                                        <p:column colspan="3">
+                                            <p:outputLabel value="#{oCaptNom.selectedPersonal.nombreCompleto}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="RFC: " style="font-weight: bold"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="#{oCaptNom.selectedPersonal.RFC}"/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <p:outputLabel value="Fecha de Pago: " style="font-weight: bold"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="#{oCaptNom.selectedPersonal.nomina.pago}">
+                                                <f:convertDateTime pattern="dd-MMMM-yyyy" type="date"/>
+                                            </p:outputLabel>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="Periodo: " style="font-weight: bold"/>
+                                        </p:column>
+                                        <p:column colspan="5">
+                                            <p:outputLabel value="#{oCaptNom.selectedPersonal.nomina.inicio}">
+                                                <f:convertDateTime pattern="dd-MMMM-yyyy" type="date"/>
+                                            </p:outputLabel>&nbsp;&nbsp;&nbsp;&nbsp;a&nbsp;&nbsp;&nbsp;&nbsp;
+                                            <p:outputLabel value="#{oCaptNom.selectedPersonal.nomina.fin}">
+                                                <f:convertDateTime pattern="dd-MMMM-yyyy" type="date"/>
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <p:outputLabel value="Sueldo Base: " style="font-weight: bold"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="$ #{oCaptNom.selectedPersonal.salario}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="Percepciones: " style="font-weight: bold"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel id="lblPercepciones" value="$ #{oCaptNom.selectedPersonal.percepciones}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="Deducciones: " style="font-weight: bold"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel id="lblDeducciones" value="$ #{oCaptNom.selectedPersonal.deducciones}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="Neto: " style="font-weight: bold"/>
+                                        </p:column>
+                                        <p:column colspan="5">
+                                            <p:outputLabel id="lblNeto" value="$ #{oCaptNom.selectedPersonal.salario+oCaptNom.selectedPersonal.percepciones-oCaptNom.selectedPersonal.deducciones}"/>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid><br/>
+                                <center>
+                                   <p:panelGrid>
+                                       <p:row>
+                                           <p:column style="text-align:center" colspan="2">
+                                               <p:dataTable value="#{oCaptNom.listPercepciones}" var="concepto" paginator="true" paginatorPosition="bottom" 
+                                                            rows="4" emptyMessage="No hay percepciones" id="dtPercepciones" editable="true">
+                                                    <p:ajax event="rowEdit" listener="#{oCaptNom.onRowEdit}" update=":form:formDlg:lblPercepciones :form:formDlg:lblNeto"/>
+                                                   <p:column headerText="No.">
+                                                       <p:outputLabel value="#{concepto.concNom.cveConcepNom}"/>
+                                                   </p:column>
+                                                   <p:column headerText="Percepciones">
+                                                       <p:outputLabel value="#{concepto.concNom.descripcion}"/>
+                                                   </p:column>
+                                                   <p:column headerText="Monto">
+                                                       <p:cellEditor>
+                                                           <f:facet name="output">
+                                                               <p:outputLabel value="#{concepto.monto}"/>  
+                                                           </f:facet>  
+                                                           <f:facet name="input">  
+                                                               <p:inputText size="5" value="#{concepto.monto}"/>
+                                                           </f:facet>  
+                                                       </p:cellEditor> 
+                                                   </p:column>
+                                                   <p:column style="width:6%">  
+                                                       <p:rowEditor />
+                                                   </p:column>
+                                                   <p:column headerText="Eliminar">
+                                                       <p:commandButton icon="ui-icon-trash">
+                                                           <p:ajax listener="#{oCaptNom.eliminaConcepto(concepto)}" 
+                                                                   update=":form:formDlg:dtPercepciones :form:formDlg:selPercepciones :form:formDlg:lblPercepciones :form:formDlg:lblNeto"/>
+                                                       </p:commandButton> 
+                                                   </p:column>
+                                               </p:dataTable>
+                                           </p:column>
+                                           <p:column style="text-align:center" colspan="2">
+                                               <p:dataTable value="#{oCaptNom.listDeducciones}" var="concepto" paginator="true" paginatorPosition="bottom" 
+                                                            rows="4" emptyMessage="No hay deducciones" id="dtDeducciones" editable="true">
+                                                    <p:ajax event="rowEdit" listener="#{oCaptNom.onRowEdit}" update=":form:formDlg:lblDeducciones :form:formDlg:lblNeto"/>
+                                                   <p:column headerText="No.">
+                                                       <p:outputLabel value="#{concepto.concNom.cveConcepNom}" />
+                                                   </p:column>
+                                                   <p:column headerText="Deducciones">
+                                                       <p:outputLabel value="#{concepto.concNom.descripcion}"/>
+                                                   </p:column>
+                                                   <p:column headerText="Monto">
+                                                       <p:cellEditor>
+                                                           <f:facet name="output">
+                                                               <p:outputLabel value="#{concepto.monto}"/>  
+                                                           </f:facet>  
+                                                           <f:facet name="input">  
+                                                               <p:inputText size="5" value="#{concepto.monto}"/>
+                                                           </f:facet>  
+                                                       </p:cellEditor> 
+                                                   </p:column>
+                                                   <p:column style="width:6%">  
+                                                       <p:rowEditor />
+                                                   </p:column>
+                                                   <p:column headerText="Eliminar">
+                                                       <p:commandButton icon="ui-icon-trash">
+                                                           <p:ajax listener="#{oCaptNom.eliminaConcepto(concepto)}" 
+                                                                   update=":form:formDlg:dtDeducciones :form:formDlg:selDeducciones :form:formDlg:lblDeducciones :form:formDlg:lblNeto"/>
+                                                       </p:commandButton>
+                                                   </p:column>
+                                               </p:dataTable>
+                                           </p:column>
+                                       </p:row>
+                                       <p:row>
+                                           <p:column>
+                                               <p:selectOneMenu id="selPercepciones" value="#{oCaptNom.selectedPercepcion}">
+                                                   <p:ajax/>
+                                                   <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                                   <f:selectItems value="#{oCaptNom.percepciones}" var="per" itemLabel="#{per.descripcion}" itemValue="#{per.cveConcepNom}"/>
+                                               </p:selectOneMenu>
+                                           </p:column>
+                                           <p:column>
+                                               <p:commandButton value="Agregar Percepción">
+                                                   <p:ajax listener="#{oCaptNom.agregaPercepcion()}" update="formDlg:dtPercepciones formDlg:selPercepciones"/>
+                                               </p:commandButton>
+                                           </p:column>
+                                           <p:column>
+                                               <p:selectOneMenu id="selDeducciones" value="#{oCaptNom.selectedDeduccion}">
+                                                   <p:ajax/>
+                                                   <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                                   <f:selectItems value="#{oCaptNom.deducciones}" var="ded" itemLabel="#{ded.descripcion}" itemValue="#{ded.cveConcepNom}"/>
+                                               </p:selectOneMenu>
+                                           </p:column>
+                                           <p:column>
+                                               <p:commandButton value="Agregar Deducción">
+                                                   <p:ajax listener="#{oCaptNom.agregaDeduccion()}" update="formDlg:dtDeducciones formDlg:selDeducciones"/>
+                                               </p:commandButton>
+                                           </p:column>
+                                       </p:row>
+                                   </p:panelGrid><br/><br/>
+                                   <p:commandButton value="&nbsp;&nbsp;&nbsp;Guardar&nbsp;&nbsp;&nbsp;" oncomplete="PF('dlgNom').hide()">
+                                       <p:ajax listener="#{oCaptNom.guardaNomina()}" update=":form:msg :form:dtEmpleados"/>
+                                   </p:commandButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                   <p:commandButton value="&nbsp;&nbsp;&nbsp;Cancelar&nbsp;&nbsp;&nbsp;" oncomplete="PF('dlgNom').hide()"/>
+                                </center>
+                             </h:form>
+                        </p:dialog>
+                        <p:dialog id="dlgNuevaNomina" widgetVar="dlgNueva" appendTo="@(body)" closable="false" resizable="false" dynamic="true" modal="true">
+                            <center>
+                                <h3>Generar Nómina</h3>
+                            </center>
+                            <h:form id="formGenerar">
+                                <p:panelGrid>
+                                    <p:row>
+                                        <p:column>
+                                            <p:outputLabel value="Periodo (Inicio):"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:calendar showOn="button" value="#{oCaptNom.nomIni}">
+                                                <p:ajax event="dateSelect" listener="#{oCaptNom.validaFecha2}" update=":form:msg calNomFin" />
+                                            </p:calendar>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="Periodo (Fin):"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:calendar id="calNomFin" showOn="button" value="#{oCaptNom.nomFin}">
+                                                <p:ajax event="dateSelect" listener="#{oCaptNom.validaFecha2}" update=":form:msg calNomFin" />
+                                            </p:calendar>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="Fecha de Pago:"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:calendar showOn="button" value="#{oCaptNom.nomPago}">
+                                                <p:ajax event="dateSelect"/>
+                                            </p:calendar>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="6">
+                                            <p:dataTable id="dtEmpleados2" value="#{oCaptNom.listPersonalNom}" var="oPH" paginator="true" paginatorPosition="bottom" rows="10" 
+                                                         emptyMessage="No hay registros" selection="#{oCaptNom.selectedPersonalNom}" rowKey="#{oPH.folioPers}">
+                                            <p:ajax event="rowSelectCheckbox"/>
+                                            <p:column selectionMode="multiple"/>
+                                            <p:column headerText="Folio Personal">
+                                                <p:outputLabel value="#{oPH.folioPers}"/>
+                                            </p:column>
+                                            <p:column headerText="Nombre">
+                                                <p:outputLabel value="#{oPH.nombre}"/>
+                                            </p:column>
+                                            <p:column headerText="Apellido Paterno">
+                                                <p:outputLabel value="#{oPH.apellidoPaterno}"/>
+                                            </p:column>
+                                            <p:column headerText="Apellido Materno">
+                                                <p:outputLabel value="#{oPH.apellidoMaterno}"/>
+                                            </p:column>
+                                            <p:column headerText="Puesto">
+                                                <p:outputLabel value="#{oPH.puesto.descrip}"/>
+                                            </p:column>
+                                        </p:dataTable>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="6">
+                                            <center><br/>
+                                                <p:commandButton value="&nbsp;&nbsp;&nbsp;Generar Nómina&nbsp;&nbsp;&nbsp;">
+                                                    <p:ajax listener="#{oCaptNom.generarNomina()}" update=":form:msg :form:dtEmpleados"/>
+                                                </p:commandButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <p:commandButton value="&nbsp;&nbsp;&nbsp;Cancelar&nbsp;&nbsp;&nbsp;" oncomplete="PF('dlgNueva').hide()"/>
+                                            </center>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </h:form>
+                        </p:dialog>
+                        <center>
+                        <p:panelGrid id="panelEmpleados">
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Folio Empleado:"/>
+                                </p:column>
+                                <p:column colspan="5">
+                                    <p:inputText value="#{oCaptNom.folio}" size="10"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Nombre:"/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText value="#{oCaptNom.nombre}" size="26"/>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Apellido Paterno:"/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText value="#{oCaptNom.apPat}" size="26"/>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Apellido Materno:"/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText value="#{oCaptNom.apMat}" size="26"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Área de Servicio:"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu value="#{oCaptNom.area}">
+                                        <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                        <f:selectItems value="#{oCaptNom.listAreas}" var="oArea" itemLabel="#{oArea.descrip}" itemValue="#{oArea.cve}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Periodo (Inicio):"/>
+                                </p:column>
+                                <p:column>
+                                    <p:calendar showOn="button" value="#{oCaptNom.inicio}">
+                                        <p:ajax event="dateSelect" listener="#{oCaptNom.validaFecha}" update="msg" />
+                                    </p:calendar>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Periodo (Fin):"/>
+                                </p:column>
+                                <p:column>
+                                    <p:calendar showOn="button" value="#{oCaptNom.fin}">
+                                        <p:ajax event="dateSelect" listener="#{oCaptNom.validaFecha}" update="msg" />
+                                    </p:calendar>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="6">
+                                    <p:commandButton value="&nbsp;&nbsp;&nbsp;Buscar Empleado&nbsp;&nbsp;&nbsp;" action="#{oCaptNom.buscarPersonal()}" update="dtEmpleados"/>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/><br/>
+                        <p:dataTable id="dtEmpleados" value="#{oCaptNom.listPersonal}" var="oPH" paginator="true" paginatorPosition="bottom" rows="6" 
+                                     emptyMessage="No hay registros" selection="#{oCaptNom.selectedPersonal}" rowKey="#{oPH.compositeKey}">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Folio Personal">
+                                <p:outputLabel value="#{oPH.folioPers}"/>
+                            </p:column>
+                            <p:column headerText="Nombre">
+                                <p:outputLabel value="#{oPH.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Apellido Paterno">
+                                <p:outputLabel value="#{oPH.apellidoPaterno}"/>
+                            </p:column>
+                            <p:column headerText="Apellido Materno">
+                                <p:outputLabel value="#{oPH.apellidoMaterno}"/>
+                            </p:column>
+                            <p:column headerText="Periodo de Pago">
+                                <p:outputLabel value="#{oPH.nomina.inicio}">
+                                    <f:convertDateTime pattern="dd/MM/yy" type="date"/>
+                                </p:outputLabel>&nbsp;-&nbsp;
+                                <p:outputLabel value="#{oPH.nomina.fin}">
+                                    <f:convertDateTime pattern="dd/MM/yy" type="date"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Sueldo Base">
+                                <p:outputLabel value="#{oPH.salario}"/>
+                            </p:column>
+                            <p:column headerText="Percepciones">
+                                <p:outputLabel value="#{oPH.percepciones}"/>
+                            </p:column>
+                            <p:column headerText="Deducciones">
+                                <p:outputLabel value="#{oPH.deducciones}"/>
+                            </p:column>
+                            <p:column headerText="TOTAL">
+                                <p:outputLabel style=" font-weight:bold" value="$ #{oPH.salario+oPH.percepciones-oPH.deducciones}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Generar Nueva Nómina" oncomplete="PF('dlgNueva').show()"  icon="ui-icon-pencil">
+                                    <p:ajax listener="#{oCaptNom.confGenerarNom()}" update=":form:dlgNuevaNomina"/>
+                                </p:commandButton>
+                                <p:commandButton value="Modificar" oncomplete="PF('dlgNom').show()"  icon="ui-icon-pencil">
+                                    <p:ajax update=":form:dlgNomina :form:formDlg:lblDeducciones :form:formDlg:lblPercepciones :form:formDlg:lblNeto"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                    </center> 
+                </h:form>              
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

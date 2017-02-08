@@ -1,0 +1,215 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"> 
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Otorgar Servicio</title>
+            <h:body >
+                <br/>
+                <h:form id="form1">   
+                    <p:growl id="grow1" sticky="true" />    
+                    <center>
+                        <h2>Otorgar Servicio</h2>    
+                        #{oOtorServ2.limpia()}
+                        #{oOtorServ2.llena()} 
+                        <br/><br/>
+                        <p:panel style=" width: 75%" id="idpanelarea" >
+                            <h:panelGrid columns="2" >
+
+                                <h:outputText value="Consultar Servicios de Áreas:"/>
+                                <p:selectOneMenu style=" width: 110%" label="Área de Servicio" converter="#{oConverterAreaServicio}" id="areas" value="#{oOtorServ2.areaServicio}">  
+                                    <f:selectItem itemLabel="Selecciona" itemValue="" />  
+                                    <f:selectItems value="#{oOtorServ2.areasServicios}" var="oArea" 
+                                                   itemLabel="#{oArea.descrip}" 
+                                                   itemValue="#{oArea}"/> 
+                                    <p:ajax update="tb areas" listener="#{oOtorServ2.consultaServicios}" /> 
+                                </p:selectOneMenu>
+
+                            </h:panelGrid>
+                        </p:panel>
+
+
+                        <br/><br/>
+
+                        <p:dataTable style=" width: 150%" selection="#{oOtorServ2.serviciosSeleccionados}" editable="true"   rowKey="#{oOS.idFolio}"  id="tb" value="#{oOtorServ2.serviciosPrestados}" rows="12" paginator="true" paginatorPosition="bottom" var="oOS">
+                            <f:facet name="header">
+                                <h:outputText value="Otorgar Servicios"/>
+                            </f:facet>
+                            <p:ajax event="cellEdit" listener="#{oOtorServ2.onCellEdit}" update=":form1:grow1" />
+                            <p:ajax event="rowEdit" listener="#{oOtorServ2.actualizaFechaEntraServ}" update=":form1:grow1" />
+
+                            <p:column  selectionMode="multiple">
+                                <f:facet name="header"> 
+                                    Otorgar
+                                </f:facet>  
+
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header"> 
+                                    Fecha de Entrada al Servicio
+                                </f:facet>  
+                                <p:cellEditor>
+                                    <f:facet name="output">  
+                                        <h:outputText value="#{oOS.DFechaEntradaServ}" >
+                                            <f:convertDateTime type="date" pattern="dd-MMMM-yyyy HH:mm" />
+                                        </h:outputText>       
+                                    </f:facet>  
+                                    <f:facet name="input">  
+                                        <p:calendar  disabled="#{!oOS.BAuxdiag}" locale="es" label="Fecha de entrada al servicio"  required="true" navigator="true"  pattern="yyyy-MM-dd HH:mm:ss"    yearRange="c-100:c+0" showOn="button" value="#{oOS.DFechaEntradaServ}"/>                              
+                                    </f:facet>  
+                                </p:cellEditor>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header"> 
+                                    Fecha de Salida al Servicio
+                                </f:facet>  
+                                <p:cellEditor>
+                                    <f:facet name="output">  
+                                        <h:outputText value="#{oOS.salidaservicio}" >
+                                            <f:convertDateTime type="date" pattern="dd-MMMM-yyyy HH:mm" />
+                                        </h:outputText>       
+                                    </f:facet>  
+                                    <f:facet name="input">  
+                                        <p:calendar  disabled="#{!oOS.BAuxdiag}" locale="es" label="Fecha de salida al servicio"  required="true" navigator="true"  pattern="yyyy-MM-dd HH:mm:ss"    yearRange="c-100:c+0" showOn="button" value="#{oOS.salidaservicio}"/>                              
+                                    </f:facet>  
+                                </p:cellEditor>
+
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Folio
+                                </f:facet>  
+                                <h:outputText value="#{oOS.idFolio}"/>   
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Fecha
+                                </f:facet>  
+                                <h:outputText value="#{oOS.registro}">
+                                    <f:convertDateTime timeZone="EST"
+                                                       pattern="dd-MMMM-yyyy HH:mm" />
+                                </h:outputText>    
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Nombre
+                                </f:facet>  
+                                <h:outputText value="#{oOS.paciente.nombreCompleto}" /> 
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Tipo
+                                </f:facet>  
+                                <h:outputText value="#{oOS.convQuienPaga}" /> 
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Costo
+                                </f:facet>  
+                                <h:outputText value="#{oOS.costoOriginal}">
+                                    <f:convertNumber pattern="#.00"/>
+                                </h:outputText> 
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Médico
+                                </f:facet>  
+                                <h:outputText value="#{oOS.medico.nombreCompleto}" /> 
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Realizó
+                                </f:facet> 
+
+                                <p:cellEditor>  
+                                    <f:facet name="output"><h:outputText value="#{oOS.persHospRealiza.nombreCompleto}" /></f:facet>  
+                                    <f:facet name="input">  
+                                        <p:selectOneMenu required="true" id="Personal" label="Médico que realizó" converter="#{oOtorServ2}" value="#{oOS.persHospRealiza}" >
+                                            <f:selectItem  itemLabel="Selecciona" itemValue="" />
+                                            <f:selectItems value="#{oOtorServ2.listaPersonalHop}"  var="oPH" 
+                                                           itemLabel="#{oPH.nombreCompleto}" 
+                                                           itemValue="#{oPH}" /> 
+                                        </p:selectOneMenu>  
+                                    </f:facet>  
+                                </p:cellEditor> 
+
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Diagnóstico auxiliar.
+                                </f:facet> 
+
+                                <p:cellEditor>  
+                                    <f:facet name="output"><h:outputText value="#{oOS.SAuxdiag}" /></f:facet>  
+                                    <f:facet name="input">  
+                                        <p:inputText label="Auxiliar Diagnostica" disabled="#{!oOS.BAuxdiag}" required="true" value="#{oOS.SAuxdiag}" />
+                                    </f:facet>  
+                                </p:cellEditor> 
+
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Técnico de Urgencia.
+                                </f:facet> 
+
+                                <p:cellEditor>  
+                                    <f:facet name="output"><h:outputText rendered="#{oOS.tecnico!=null}" value="#{oOS.tecnico.nombreCompleto}" /></f:facet>  
+                                    <f:facet name="input">  
+                                        <p:selectOneMenu  disabled="#{!oOS.concepUrgencia}" id="Tecnicos" label="Ténico" converter="#{oOtorServ2}" value="#{oOS.tecnico}" >
+                                            <f:selectItem  itemLabel="Selecciona" itemValue="" />
+                                            <f:selectItems value="#{oOtorServ2.listaTecnicos}"  var="oPHT" 
+                                                           itemLabel="#{oPHT.nombreCompleto}" 
+                                                           itemValue="#{oPHT}" /> 
+                                        </p:selectOneMenu>  
+                                    </f:facet>  
+                                </p:cellEditor> 
+
+                            </p:column>
+                               <p:column >
+                                <f:facet name="header"> 
+                                    Enfermera de Endoscopía.
+                                </f:facet> 
+
+                                <p:cellEditor>  
+                                    <f:facet name="output"><h:outputText rendered="#{oOS.enfermera!=null}" value="#{oOS.tecnico.nombreCompleto}" /></f:facet>  
+                                    <f:facet name="input">  
+                                        <p:selectOneMenu disabled="#{!(oOS.lineaEndos or oOS.concepUrgencia ) }" id="Enfermeras" label="Enfermera" converter="#{oOtorServ2}" value="#{oOS.enfermera}" >
+                                            <f:selectItem  itemLabel="Selecciona" itemValue="" />
+                                            <f:selectItems value="#{oOtorServ2.listaEnfermeras}"  var="oPHE" 
+                                                           itemLabel="#{oPHE.nombreCompleto}" 
+                                                           itemValue="#{oPHE}" /> 
+                                        </p:selectOneMenu>  
+                                    </f:facet>  
+                                </p:cellEditor> 
+
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> 
+                                    Observaciones
+                                </f:facet>  
+                                <h:outputText value="#{oOS.obs}" /> 
+                            </p:column>
+                            <p:column>  
+                                <p:rowEditor />  
+                            </p:column>   
+
+                        </p:dataTable>
+
+
+
+                        <p:commandButton value="Otorgar Servicio" icon="ui-icon-disk" actionListener="#{oOtorServ2.otorgarServicio()}" update="grow1 tb"/>
+       
+                    </center>    
+                </h:form>
+
+
+                <br/>
+                <br/><br/>
+            </h:body>
+        </ui:define> 
+    </ui:composition>    
+</html>

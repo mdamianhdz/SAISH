@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Consultar Corte de Caja</title>
+            <h:body>
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    <p:dialog id="dlgCorteCaja" widgetVar="dlgCorte" appendTo="@(body)" closable="false" resizable="false"  
+                                  dynamic="true" modal="false" >
+                            <center>
+                                <h3>Detalle Corte de Caja</h3>
+                                <h:form id="formDlg">
+                                    <p:dataTable id="dtDetalle" var="op" value="#{oConsCC.selectedCorte.listOperaciones}" paginator="true" 
+                                                 paginatorPosition="bottom" rows="10" emptyMessage="No hay registros">
+                                        <p:column headerText="Folio">
+                                            <p:outputLabel rendered="#{op.opeCC.opeCaja.folio>0}" value="#{op.opeCC.opeCaja.folio}"/>
+                                        </p:column>
+                                        <p:column headerText="Fecha">
+                                            <p:outputLabel value="#{op.opeCC.opeCaja.fechaOp}">
+                                                <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                            </p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Concepto">
+                                            <p:outputLabel rendered="#{op.opeCC.opeCaja.folio>0}" value="#{op.concepto}"/>
+                                            <p:outputLabel rendered="#{!(op.opeCC.opeCaja.folio>0)}" value="#{op.concepto}" style="font-weight:bolder"/>
+                                        </p:column>
+                                        <p:column headerText="Forma de Pago">
+                                            <p:outputLabel value="#{op.formaPago.descripcion}"/>
+                                        </p:column>
+                                        <p:column headerText="Monto Ingreso">
+                                            <p:outputLabel rendered="#{(op.monto>0 and op.tipoOperacion=='I') and op.opeCC.opeCaja.folio>0}" value="$ #{op.monto}"/>
+                                            <p:outputLabel rendered="#{op.concepto=='TOTAL'}" value="$ #{oConsCC.hosp+oConsCC.ext}" style="font-weight:bolder"/>
+                                        </p:column>
+                                        <p:column headerText="Monto Egreso">
+                                            <p:outputLabel rendered="#{(op.monto>0 and op.tipoOperacion=='E') and op.opeCC.opeCaja.folio>0}" value="$ #{op.monto}"/>
+                                            <p:outputLabel rendered="#{op.concepto=='TOTAL'}" value="$ #{oConsCC.totalE}" style="font-weight:bolder"/>
+                                        </p:column>
+                                        <p:column headerText="Saldo">
+                                            <p:outputLabel rendered="#{op.opeCC.opeCaja.folio>0}" value="$ #{oConsCC.calculaSaldo(op.opeCC.opeCaja.folio, op.monto)}"/>
+                                            <p:outputLabel rendered="#{!(op.opeCC.opeCaja.folio>0)}" value="$ #{oConsCC.calculaSaldo(op.opeCC.opeCaja.folio, op.monto)}" style="font-weight:bolder"/>
+                                        </p:column>
+                                        <f:facet name="footer">
+                                            <p:commandButton value="Regresar" oncomplete="PF('dlgCorte').hide()"/>
+                                        </f:facet>
+                                    </p:dataTable>
+                                </h:form>
+                            </center>
+                    </p:dialog>
+                    <center>
+                        <h2>Consultar Corte de Caja</h2>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Fecha:" style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column colspan="3">del&nbsp;&nbsp;
+                                    <p:calendar value="#{oConsCC.inicio}" showOn="button">
+                                        <p:ajax event="dateSelect" listener="#{oConsCC.validaFecha}" update="msg" />
+                                    </p:calendar>&nbsp;&nbsp;al&nbsp;&nbsp;
+                                    <p:calendar value="#{oConsCC.fin}" showOn="button">
+                                        <p:ajax event="dateSelect" listener="#{oConsCC.validaFecha}" update="msg" />
+                                    </p:calendar>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Buscar">
+                                        <p:ajax update="dtCortes" listener="#{oConsCC.buscar()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/>
+                        <p:dataTable id="dtCortes" var="oCorte" value="#{oConsCC.listaCortes}" paginator="true" paginatorPosition="bottom" rows="10" 
+                                     emptyMessage="No hay registros" style="width:800px" selection="#{oConsCC.selectedCorte}" rowKey="#{oCorte.idCorte}">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Id">
+                                <p:outputLabel value="#{oCorte.idCorte}"/>
+                            </p:column>
+                            <p:column headerText="Fecha">
+                                <p:outputLabel value="#{oCorte.registro}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Saldo Inicial">
+                                <p:outputLabel value="$ #{oCorte.listOperaciones.get(0).monto}"/>
+                            </p:column>
+                            <p:column headerText="Saldo Final">
+                                <p:outputLabel value="$ #{oCorte.saldoFinal}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Ver Detalle" oncomplete="PF('dlgCorte').show()" update=":form:dlgCorteCaja">
+                                    <p:ajax listener="#{oConsCC.calculaDetalleIngresos()}"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                    </center>
+                </h:form>
+            </h:body>
+        </ui:define>
+    </ui:composition>
+</html>

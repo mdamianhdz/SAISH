@@ -1,0 +1,164 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+<ui:define name="cuerpo">
+<title>Autorización de pagos extras a enfermeras</title>
+<h:body>
+    
+    <h:form id="form">  
+        #{oRegEnf.limpiar()}
+       <p:growl id="msgs" showDetail="true"/>
+       <p:panel header="Autorización de pagos extras a enfermeras" style="margin-bottom:10px;">  
+           <h:panelGrid columns="2" style="width: 35%;">
+               <h:outputText value="Jefa de enfermería:" style="font-weight: bold"/>
+               <p:selectOneMenu id="txtFolioM1" value="#{oRegEnf.jefaEnf}">  
+                    <f:selectItem itemLabel="Enfermería JT" itemValue="" />  
+                    <f:selectItems value="#{oRegEnf.jefasEnfermeria}" /> 
+               </p:selectOneMenu>  
+           </h:panelGrid>
+           <h:panelGrid columns="5" style="width: 50%;">
+                <h:outputText value="Fecha inicial: " style="font-weight: bold"/>
+                <p:calendar value="#{oRegEnf.fechaInicio}" 
+                            showOn="button" locale="es">
+                    <p:ajax event="dateSelect" 
+                            listener="#{oRegEnf.validaFecha}" 
+                            update="msgs" />
+                </p:calendar>
+                <h:outputText value="  Fecha final: " style="font-weight: bold"/>
+                <p:calendar value="#{oRegEnf.fechaFin}" 
+                            showOn="button" locale="es">
+                    <p:ajax event="dateSelect" 
+                            listener="#{oRegEnf.validaFecha}" 
+                            update="msgs" />
+                </p:calendar>
+                <p:commandButton actionListener="#{oRegEnf.obtieneRegalias}" 
+                                value="Buscar" 
+                                update=":form:regaliasDT :form:msgs" />  
+           </h:panelGrid>
+           <br/>
+           <p:dataTable id="regaliasDT"  rows="7" paginator="true" var="cr" 
+                       value="#{oRegEnf.dist}" paginatorPosition="bottom"
+                       emptyMessage="No hay información">
+               <f:facet name="header"> Pagos extras a enfermeras </f:facet>
+               <p:columns value="#{oRegEnf.nameColumnas}"  var="column" >  
+                    <f:facet name="header">  
+                        #{column}  
+                    </f:facet>  
+               </p:columns>
+               <p:subTable var="cReg" value="#{oRegEnf.distribucion}">
+                    <p:column>
+                        <h:outputText value="#{cReg.fecha}" style=" text-transform: capitalize;">
+                            <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                        </h:outputText>
+                        <ui:repeat value="#{cReg.numConceptos}" var="nums">
+                            <td>
+                                <h:outputText value="#{nums}">
+                                <f:convertNumber integerOnly="true"/>
+                                </h:outputText>
+                            </td>
+                        </ui:repeat>
+                    </p:column>
+                    <p:column>
+                        <h:outputText value="#{cReg.importe}" style="float: right;">
+                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column>
+                        <h:outputText value="#{cReg.importeRegalia}" style="float: right;"> 
+                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                        </h:outputText>
+                    </p:column>
+               </p:subTable>
+               <p:columnGroup type="footer">
+                    <p:row>
+                        <p:column colspan="#{oRegEnf.numColumnas}" footerText="Total:" style="text-align:right" />
+                        <p:column footerText="#{oRegEnf.totalImporte}" />
+                        <p:column footerText="#{oRegEnf.totalRegalias}" />
+                    </p:row>
+                </p:columnGroup>
+           </p:dataTable>
+           <br/>
+           <h:panelGrid id="pBoton" style="float:right;" columns="2">
+               <p:commandButton id="btn" actionListener="#{oRegEnf.autorizacionPago()}" value="Autorizar" process="@parent" update=":form:msgs" /> 
+               <p:commandButton update=":form:rpt" value="Imprimir" icon="ui-icon-print" oncomplete="PF('rptDialog').show()" process="@parent" >
+               </p:commandButton>
+                
+           </h:panelGrid>
+       </p:panel>
+       
+       <p:dialog header="Autorización de pago de regalías a enfermeras" appendTo="@(body)" widgetVar="rptDialog" modal="true" showEffect="fade" hideEffect="fade" resizable="false" closable="false">
+        <p:panel id="rpt" style="width:100%;">
+            <h:panelGrid id="rptVista" width="100%">
+                <p:panel>
+                    <center>
+                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                    </center>
+                </p:panel>
+                <div align="center"><h:outputText value="AUTORIZACIÓN DE PAGO DE REGALÍAS A ENFERMERAS" style="font-weight: bold;"/></div>
+                <p:separator />
+                <h:panelGrid columns="4" width="80%">
+                    <h:outputText value="Regalías del:  "/>
+                    <h:outputText value="#{oRegEnf.fechaInicio}" style="font-weight: bold; text-transform: capitalize;">
+                        <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                    </h:outputText>
+                    <h:outputText value="Al: "/>
+                    <h:outputText value="#{oRegEnf.fechaFin}" style="font-weight: bold; text-transform: capitalize;">
+                        <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                    </h:outputText>
+                    <h:outputText value="Jefa de enfermería: "/>
+                    <h:outputText value="#{oRegEnf.jefaEnf}" style="font-weight: bold"/>  
+                </h:panelGrid>
+                <br/>
+                <p:dataTable id="regaliasDT2"  var="cr" value="#{oRegEnf.dist}" >
+                    <p:columns value="#{oRegEnf.nameColumnas}"  var="column" >  
+                        <f:facet name="header">  
+                            #{column}  
+                        </f:facet>  
+                    </p:columns>
+                    <p:subTable var="cReg" value="#{oRegEnf.distribucion}">
+                        <p:column>
+                            <h:outputText value="#{cReg.fecha}" style=" text-transform: capitalize;" >
+                                <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                            </h:outputText>
+                            <ui:repeat value="#{cReg.numConceptos}" var="nums">
+                                <td>
+                                    <h:outputText value="#{nums}" >
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputText>
+                                </td>
+                            </ui:repeat>
+                        </p:column>
+                        <p:column><h:outputText value="#{cReg.importe}" style="float: right;"/></p:column>
+                        <p:column><h:outputText value="#{cReg.importeRegalia}" style="float: right;"/></p:column>
+                    </p:subTable>
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column colspan="#{oRegEnf.numColumnas}" footerText="Total:" style="text-align:right" />
+                            <p:column footerText="#{oRegEnf.totalImporte}" />
+                            <p:column footerText="#{oRegEnf.totalRegalias}" />
+                        </p:row>
+                    </p:columnGroup>
+                </p:dataTable>
+            </h:panelGrid>
+            <br/>
+            <h:panelGrid columns="2" style="float:right;">
+                <p:button outcome="autorizacionPagoExtraEnfermeras.xhtml?faces-redirect=true" value="Regresar"  />                          
+                <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" >  
+                    <p:printer target="rptVista" />  
+                </p:commandButton>
+            </h:panelGrid>
+        </p:panel>
+        </p:dialog>
+        
+       
+    </h:form>   
+</h:body>
+</ui:define> 
+</ui:composition> 
+</html>

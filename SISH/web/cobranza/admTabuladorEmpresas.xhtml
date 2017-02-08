@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Administrar tabulador de empresas</title>
+            <h:body>    
+            <h:form id="formulario"> 
+                <p:growl id="messages" showDetail="true"/>
+                #{oCompCredito.limpiar()}
+                <p:dataTable  id="companias" value="#{oCompCredito.todasCompaniasCredActivas}" 
+                              rows="5" paginator="true" paginatorPosition="bottom" var="comp">
+                    <f:facet name="header">
+                        <h:outputText value="Compañias de crédito"/>
+                    </f:facet>
+                    
+                    <p:column>
+                        <f:facet name="header"> 
+                            Identificador
+                        </f:facet>  
+                        <h:outputText value="#{comp.idEmp}" />
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header"> 
+                            Nombre corto
+                        </f:facet>  
+                        <h:outputText value="#{comp.nombreCorto}" />
+                    </p:column>
+                    <p:column >
+                        <f:facet name="header"> 
+                            Razón social
+                        </f:facet>  
+                        <h:outputText value="#{comp.nomRazSoc}" /> 
+                    </p:column>
+                    <p:column >
+                        <f:facet name="header"> 
+                            RFC
+                        </f:facet>  
+                        <h:outputText value="#{comp.RFC}" /> 
+                    </p:column>
+                    <p:column >
+                        <f:facet name="header"> 
+                            Políticas de pago
+                        </f:facet>  
+                        <h:outputText value="#{comp.politicasPago}" /> 
+                    </p:column>
+                    <p:column >
+                        <f:facet name="header"> 
+                            Plazo de pago
+                        </f:facet>  
+                        <h:outputText value="#{comp.plazoPago}"  /> 
+                    </p:column>
+                    <p:column>
+                        <p:commandButton value="Actualizar" update=":formPlazo:modificarPlazo" oncomplete="dialogModificarPlazo.show()">
+                            <f:setPropertyActionListener target="#{oCompCredito.companiaCredSeleccionada}" value="#{comp}" />
+                        </p:commandButton>
+                    </p:column> 
+                </p:dataTable> 
+            </h:form>
+            <p:dialog id="idDialogModificarPlazo" appendTo="@(body)" widgetVar="dialogModificarPlazo" resizable="true" showEffect="fade" hideEffect="explode" modal="true"> 
+            <h:form id="formPlazo">
+                <h:panelGrid  columns="2" id="modificarPlazo">
+                        <h:outputLabel value="Plazo de pago" for="txtPlazo"/>
+                        <p:inputText id="txtPlazo" value="#{oCompCredito.companiaCredSeleccionada.plazoPago}" required="true">
+                            <f:validateLongRange minimum="1" maximum="30"/>
+                        </p:inputText>
+                        <p:commandButton value="Guardar"  update=":formulario:messages :formulario:companias" action="#{oCompCredito.modificarPlazoCom}"></p:commandButton>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+    </h:body>
+       </ui:define> 
+    </ui:composition> 
+</html>
+

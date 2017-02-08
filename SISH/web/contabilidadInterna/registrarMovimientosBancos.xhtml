@@ -1,0 +1,234 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Controlar Movimientos a Bancos</title>
+            <h:body>
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    <center>
+                        <h2>Registrar Movimientos a Bancos</h2>
+                        <p:dialog id="dlgCapturaMovimiento" widgetVar="dlgMov" appendTo="@(body)" closable="false" resizable="false"  
+                                  dynamic="true" modal="false" >
+                            <center>
+                                <h3>Movimiento a Banco</h3>
+                                <h:form id="formDlg">
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Banco: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oMovBan.currentMovimiento.cuentaBanco.banco.idEmp}" disabled="#{oMovBan.disDatos}">
+                                                    <f:selectItem itemValue="0" itemLabel="Seleccione"/>
+                                                    <f:selectItems value="#{oMovBan.listBancos}" var="oBanco" itemValue="#{oBanco.idEmp}" itemLabel="#{oBanco.nombreCorto}"/>
+                                                    <p:ajax listener="#{oMovBan.buscaCuentasDlg()}" update="selCuentasDlg"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Cuenta: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu id="selCuentasDlg" value="#{oMovBan.currentMovimiento.cuentaBanco.numCtaBan}" disabled="#{oMovBan.disDatos}">
+                                                    <f:selectItem itemValue="S" itemLabel="Seleccione"/>
+                                                    <f:selectItems value="#{oMovBan.listCuentas}" var="oCta" itemValue="#{oCta.numCtaBan}" itemLabel="#{oCta.descripcion}"/>
+                                                    <p:ajax/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Fecha: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:calendar showOn="button" value="#{oMovBan.currentMovimiento.fechaMov}" disabled="#{oMovBan.disDatos}"><p:ajax event="dateSelect"/></p:calendar>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Monto: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oMovBan.currentMovimiento.monto}" disabled="#{oMovBan.disDatos}"><p:ajax/></p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Tipo: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oMovBan.currentMovimiento.conceptoMov.tipoMovCta}" disabled="#{oMovBan.disDatos}">
+                                                    <f:selectItem itemValue="" itemLabel="Seleccione"/>
+                                                    <f:selectItem itemValue="E" itemLabel="Entrada"/>
+                                                    <f:selectItem itemValue="S" itemLabel="Salida"/>
+                                                    <p:ajax listener="#{oMovBan.buscaConceptos()}" update="selConceptos"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Concepto: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu id="selConceptos" value="#{oMovBan.currentMovimiento.conceptoMov.concepMovCta}" disabled="#{oMovBan.disDatos}">
+                                                    <f:selectItem itemValue="0" itemLabel="Seleccione"/>
+                                                    <f:selectItems value="#{oMovBan.listConceptos}" var="oCon" itemValue="#{oCon.concepMovCta}" itemLabel="#{oCon.descripcion}"/>
+                                                    <p:ajax listener="#{oMovBan.validaConcepto()}" update="panelDatos"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="4">
+                                                <p:dataTable id="dtFact" rendered="#{oMovBan.renderFact}" value="#{oMovBan.listFacturas}" var="oFact" 
+                                                             paginator="true" paginatorPosition="bottom" rows="3" emptyMessage="No hay registros" 
+                                                             selection="#{oMovBan.selectedFacturas}" rowKey="#{oFact.compositeKey}">
+                                                    <p:ajax event="rowSelectCheckbox"/>
+                                                    <p:column selectionMode="multiple"/>
+                                                    <p:column headerText="Serie">
+                                                        <p:outputLabel value="#{oFact.nombreSerie}"/>
+                                                    </p:column>
+                                                    <p:column headerText="Folio">
+                                                        <p:outputLabel value="#{oFact.folio}"/>
+                                                    </p:column>
+                                                    <p:column headerText="Receptor">
+                                                        <p:outputLabel value="#{oFact.receptor.rfc} - #{oFact.receptor.nombre}"/>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Forma de Pago: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oMovBan.currentMovimiento.formaPago.cveFrmPago}" disabled="#{oMovBan.disDatos}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="" /> 
+                                                    <f:selectItems value="#{oMovBan.listFormasPago}" var="oFM" itemValue="#{oFM.cveFrmPago}" itemLabel="#{oFM.descripcion}"/>
+                                                    <p:ajax/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Núm. Documento/Operación " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column >
+                                                <p:inputText value="#{oMovBan.currentMovimiento.numDocto}" disabled="#{oMovBan.disDatos}"><p:ajax/></p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Referencia: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputText value="#{oMovBan.currentMovimiento.referencia}" size="110" disabled="#{oMovBan.disDatos}"><p:ajax/></p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="4">
+                                                <p:commandButton rendered="#{oMovBan.renderG}" value="Guardar" oncomplete="PF('dlgMov').hide()"><p:ajax listener="#{oMovBan.guardar()}" update=":form:msg :form:dtMovimientos"/></p:commandButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <p:commandButton rendered="#{oMovBan.renderM}" value="Modificar" oncomplete="PF('dlgMov').hide()"><p:ajax listener="#{oMovBan.modificar()}" update=":form:msg :form:dtMovimientos"/></p:commandButton>
+                                                <p:commandButton rendered="#{oMovBan.renderE}" value="Eliminar" oncomplete="PF('dlgMov').hide()"><p:ajax listener="#{oMovBan.eliminar()}" update=":form:msg :form:dtMovimientos"/></p:commandButton>
+                                                <p:commandButton value="Cancelar" oncomplete="PF('dlgMov').hide()"/><br/>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Banco: " style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu value="#{oMovBan.selectedBanco}">
+                                        <f:selectItem itemValue="0" itemLabel="Seleccione"/>
+                                        <f:selectItems value="#{oMovBan.listBancos}" var="oBanco" itemValue="#{oBanco.idEmp}" itemLabel="#{oBanco.nombreCorto}"/>
+                                        <p:ajax listener="#{oMovBan.buscaCuentas()}" update="selCuentas"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Cuenta: " style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu id="selCuentas" value="#{oMovBan.selectedCuenta}">
+                                        <f:selectItem itemValue="S" itemLabel="Seleccione"/>
+                                        <f:selectItems value="#{oMovBan.listCuentas}" var="oCta" itemValue="#{oCta.numCtaBan}" itemLabel="#{oCta.descripcion}"/>
+                                        <p:ajax/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Fecha:" style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column colspan="3">del&nbsp;&nbsp;
+                                    <p:calendar value="#{oMovBan.inicio}" showOn="button">
+                                        <p:ajax event="dateSelect" listener="#{oMovBan.validaFecha}" update="msg" />
+                                    </p:calendar>&nbsp;&nbsp;al&nbsp;&nbsp;
+                                    <p:calendar value="#{oMovBan.fin}" showOn="button">
+                                        <p:ajax event="dateSelect" listener="#{oMovBan.validaFecha}" update="msg" />
+                                    </p:calendar>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Buscar">
+                                        <p:ajax update="dtMovimientos" listener="#{oMovBan.buscar()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/>
+                        <p:dataTable id="dtMovimientos" var="oMov" value="#{oMovBan.listMovimientos}" paginator="true" paginatorPosition="bottom" rows="6" 
+                                     emptyMessage="No hay registros" selection="#{oMovBan.selectedMovimiento}" rowKey="#{oMov.idMovCtaBan}" style="width:800px">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Fecha">
+                                <p:outputLabel value="#{oMov.fechaMov}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Banco">
+                                <p:outputLabel value="#{oMov.cuentaBanco.banco.nombreCorto}"/>
+                            </p:column>
+                            <p:column headerText="Cuenta">
+                                <p:outputLabel value="#{oMov.cuentaBanco.descripcion}"/>
+                            </p:column>
+                            <p:column headerText="Tipo Movimiento">
+                                <p:outputLabel value="#{oMovBan.cambiaTipoMov(oMov.conceptoMov.tipoMovCta)}"/>
+                            </p:column>
+                            <p:column headerText="Concepto">
+                                <p:outputLabel value="#{oMov.conceptoMov.descripcion}"/>
+                            </p:column>
+                            <p:column headerText="Monto">
+                                <p:outputLabel value="#{oMov.monto}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Nuevo" oncomplete="PF('dlgMov').show()">
+                                    <p:ajax listener="#{oMovBan.confNuevo()}" update=":form:dlgCapturaMovimiento :form:msg"/>
+                                </p:commandButton>
+                                <p:commandButton value="Modificar" oncomplete="PF('dlgMov').show()">
+                                    <p:ajax listener="#{oMovBan.confSel('M')}" update=":form:dlgCapturaMovimiento :form:msg"/>
+                                </p:commandButton>
+                                <p:commandButton value="Eliminar" oncomplete="PF('dlgMov').show()"> 
+                                    <p:ajax listener="#{oMovBan.confSel('E')}" update=":form:dlgCapturaMovimiento :form:msg"/>
+                                </p:commandButton>
+                                <p:commandButton value="Consultar" oncomplete="PF('dlgMov').show()">
+                                    <p:ajax listener="#{oMovBan.confSel('C')}" update=":form:dlgCapturaMovimiento :form:msg"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                    </center>
+                </h:form>                     
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

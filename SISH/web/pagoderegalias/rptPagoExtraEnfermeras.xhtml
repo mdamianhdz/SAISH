@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+ 
+<ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+<ui:define name="cuerpo">
+<title>Reporte de pagos extras a enfermeras</title>
+<h:body>
+   
+    <h:form id="form">  
+        #{rptRegEnf.limpiar()}
+       <p:growl id="msgs" showDetail="true"/>
+       <p:panel header="Reporte de pagos extras a enfermeras" style="margin-bottom:10px;">  
+           <br/>
+           <h:panelGrid id="datos" columns="5" style="width: 50%;">
+                <h:outputText value="Fecha inicial: " style="font-weight: bold"/>
+                <p:calendar value="#{rptRegEnf.fechaInicio}" 
+                            showOn="button" locale="es">
+                    <p:ajax event="dateSelect" 
+                            listener="#{rptRegEnf.validaFecha}" 
+                            update="msgs" />
+                </p:calendar>
+                <h:outputText value="  Fecha final: " style="font-weight: bold"/>
+                <p:calendar value="#{rptRegEnf.fechaFin}" 
+                            showOn="button" locale="es">
+                    <p:ajax event="dateSelect" 
+                            listener="#{rptRegEnf.validaFecha}" 
+                            update="msgs" />
+                </p:calendar>
+                <p:commandButton actionListener="#{rptRegEnf.obtieneRegalias()}" value="Buscar" update=":form:rptVista :form:msgs" />  
+           </h:panelGrid>
+          
+           <br/>
+           <h:panelGrid id="rptVista" width="100%">
+               <p:panel>
+                    <center>
+                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                    </center>
+                </p:panel>
+                <div align="center"><h:outputText value="REPORTE DE PAGOS EXTRAS A ENFERMERAS" style="font-weight: bold;"/></div>
+               <p:separator />
+               <h:panelGrid columns="4" width="80%">
+                    <h:outputText value="Periodo del:  "/>
+                    <h:outputText value="#{rptRegEnf.fechaInicio}" style="font-weight: bold">
+                        <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                    </h:outputText>
+                    <h:outputText value="Al: "/>
+                    <h:outputText value="#{rptRegEnf.fechaFin}" style="font-weight: bold">
+                        <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                    </h:outputText>
+                    <h:outputText value="Jefa de enfermería: "/>
+                    <h:outputText value="#{rptRegEnf.jefaEnf}" style="font-weight: bold"/>  
+               </h:panelGrid>
+               
+               <p:dataTable id="regaliasDT" var="cr" value="#{rptRegEnf.dist}" >
+                    <f:facet name="header"> Regalías a enfermeras </f:facet>
+                    <p:columns value="#{rptRegEnf.nameColumnas}"  var="column" >  
+                        <f:facet name="header">  
+                            #{column}  
+                        </f:facet>  
+                    </p:columns>
+                    <p:subTable var="cReg" value="#{rptRegEnf.distribucion}">
+                        <p:column><h:outputText value="#{cReg.fecha}" />
+                            <ui:repeat value="#{cReg.numConceptos}" var="nums">
+                                <td><h:outputText value="#{nums}">
+                                    <f:convertNumber integerOnly="true"/>
+                                    </h:outputText></td>
+                            </ui:repeat>
+                        </p:column>
+                        <p:column>
+                            <h:outputText value="#{cReg.importe}" style="float: right;">
+                                <f:convertNumber type="currency" locale="es_MX"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <h:outputText value="#{cReg.importeRegalia}" style="float: right;"> 
+                                <f:convertNumber type="currency" locale="es_MX"/>
+                            </h:outputText>
+                        </p:column>
+                    </p:subTable>
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column colspan="#{rptRegEnf.numColumnas}" 
+                                      footerText="Total:" style="text-align:right" />
+                            <p:column footerText="#{rptRegEnf.totalImporte}" 
+                                      style="text-align:right">
+                            </p:column>
+                            <p:column footerText="#{rptRegEnf.totalRegalias}" 
+                                      style="text-align:right"/>
+                        </p:row>
+                    </p:columnGroup>
+               </p:dataTable>
+           </h:panelGrid>
+               <br/>
+               <h:panelGrid id="pBoton" style="float:right;" columns="2">
+                    <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" >  
+                        <p:printer target="rptVista" />  
+                    </p:commandButton>
+               </h:panelGrid>
+       </p:panel>
+    </h:form>   
+</h:body>
+</ui:define> 
+</ui:composition> 
+</html>

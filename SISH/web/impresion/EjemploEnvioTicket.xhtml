@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+
+    <h:form id="formPrint">
+        <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" onclick="printTicket();
+                return false;" style="display:block;margin-bottom: 20px">            
+        </p:commandButton>
+    </h:form> 
+    <script>
+            var ticket;
+            function printTicket() {
+                ticket = {
+                    "reimpresion": false,
+                    "title": 5,
+                    "fecha": "03-MAR-14",
+                    "hora": "10:34",
+                    "folioope": 2000,
+                    "doctor": "Dr. Miguel Ángel Dámian Hernández",
+                    "recfiscal": "",
+                    "mes": "SEPTIEMBRE",
+                    "anio": "2013",
+                    "usuario": "Fernando Cabrera Brenis",
+                    "servicios": [
+                        {
+                            "cantidad": 1,
+                            "descripcion": "PAGO DE RENTA",
+                            "precio": 1000
+                        }
+                    ]
+                };
+                print(ticket);
+            }
+    </script>
+
+</html>

@@ -1,0 +1,596 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Precierre de cuenta</title>
+            <h:body>
+                <h:form id="form">  
+                    #{oPreCCta.limpiar()}
+
+                    <p:growl id="msgs" showDetail="true"/>
+                    <p:panel id="panelprin" header="Precierre de cuenta" style="margin-bottom:10px;">  
+
+                        <h:panelGrid id="agenda" columns="4" width="60%" >
+                            <h:outputText value="Fecha:  " />
+                            <h:outputText value="#{oPreCCta.fecha}" style="font-weight:bold">
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </h:outputText>
+
+                            <h:outputText value="Paciente: "/>
+                            <p:selectOneMenu id="txtFolioM1" value="#{oPreCCta.nombrePaciente}" >  
+                                <f:selectItem itemLabel="Pacientes con cuenta" itemValue="" />  
+                                <f:selectItems value="#{oPreCCta.nomPacientes}" />  
+                                <p:ajax update="datos" listener="#{oPreCCta.datosEpisodio()}" />  
+                            </p:selectOneMenu>  
+                        </h:panelGrid>  
+
+                        <h:panelGrid id="datos" columns="1">
+                            <br/>
+                            <h:outputText value="DATOS PACIENTE" style="font-weight:bold"/>
+                            <h:panelGrid id="datosPac" columns="6">
+                                <h:outputText value="Folio: "/>
+                                <p:inputText value="#{oPreCCta.paciente.folioPac}" size="30" readonly="true"/>
+                                <h:outputText value="RFC: "/>
+                                <p:inputText value="#{oPreCCta.paciente.RFC}" size="30" readonly="true"/>
+                                <h:outputText value="CURP: "/>
+                                <p:inputText value="#{oPreCCta.paciente.CURP}" size="30" readonly="true"/>
+                                <h:outputText value="Fecha de nacimiento: "/>
+                                <p:inputText value="#{oPreCCta.paciente.nac}" size="30" readonly="true">
+                                    <f:convertDateTime pattern="dd/MM/yyyy" timeZone="EST"/>
+                                </p:inputText>
+                                <h:outputText value="Sexo: "/>
+                                <p:inputText value="#{oPreCCta.paciente.genero}" size="30" readonly="true"/>
+                                <h:outputText value="Edad: "/>
+                                <p:inputText value="#{oPreCCta.paciente.edad}" size="30" readonly="true"/>
+                                <h:outputText value="Domicilio: "/>
+                                <p:inputText value="#{oPreCCta.paciente.calleYNum}" size="30" readonly="true"/>
+                                <h:outputText value="Colonia: "/>
+                                <p:inputText value="#{oPreCCta.paciente.colonia}" size="30" readonly="true"/>
+                                <h:outputText value="Ciudad: "/>
+                                <p:inputText value="#{oPreCCta.paciente.ciudadPoblacion}" size="30" readonly="true"/>
+                                <h:outputText value="Teléfono: "/>
+                                <p:inputText value="#{oPreCCta.paciente.telCasa}" size="30" readonly="true"/>
+                                <h:outputText value="Celular: "/>
+                                <p:inputText value="#{oPreCCta.paciente.telCelular}" size="30" readonly="true"/>
+                            </h:panelGrid>
+
+                            <br/>
+                            <h:outputText value="DATOS DE HOSPITALIZACION" style="font-weight: bold"/>
+                            <h:panelGrid id="datosHops" columns="6" >
+                                <h:outputText value="Fecha  de  ingreso : "/>
+                                <p:inputText value="#{oPreCCta.episodioMedico.inicio}"  readonly="true">
+                                    <f:convertDateTime pattern="dd/MM/yyyy" timeZone="EST"/>
+                                </p:inputText>
+                                <h:outputText value="Habitación: "/>
+                                <p:inputText value="#{oPreCCta.episodioMedico.hab.hab}" readonly="true"/>
+                                <h:outputText value="Diagnóstico Inicial: "/>
+                                <p:inputText value="#{oPreCCta.episodioMedico.dxIngreso.descrip}" readonly="true"/>
+                                <h:outputText value="Diagnóstico Final*: "/>
+                                <p:autoComplete size="50" scrollHeight="300" minQueryLength="4" 
+                                        itemtipMyPosition="left center" itemtipAtPosition="right center"  
+                                        label="Diagnóstico de egreso" required="true"
+                                        forceSelection="true"
+                                    completeMethod="#{oListaDiag.obtenerDiagnostico}" 
+                                    value="#{oPreCCta.episodioMedico.dxEgreso.cve}" 
+                                    var="oDiag11" itemLabel="#{oDiag11.descrip2}" 
+                                        itemValue="#{oDiag11.cve}">
+                                    <p:ajax/>
+                                </p:autoComplete>
+                                <h:outputText value=" "/>
+                                <h:outputText value=" "/>
+                                <h:outputText value=" "/>
+                                <h:outputText value=" "/>
+                            </h:panelGrid>
+
+                            <br/>
+                            <h:outputText value="SERVICIOS" style="font-weight: bold"/>
+                            <p:dataTable  id="dtNoPagados" value="#{oPreCCta.serviciosNoPagados}" rows="7" editable="true" paginator="true" paginatorPosition="bottom" var="oPPr" >
+                                <p:ajax event="rowEdit" listener="#{oPreCCta.onRowEdit}" update=":form:msgs :form:dtNoPagados" />
+                                <p:column headerText="Fecha de registro">
+                                    <h:outputText value="#{oPPr.registro}" >
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Fecha de realización">
+                                    <h:outputText value="#{oPPr.realizado}" >
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Concepto">
+                                    <h:outputText value="#{oPPr.concepPrestado.descripConcep}" />
+                                </p:column>
+                                <p:column headerText="Costo original">
+                                    <h:outputText value="#{oPPr.costoCobrado*oPPr.cantidad}" style="float:right;">
+                                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Costo">
+                                    <h:outputText value="#{oPPr.costoCobrado*oPPr.cantidad}" style="float:right;">
+                                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Pagador">
+                                    <p:cellEditor>
+                                        <f:facet name="output">
+                                            <h:outputText value="#{oPPr.companiaCred.nombreCorto}" />  -
+                                            <h:outputText value="#{oPPr.numPoliza}"/>
+                                        </f:facet>  
+                                        <f:facet name="input">  
+                                            <p:selectOneMenu id="txtEmpAseg" value="#{oPPr.companiaCred.nombreCorto}" >  
+                                                <f:selectItems value="#{oPreCCta.nomCompaniasCred}" />  
+                                                <p:ajax listener="#{oPreCCta.buscaPolizas(oPPr.companiaCred.nombreCorto)}" update="txtPolAseg" />
+                                            </p:selectOneMenu> <br/>
+                                            <p:selectOneMenu id="txtPolAseg" value="#{oPPr.numPoliza}" >  
+                                                <f:selectItems value="#{oPreCCta.polizas}" />  
+                                            </p:selectOneMenu>
+                                        </f:facet>  
+                                    </p:cellEditor> 
+                                </p:column>
+
+                                <p:column style="width:6%">  
+                                    <p:rowEditor rendered="#{!oPreCCta.disable}" />
+                                </p:column> 
+                            </p:dataTable> 
+                            <br/>
+                            <h:outputText value="PAGOS EXTERNOS" style="font-weight: bold"/>
+                            <p:dataTable id="dtPagosExternos" value="#{oPreCCta.serviciosPagosExterno}" var="oPext">
+                                <p:column headerText="Fecha de registro">
+                                    <h:outputText value="#{oPext.registro}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Fecha de realización">
+                                    <h:outputText value="#{oPext.realizado}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Concepto">
+                                    <h:outputText value="#{oPext.concepPrestado.descripConcep}" />
+                                </p:column>
+                                <p:column headerText="Costo original" >
+                                    <h:outputText value="#{oPext.costoCobrado*oPext.cantidad}" style="float:right;">
+                                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Costo">
+                                    <h:outputText value="#{oPext.costoCobrado*oPext.cantidad}" style="float:right;">
+                                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                            <br/>
+                            <h:outputText value="ANTICIPOS" style="font-weight: bold"/>
+                            <p:dataTable id="dtAnticipos" value="#{oPreCCta.serviciosAnticipo}" var="oPant">
+                                <p:column headerText="Fecha de registro">
+                                    <h:outputText value="#{oPant.registro}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Fecha de realización">
+                                    <h:outputText value="#{oPant.realizado}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Concepto">
+                                    <h:outputText value="#{oPant.concepPrestado.descripConcep}" />
+                                </p:column>
+                                <p:column headerText="Costo original">
+                                    <h:outputText value="#{oPant.costoCobrado}" style="float:right;">
+                                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Costo">
+                                    <h:outputText value="#{oPant.costoCobrado}" style="float:right;">
+                                        <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                            <br/>
+                            <p:panelGrid style="float:right;">
+                                <p:row>
+                                    <p:column><h:outputText value=""/></p:column>
+                                    <p:column><h:outputText value="Compañía o aseguradora" style="font-weight: bold"/></p:column>
+                                    <p:column><h:outputText value="Paciente" style="font-weight: bold"/></p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column><h:outputText value="Subtotal:"/></p:column>
+                                    <p:column>
+                                        <h:outputText value="#{oPreCCta.subtotalCompania}" style="float:right;">
+                                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="#{oPreCCta.subtotalPaciente}" style="float:right;">
+                                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column><h:outputText value="I.V.A.:"/></p:column>
+                                    <p:column>
+                                        <h:outputText value="#{oPreCCta.ivaCompania}" style="float:right;">
+                                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="#{oPreCCta.ivaPaciente}" style="float:right;">
+                                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column><h:outputText value="Total:"/></p:column>
+                                    <p:column>
+                                        <h:outputText value="#{oPreCCta.totalCompania}" style="float:right;">
+                                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="#{oPreCCta.totalPaciente}" style="float:right;">
+                                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                            <h:panelGrid style="float:right;" columns="2">
+                                <h:outputText value="Total de la cuenta:" style="font-weight: bold"/>
+                                <h:outputText value="#{oPreCCta.totalCuenta}" style="float:right;">
+                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                </h:outputText>
+                                <h:outputText value="Pagos:" style="font-weight: bold"/>
+                                <h:outputText value="#{oPreCCta.totalPagos}" style="float:right;">
+                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                </h:outputText>
+                                <h:outputText value="Pendiente de pago:" style="font-weight: bold"/>
+                                <h:outputText value="#{oPreCCta.totaPendientePago}" style="float:right;">
+                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                </h:outputText>
+                            </h:panelGrid>
+                            <br/>
+                            <h:form id="form2">
+                                <h:panelGrid id="datosAdicionales" columns="2">
+                                    <h:outputText value="Tipo de alta: " />   
+                                    <p:selectOneMenu value="#{oPreCCta.episodioMedico.tipoAlta}" disabled="#{oPreCCta.disable}" required="true">  
+                                        <f:selectItem itemLabel="Tipo de alta" itemValue="-1" noSelectionOption="true"/>  
+                                        <f:selectItem itemLabel="Alta médica " itemValue="0" />  
+                                        <f:selectItem itemLabel="Alta voluntaria" itemValue="1" />  
+                                        <f:selectItem itemLabel="Alta por traslado" itemValue="2" />  
+                                        <f:selectItem itemLabel="Defunción" itemValue="3" />  
+                                        <p:ajax update=":form:form2:" />
+                                    </p:selectOneMenu>
+                                </h:panelGrid>
+
+                                <p:panel id="panelSalida">
+                                    <h:panelGrid id="panelAltaTraslado" rendered="#{oPreCCta.episodioMedico.tipoAlta==2}">
+                                        <h:outputText value="ALTA POR TRASLADO" style="font-weight: bold" />
+                                        <br/>
+                                        <h:panelGrid columns="4">
+                                            <h:outputText value="Razón: "/>
+                                            <p:inputText style="text-transform:uppercase"
+                                                value="#{oPreCCta.episodioMedico.razonAltaVoluntTrasl}">
+                                                <p:ajax/>
+                                            </p:inputText>
+                                            <h:outputText value="Destino: "/>
+                                            <p:inputText style="text-transform:uppercase"
+                                                value="#{oPreCCta.episodioMedico.destino}">
+                                                <p:ajax/>
+                                            </p:inputText>
+                                        </h:panelGrid>
+                                    </h:panelGrid>
+                                    <h:panelGrid id="panelAltaVoluntaria" rendered="#{oPreCCta.episodioMedico.tipoAlta==1}">
+                                        <h:outputText value="ALTA VOLUNTARIA" style="font-weight: bold" />
+                                        <br/>
+                                        <h:panelGrid columns="2">
+                                            <h:outputText value="Razón: "/>
+                                            <p:inputText style="text-transform:uppercase"
+                                                value="#{oPreCCta.episodioMedico.razonAltaVoluntTrasl}">
+                                                <p:ajax/>
+                                            </p:inputText>
+                                        </h:panelGrid>
+                                    </h:panelGrid>
+                                </p:panel>
+                                <h:panelGrid id="datosAdicionales2" columns="2">
+                                    <p:selectBooleanCheckbox value="#{oPreCCta.episodioMedico.reqAtnPostQx}" disabled="#{oPreCCta.disable}">
+                                        <p:ajax listener="#{oPreCCta.llena()}"/>
+                                    </p:selectBooleanCheckbox>
+                                    <h:outputText value="Atención posterior a la hospitalización." />
+                                    <p:selectBooleanCheckbox id="checkboxId" rendered="false"
+                                                             value="#{oPreCCta.disableCredito}" 
+                                                             disabled="#{oPreCCta.disable}" >
+                                        <p:ajax event="change" update="panel123" />
+                                    </p:selectBooleanCheckbox>
+                                    <h:outputText value="Autorizar salida con crédito." rendered="false"/>
+                                </h:panelGrid>
+                                <p:panel id="panel123">
+                                    <h:panelGrid id="panelId" rendered="#{oPreCCta.disableCredito}">
+                                        <h:outputText value="Autorización de salida con crédito" style="font-weight: bold" />
+                                        <br/>
+                                        <h:panelGrid columns="6">
+                                            <h:outputText value="Fecha del pagaré: "/>
+                                            <p:calendar value="#{oPreCCta.fechaPagare}" pattern="dd/MM/yyyy" locale="es" showOn="button"/>  
+                                            <h:outputText value="Interés: "/>
+                                            <p:inputText value="#{oPreCCta.interesPagare}"/>
+                                            <h:outputText value="Contraseña para autorizar un crédito: " />
+                                            <p:password value="#{oPreCCta.autorizacion}" required="true" label="Contraseña"/>
+                                        </h:panelGrid>
+                                        <p:commandButton id="btnAC" actionListener="#{oPreCCta.autorizaSalidaCredito()}" 
+                                                         value="Autorizar crédito"  
+                                                         process="@parent" update=":form:creditoDetail :form:msgs " 
+                                                         oncomplete="PF('creditoDialog').show()" 
+                                                         disabled="#{oPreCCta.disable}"/>
+                                    </h:panelGrid>
+                                </p:panel>
+                            </h:form>
+
+                            <br/>
+                            <p:panel id="pBoton" >
+                                <p:commandButton update=":form:precierreDetail" 
+                                                 value="Imprimir" icon="ui-icon-print" 
+                                                 oncomplete="PF('precierreDialog').show()" 
+                                                 process="@parent" >
+                                    <p:ajax listener="#{oPreCCta.setPacienteSesion()}" />  
+                                </p:commandButton>
+                                <p:commandButton id="btn" actionListener="#{oPreCCta.precerrarCuenta()}" 
+                                                 value="Precerrar cuenta" process="@parent" 
+                                                 validateClient="true"
+                                                 update=":form:msgs :form:pBoton :form:dtNoPagados :form:form2:datosAdicionales :form:form2:panel123" 
+                                                 disabled="#{oPreCCta.disable}"/>
+                            </p:panel>
+                        </h:panelGrid>
+                    </p:panel>  
+
+                    <p:dialog header="Autorizar salida con crédito" appendTo="@(body)" widgetVar="creditoDialog" modal="true" showEffect="fade" hideEffect="fade" resizable="true"  >
+                        <h:panelGrid id="creditoDetail" >
+                            <h:outputText value="NO SE AUTORIZÓ LA SALIDA CON CRÉDITO" style="font-weight: bold" rendered="#{!oPreCCta.encontrado}"/>
+                            <p:panel id="pagare" rendered="#{oPreCCta.encontrado}" >
+                                <h:form id="pdf">
+                                    <p:media id="contr" value="/resources/#{oPreCCta.rutaPDFpagare}" width="400" height="400">  
+                                        El navegador no puede abrir el PDF, <h:outputLink value=".../resources/#{oPreCCta.rutaPDFpagare}">click</h:outputLink> para descargar el PDF.  
+                                    </p:media>  
+                                </h:form>
+                            </p:panel>
+                        </h:panelGrid>
+                    </p:dialog>
+
+                    <p:dialog header="Impresión del precierre cuenta" appendTo="@(body)" 
+                              widgetVar="precierreDialog" modal="true" 
+                              showEffect="fade" hideEffect="fade" resizable="true" >
+                        <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" oncomplete="#{oPreCCta.llena()}">  
+                            <p:printer target="form:precierreDetail" />  
+                        </p:commandButton>
+                        <p:scrollPanel mode="native" style="width:100%;height:500px">
+                            <h:panelGrid id="precierreDetail" >
+                                <p:panel>
+                                    <center>
+                                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                    </center>
+                                </p:panel>
+                                <h:panelGrid id="agendaPrecierre" columns="4" width="60%" >
+                                    <h:outputText value="Fecha:  " />
+                                    <h:outputText value="#{oPreCCta.fecha}" style=" font-weight: bold;">
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                    <h:outputText value="Paciente: "/>
+                                    <h:outputText value="#{oPreCCta.paciente.nombreCompleto}" style="font-weight:bold"/>
+                                </h:panelGrid>  
+                                <h:panelGrid id="datosPrecierre" columns="1">
+                                    <br/>
+                                    <h:outputText value="DATOS PACIENTE" style="font-weight:bold"/>
+                                    <h:panelGrid id="datosPacPrecierre" columns="6">
+                                        <h:outputText value="Folio: "/>
+                                        <p:inputText value="#{oPreCCta.paciente.folioPac}" size="30" readonly="true"/>
+                                        <h:outputText value="RFC: "/>
+                                        <p:inputText value="#{oPreCCta.paciente.RFC}" size="30" readonly="true"/>
+                                        <h:outputText value="CURP: "/>
+                                        <p:inputText value="#{oPreCCta.paciente.CURP}" size="30" readonly="true"/>
+                                        <h:outputText value="Fecha de nacimiento: "/>
+                                        <p:inputText value="#{oPreCCta.paciente.nac}" size="30" readonly="true">
+                                            <f:convertDateTime pattern="dd/MM/yyyy" timeZone="EST"/>
+                                        </p:inputText>
+                                        <h:outputText value="Sexo: "/>
+                                        <p:inputText value="#{oPreCCta.paciente.genero}" size="30" readonly="true"/>
+                                        <h:outputText value="Edad: "/>
+                                        <p:inputText value="#{oPreCCta.paciente.edad}" size="30" readonly="true"/>
+                                        <h:outputText value="Domicilio: "/>
+                                        <p:inputText value="#{oPreCCta.paciente.calleYNum}" size="30" readonly="true"/>
+                                        <h:outputText value="Colonia: "/>
+                                        <p:inputText value="#{oPreCCta.paciente.colonia}" size="30"/>
+                                        <h:outputText value="Ciudad: "/>
+                                        <p:inputText value="#{oPreCCta.paciente.ciudadPoblacion}" size="30" readonly="true"/>
+                                        <h:outputText value="Teléfono: "/>
+                                        <p:inputText value="#{oPreCCta.paciente.telCasa}" size="30" readonly="true"/>
+                                        <h:outputText value="Celular: "/>
+                                        <p:inputText value="#{oPreCCta.paciente.telCelular}" size="30" readonly="true"/>
+                                    </h:panelGrid>
+                                    <br/>
+                                    <h:outputText value="DATOS DE HOSPITALIZACION" style="font-weight: bold"/>
+                                    <h:panelGrid id="datosHopsPrecierre" columns="8" >
+                                        <h:outputText value="Fecha  de  ingreso : "/>
+                                        <p:inputText value="#{oPreCCta.episodioMedico.inicio}" size="30" readonly="true"/>
+                                        <h:outputText value="Habitación: "/>
+                                        <p:inputText value="#{oPreCCta.episodioMedico.hab.hab}" size="30" readonly="true"/>
+                                        <h:outputText value="Diagnóstico de ingreso: "/>
+                                        <p:inputText value="#{oPreCCta.episodioMedico.dxIngreso.descrip}" size="30" readonly="true"/>
+                                        <h:outputText value="Diagnóstico de egreso: "/>
+                                        <p:inputText value="#{oPreCCta.episodioMedico.dxEgreso.descrip}" size="30" readonly="true"/>
+                                    </h:panelGrid>
+                                    <br/>
+                                    <h:outputText value="CONCEPTOS" style="font-weight: bold"/>
+                                    <p:dataTable  id="dtNoPagadosRPT" value="#{oPreCCta.serviciosNoPagados}" rows="7" editable="true" paginator="true" paginatorPosition="bottom" var="oPPr" >
+                                        <p:column headerText="Fecha de registro">
+                                            <h:outputText value="#{oPPr.registro}" >
+                                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Fecha de realización">
+                                            <h:outputText value="#{oPPr.realizado}" >
+                                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Concepto">
+                                            <h:outputText value="#{oPPr.concepPrestado.descripConcep}" />
+                                        </p:column>
+                                        <p:column headerText="Costo original">
+                                            <h:outputText value="#{oPPr.costoCobrado}" style="float:right;">
+                                                <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Costo">
+                                            <h:outputText value="#{oPPr.costoCobrado}" style="float:right;">
+                                                <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Pagador">
+                                            <p:cellEditor>
+                                                <f:facet name="output">
+                                                    <h:outputText value="#{oPPr.companiaCred.nombreCorto}" />  -
+                                                    <h:outputText value="#{oPPr.numPoliza}"/>
+                                                </f:facet>  
+                                                <f:facet name="input">  
+                                                    <p:selectOneMenu id="txtEmpAseg" value="#{oPPr.companiaCred.nombreCorto}" >  
+                                                        <f:selectItems value="#{oPreCCta.nomCompaniasCred}" />  
+                                                        <p:ajax listener="#{oPreCCta.buscaPolizas(oPPr.companiaCred.nombreCorto)}" update="txtPolAseg" />
+                                                    </p:selectOneMenu> <br/>
+                                                    <p:selectOneMenu id="txtPolAseg" value="#{oPPr.numPoliza}" >  
+                                                        <f:selectItems value="#{oPreCCta.polizas}" />  
+                                                    </p:selectOneMenu>
+                                                </f:facet>  
+                                            </p:cellEditor> 
+                                        </p:column>
+
+                                        <p:column style="width:6%">  
+                                            <p:rowEditor rendered="#{!oPreCCta.disable}" />
+                                        </p:column> 
+                                    </p:dataTable> 
+                                    <br/>
+                                    <h:outputText value="PAGOS EXTERNOS" style="font-weight: bold"/>
+                                    <p:dataTable id="dtPagosExternosRPT" value="#{oPreCCta.serviciosPagosExterno}" var="oPext">
+                                        <p:column headerText="Fecha de registro">
+                                            <h:outputText value="#{oPext.registro}">
+                                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Fecha de realización">
+                                            <h:outputText value="#{oPext.realizado}">
+                                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Concepto">
+                                            <h:outputText value="#{oPext.concepPrestado.descripConcep}" />
+                                        </p:column>
+                                        <p:column headerText="Costo original" >
+                                            <h:outputText value="#{oPext.costoCobrado}" style="float:right;">
+                                                <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Costo">
+                                            <h:outputText value="#{oPext.costoCobrado}" style="float:right;">
+                                                <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
+                                    <br/>
+                                    <h:outputText value="ANTICIPOS" style="font-weight: bold"/>
+                                    <p:dataTable id="dtAnticiposRPT" value="#{oPreCCta.serviciosAnticipo}" var="oPant">
+                                        <p:column headerText="Fecha de registro">
+                                            <h:outputText value="#{oPant.registro}">
+                                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Fecha de realización">
+                                            <h:outputText value="#{oPant.realizado}">
+                                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Concepto">
+                                            <h:outputText value="#{oPant.concepPrestado.descripConcep}" />
+                                        </p:column>
+                                        <p:column headerText="Costo original">
+                                            <h:outputText value="#{oPant.costoCobrado}" style="float:right;">
+                                                <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Costo">
+                                            <h:outputText value="#{oPant.costoCobrado}" style="float:right;">
+                                                <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
+                                    <br/>
+                                    <p:panelGrid style="float:right;">
+                                        <p:row>
+                                            <p:column><h:outputText value=""/></p:column>
+                                            <p:column><h:outputText value="Compañía o aseguradora" style="font-weight: bold"/></p:column>
+                                            <p:column><h:outputText value="Paciente" style="font-weight: bold"/></p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column><h:outputText value="Subtotal:"/></p:column>
+                                            <p:column>
+                                                <h:outputText value="#{oPreCCta.subtotalCompania}" style="float:right;">
+                                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{oPreCCta.subtotalPaciente}" style="float:right;">
+                                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                                </h:outputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column><h:outputText value="I.V.A.:"/></p:column>
+                                            <p:column>
+                                                <h:outputText value="#{oPreCCta.ivaCompania}" style="float:right;">
+                                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{oPreCCta.ivaPaciente}" style="float:right;">
+                                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                                </h:outputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column><h:outputText value="Total:"/></p:column>
+                                            <p:column>
+                                                <h:outputText value="#{oPreCCta.totalCompania}" style="float:right;">
+                                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{oPreCCta.totalPaciente}" style="float:right;">
+                                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                                </h:outputText>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                    <br/>
+                                    <h:panelGrid style="float:right;" columns="2">
+                                        <h:outputText value="Total de la cuenta:" style="font-weight: bold"/>
+                                        <h:outputText value="#{oPreCCta.totalCuenta}" style="float:right;">
+                                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                        </h:outputText>
+                                        <h:outputText value="Pagos:" style="font-weight: bold"/>
+                                        <h:outputText value="#{oPreCCta.totalPagos}" style="float:right;">
+                                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                        </h:outputText>
+                                        <h:outputText value="Pendiente de pago:" style="font-weight: bold"/>
+                                        <h:outputText value="#{oPreCCta.totaPendientePago}" style="float:right;">
+                                            <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                        </h:outputText>
+                                    </h:panelGrid>
+                                    <h:outputText  value="#{oPreCCta.autorizado}"/>
+                                </h:panelGrid>
+                            </h:panelGrid>
+                        </p:scrollPanel>
+                    </p:dialog>
+                </h:form>     
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

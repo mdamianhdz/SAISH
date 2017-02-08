@@ -1,0 +1,407 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"> 
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Registrar Paquete Personalizado</title>
+            <h:body>      
+                #{AdministrarPaquetePersoJB.limpiaServicios()}
+                <center><h3>Registrar Paquete Personalizado</h3></center>
+                <p:dialog closable="false" dynamic="true" height="550" width="900"  appendTo="@(body)" modal="true" id="dlgCompBusq" header="Busqueda de paciente"  widgetVar="dlgCompBusqVar" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+
+                    <h:form id="form">
+                        <p:growl id="grow3" sticky="true" /> 
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include> 
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar"  action="#{AdministrarPaquetePersoJB.pacienteExistente()}"  oncomplete="dlgCompBusqVar.hide()" update=":formulario :formulario:grow1" icon="ui-icon-search"/>               
+                        <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" action="#{AdministrarPaquetePersoJB.limpiaServicios()}" update=":formulario" icon="ui-icon-circle-close" />
+                    </h:form> 
+                </p:dialog>  
+                <br/>
+                <h:form>
+                    <p:growl id="grow2" sticky="true" />        
+                    <center>
+                        <p:commandButton value="Seleccionar paciente"  action="#{oPacienteJB.limpiaSelectedPaciente()}" update=":formulario :form:dtPacientes" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+                    </center>
+                </h:form>
+                <br/>
+                <center> 
+                    <h:form id="formulario">                        
+                        <p:growl id="grow1" sticky="true" />
+                        <p:panel id="panelGeneral" rendered="#{AdministrarPaquetePersoJB.panelGeneral}"  style="width:120%">
+                            <p:panel id="panelPacExiHosp2"> 
+                                <p:panelGrid style=" alignment-adjust:  central"  columns="6">
+                                    <h:outputText value="Tipo de paquete:"/>
+                                    <h:outputText value="PERSONALIZADO"/>
+                                    <h:outputText value="Nombre del paquete:"/>                                    
+                                    <p:inputText label="Nombre del paquete" value="#{AdministrarPaquetePersoJB.paquete.nombre}"/>
+                                    <h:outputText value="Costo total del paquete:"/>                                    
+                                    <p:inputText label="Costo del paquete" readonly="#{AdministrarPaquetePersoJB.soloLectura}"  value="#{AdministrarPaquetePersoJB.paquete.costo}">
+                                        <p:ajax update="promotor" />
+                                    </p:inputText>
+                                    <h:outputText value="Folio paciente:"/> 
+                                    <h:outputText value="#{AdministrarPaquetePersoJB.paciente.folioPac}" />
+                                    <h:outputText value="Nombre del paciente:"/>
+                                    <h:outputText value="#{AdministrarPaquetePersoJB.paciente.nombreCompleto}"/>
+                                    <h:outputText value="Sexo:"/>
+                                    <h:outputText value="#{AdministrarPaquetePersoJB.paciente.genero}" />
+                                </p:panelGrid>
+                                <p:panelGrid id="ps" columns="2">
+                                    Promotor:
+                                    <p:selectOneMenu id="promotor" label="Promotor" converter="#{AdministrarPaquetePersoJB}" value="#{AdministrarPaquetePersoJB.paqueteContratado.personalPromo}">
+                                        <f:selectItem itemLabel="Selecciona" />
+                                        <f:selectItems value="#{AdministrarPaquetePersoJB.promotores}" var="oPromotor" itemLabel="#{oPromotor.nombreCompleto}" itemValue="#{oPromotor}"/>
+                                    </p:selectOneMenu>
+                                    ¿Desea Factura?<p:selectBooleanCheckbox id="facturable" value="#{AdministrarPaquetePersoJB.paqueteContratado.facturable}" />
+                                    <h:outputText value="Médico Tratante:*"/>
+                                    <p:selectOneMenu required="true" 
+                                                     filter="true"
+                                                     label="Médico Tratante" 
+                                                     converter="#{oConverterMedico}" 
+                                                     value="#{AdministrarPaquetePersoJB.episodioMedico.medTratante}" >
+                                        <f:selectItem  itemLabel="Selecciona" itemValue="" />
+                                        <f:selectItems  value="#{AdministrarPaquetePersoJB.medicos}"  var="oMed" 
+                                                        itemLabel="#{oMed.nombreCompleto}" 
+                                                        itemValue="#{oMed}" /> 
+                                    </p:selectOneMenu>
+                                </p:panelGrid>
+                                <p:panel id="panel">
+                                    <h4>Servicios</h4>
+
+                                    <br/>
+                                    <h:panelGrid rendered="#{!AdministrarPaquetePersoJB.soloLectura}" columns="2" > 
+                                        Área<p:selectOneMenu label="Area de Servicio" converter="#{oConverterAreaServicio}" id="city" value="#{AdministrarPaquetePersoJB.areaDeServicio}">  
+                                            <f:selectItem itemLabel="Selecciona tipo" itemValue="" />  
+                                            <f:selectItems value="#{AdministrarPaquetePersoJB.areasDeServicio}" var="oArea" 
+                                                           itemLabel="#{oArea.descrip}" 
+                                                           itemValue="#{oArea}"/> 
+                                            <p:ajax update="lineas" listener="#{AdministrarPaquetePersoJB.actualizaListaLineas()}" /> 
+                                        </p:selectOneMenu>
+                                        Línea ingreso<p:selectOneMenu id="lineas" converter="#{oConverterLineaIngreso}" label="Linea ingreso " value="#{AdministrarPaquetePersoJB.lineaIngreso}">
+                                            <f:selectItem itemLabel="Selecciona" itemValue="" />
+                                            <f:selectItems value="#{AdministrarPaquetePersoJB.lineasIngreso}" var="oLinea" 
+                                                           itemLabel="#{oLinea.descrip}" 
+                                                           itemValue="#{oLinea}"/>
+                                            <p:ajax update="servicios" listener="#{AdministrarPaquetePersoJB.actualizaListaServicios()}" />
+                                        </p:selectOneMenu>                                    
+                                        Servicio:
+                                        <p:autoComplete id="servicios" size="50" scrollHeight="300" minQueryLength="4" itemtipMyPosition="left center" itemtipAtPosition="right center" 
+                                                        label="Servicio" converter="#{AdministrarPaquetePersoJB}" value="#{AdministrarPaquetePersoJB.servicioSeleccionado}" 
+                                                        completeMethod="#{AdministrarPaquetePersoJB.obtenerServicios}" var="oServ" itemLabel="#{oServ.descripcion}" 
+                                                        itemValue="#{oServ}" >
+                                        </p:autoComplete>
+                                        Unidad de Medida:
+                                        <p:selectOneMenu  label="Unidad de Medida" 
+                                                          converter="oConverterUnidMed" value="#{AdministrarPaquetePersoJB.unidadMedida}" >
+                                            <f:selectItem itemLabel="Selecciona" itemValue="" />
+                                            <f:selectItems value="#{AdministrarPaquetePersoJB.listaUnidades}"  
+                                                           var="oUnidad1" 
+                                                           itemLabel="#{oUnidad1.descrip}" 
+                                                           itemValue="#{oUnidad1}" /> 
+                                        </p:selectOneMenu> 
+                                        Observaciones del Paquete:<p:inputText value="#{AdministrarPaquetePersoJB.observaciones}"/>
+                                    </h:panelGrid> 
+                                    <br/>
+                                    <p:commandButton  rendered="#{!AdministrarPaquetePersoJB.soloLectura}" value="Agregar Servicio" update=":formulario:grow1 :formulario:tb2 panel" actionListener="#{AdministrarPaquetePersoJB.agregaServicio()}" icon="ui-icon-cart" />
+                                    <br/><br/>
+                                    <p:dataTable liveScroll="true"  emptyMessage="Sin servicios agregados" sortBy="conceptoIngreso.descripcion" editMode="cell" editable="true"  id="tb2" value="#{AdministrarPaquetePersoJB.carritoServicios}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoServicios">
+                                        <f:facet name="header">
+                                            <h:outputText value="Servicios Nuevos"/>
+                                        </f:facet> 
+                                        <p:ajax event="cellEdit" listener="#{AdministrarPaquetePersoJB.onCellEdit}" update=":formulario:grow1" />
+                                        <p:column width="50%!important" rendered="#{!AdministrarPaquetePersoJB.soloLectura}"  >
+                                            <f:facet name="header"> 
+                                                Área
+                                            </f:facet>  
+                                            <h:outputText value="#{carritoServicios.conceptoIngreso.areaServicio.descrip}" />
+                                        </p:column>
+                                        <p:column rendered="#{!AdministrarPaquetePersoJB.soloLectura}">
+                                            <f:facet name="header"> 
+                                                Línea
+                                            </f:facet>  
+                                            <h:outputText value="#{carritoServicios.conceptoIngreso.lineaIngreso.descrip}" />
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Servicio
+                                            </f:facet>  
+                                            <h:outputText value="#{carritoServicios.conceptoIngreso.descripcion}" />
+                                        </p:column>                                   
+                                        <p:column width="50%!important"  >
+                                            <f:facet name="header"> 
+                                                <h:outputText rendered="#{AdministrarPaquetePersoJB.soloLectura}" value="Cantidad" />
+                                                <h:outputText rendered="#{!AdministrarPaquetePersoJB.soloLectura}" value="Cantidad(editable)" />
+                                            </f:facet>  
+                                            <p:spinner id="ajaxspinner" rendered="#{!AdministrarPaquetePersoJB.soloLectura}" maxlength="2" max="#{carritoServicios.conceptoIngreso.disponibilidadMax}"  size="2" min="1" value="#{carritoServicios.conceptoIngreso.cantidad}">  
+                                                <p:ajax update="tb2"  listener="#{AdministrarPaquetePersoJB.actualizaTotal()}" />  
+                                            </p:spinner>
+                                            <h:outputText value="#{carritoServicios.conceptoIngreso.cantidad}" rendered="#{AdministrarPaquetePersoJB.soloLectura}"/> 
+                                        </p:column>
+                                        <p:column width="50%!important" rendered="#{!AdministrarPaquetePersoJB.soloLectura}">
+                                            <f:facet name="header">                                                 
+                                                Unidad de medida (editable)
+                                            </f:facet>
+                                            <h:outputText value="#{carritoServicios.conceptoIngreso.unidadMedida.descrip}" /> 
+                                        </p:column>
+                                        <p:column width="50%!important" rendered="#{AdministrarPaquetePersoJB.soloLectura}" >
+                                            <f:facet name="header"> 
+                                                Unidad de medida
+                                            </f:facet>
+                                            <h:outputText value="#{carritoServicios.conceptoIngreso.unidadMedida.descrip}" />                               
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Monto
+                                            </f:facet> 
+                                            <p:inputText size="5" readonly="#{AdministrarPaquetePersoJB.soloLectura}" value="#{carritoServicios.conceptoIngreso.montoNuevo}">
+                                                <p:ajax update="tb2"  listener="#{AdministrarPaquetePersoJB.actualizaTotal()}" />   
+                                            </p:inputText>    
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Observaciones
+                                            </f:facet> 
+                                            <h:outputText value="#{carritoServicios.obs}" />
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Eliminar
+                                            </f:facet>
+                                            <p:commandButton rendered="#{carritoServicios.conceptoIngreso.tipoConcIngr=='Servicio medico' || carritoServicios.conceptoIngreso.tipoConcIngr=='otro ingreso'}" value=" " icon="ui-icon-trash" style=" height: 25px; width: 25px" actionListener="#{AdministrarPaquetePersoJB.eliminaServicioInt(carritoServicios.conceptoIngreso.cveConcep)}" update=":formulario:tb2"/>
+                                            <p:commandButton rendered="#{carritoServicios.conceptoIngreso.tipoConcIngr=='medicamento' }" value=" " icon="ui-icon-trash" style=" height: 25px; width: 25px" actionListener="#{AdministrarPaquetePersoJB.eliminaServicioString(carritoServicios.conceptoIngreso.medicamento.cveMedicamento)}" update=":formulario:tb2 "/>
+                                            <p:commandButton rendered="#{carritoServicios.conceptoIngreso.tipoConcIngr=='material'}" value=" " icon="ui-icon-trash" style=" height: 25px; width: 25px" actionListener="#{AdministrarPaquetePersoJB.eliminaServicioString(carritoServicios.conceptoIngreso.materialCuracion.cveMaterial)}" update=":formulario:tb2" />
+                                        </p:column>    
+                                        <p:summaryRow rendered="#{!AdministrarPaquetePersoJB.soloLectura}">  
+                                            <p:column colspan="7"  style="text-align:right">  
+                                                Total:  
+                                            </p:column>  
+                                            <p:column>  
+                                                <h:outputText value="#{carritoServicios.conceptoIngreso.montoNuevo*carritoServicios.conceptoIngreso.cantidad}">
+                                                    <f:convertNumber pattern="#.##"/>
+                                                </h:outputText>
+                                            </p:column>  
+                                        </p:summaryRow>
+                                        <p:summaryRow rendered="#{AdministrarPaquetePersoJB.soloLectura}">  
+                                            <p:column colspan="5"  style="text-align:right">  
+                                                Total:  
+                                            </p:column>  
+                                            <p:column>  
+                                                <h:outputText value="#{carritoServicios.conceptoIngreso.montoNuevo*carritoServicios.conceptoIngreso.cantidad}">
+                                                    <f:convertNumber pattern="#.##"/>
+                                                </h:outputText>
+                                            </p:column>  
+                                        </p:summaryRow>
+                                        <p:columnGroup type="footer">
+                                            <p:row rendered="#{!AdministrarPaquetePersoJB.soloLectura}">
+                                                <p:column colspan="7" style="text-align:right" footerText="Costo total:" />
+                                                <p:column footerText="$#{AdministrarPaquetePersoJB.totalCarrito}" />
+                                            </p:row>
+                                            <p:row rendered="#{AdministrarPaquetePersoJB.soloLectura}">
+                                                <p:column colspan="5" style="text-align:right" footerText="Costo total:" />
+                                                <p:column footerText="$#{AdministrarPaquetePersoJB.totalCarrito}" />
+                                            </p:row>
+                                        </p:columnGroup>
+                                    </p:dataTable>
+                                </p:panel>
+                                <p:panel id="panel2" >
+                                    <h4>Descuentos que incluye</h4>                                 
+                                    <h:panelGrid id="pd" rendered="#{!AdministrarPaquetePersoJB.soloLectura}" columns="2" >                                
+                                        Área:<p:selectOneMenu label="Area de Servicio" converter="#{oConverterAreaServicio}" id="area2" value="#{AdministrarPaquetePersoJB.areaDeServicio2}">  
+                                            <f:selectItem itemLabel="Selecciona tipo" itemValue="" />  
+                                            <f:selectItems value="#{AdministrarPaquetePersoJB.areasDeServicio}" var="oArea" 
+                                                           itemLabel="#{oArea.descrip}" 
+                                                           itemValue="#{oArea}"/> 
+                                            <p:ajax update="lineas2" listener="#{AdministrarPaquetePersoJB.actualizaListaLineas2()}" /> 
+                                        </p:selectOneMenu>
+                                        Línea ingreso:<p:selectOneMenu id="lineas2" converter="#{oConverterLineaIngreso}" label="Linea ingreso " value="#{AdministrarPaquetePersoJB.lineaIngreso2}">
+                                            <f:selectItem itemLabel="Selecciona" itemValue="" />
+                                            <f:selectItems value="#{AdministrarPaquetePersoJB.lineasIngreso}" var="oLinea" 
+                                                           itemLabel="#{oLinea.descrip}" 
+                                                           itemValue="#{oLinea}"/>
+                                            <p:ajax update="lineas2" />
+                                        </p:selectOneMenu>       
+                                        Descuento:<p:inputText value="#{AdministrarPaquetePersoJB.descuento}" />  
+                                    </h:panelGrid> 
+                                    <br/>
+                                    <p:commandButton rendered="#{!AdministrarPaquetePersoJB.soloLectura}" value="Agregar descuento" update=":formulario:grow1 :formulario:tb4 pd" actionListener="#{AdministrarPaquetePersoJB.agregaDescuento()}" ajax="true" icon="ui-icon-cart"   />
+                                    <br/><br/>
+                                    <p:dataTable emptyMessage="Sin descuentos agregados" id="tb4" value="#{AdministrarPaquetePersoJB.carritoDescuentos}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoDescuentos">
+                                        <f:facet name="header">
+                                            <h:outputText value="Descuentos Nuevos"/>
+                                        </f:facet> 
+                                        <p:column width="50%!important"  >
+                                            <f:facet name="header"> 
+                                                Área
+                                            </f:facet>  
+                                            <h:outputText value="#{carritoDescuentos.areaServicio.descrip}" />
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Línea
+                                            </f:facet>  
+                                            <h:outputText value="#{carritoDescuentos.lineaIngreso.descrip}" />
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Descuento
+                                            </f:facet>  
+                                            <h:outputText value="#{carritoDescuentos.pctDscto}" />
+                                        </p:column>                                                                  
+                                        <p:column rendered="#{!AdministrarPaquetePersoJB.soloLectura}" >
+                                            <f:facet name="header"> 
+                                                Eliminar
+                                            </f:facet>
+                                            <p:commandButton value=" " icon="ui-icon-trash" style=" height: 25px; width: 25px" actionListener="#{AdministrarPaquetePersoJB.eliminaDescuento(carritoDescuentos.areaServicio.cve,carritoDescuentos.lineaIngreso.cveLin)}" update=":formulario:tb4"/>
+                                        </p:column> 
+                                    </p:dataTable>
+                                </p:panel>
+                                <p:panel id="panel3" >
+                                    <h4>Pagos</h4>
+                                    <p:panelGrid columns="2" >    
+                                        <p:selectOneRadio  rendered="#{!AdministrarPaquetePersoJB.soloLectura}" label="Tipo de pago" value="#{AdministrarPaquetePersoJB.tipo}">  
+                                            <f:selectItem itemLabel="Total" itemValue="Total" />
+                                            <f:selectItem itemLabel="Parcialidades" itemValue="Parcialidades" />
+                                            <p:ajax listener="#{AdministrarPaquetePersoJB.validaTipo()}" update="panel3"/>
+                                        </p:selectOneRadio>
+                                    </p:panelGrid>
+                                    <h:outputText rendered="#{AdministrarPaquetePersoJB.soloLectura}" value="#{AdministrarPaquetePersoJB.tipo}" />
+                                    <p:panelGrid rendered="#{AdministrarPaquetePersoJB.panelParcialidades}" id="panelParcialidades">
+                                        <p:row>
+                                            <p:column>
+                                                Anticipo:
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText label="Anticipo" readonly="#{AdministrarPaquetePersoJB.soloLectura}" value="#{AdministrarPaquetePersoJB.paquete.anticipo}">
+                                                    <p:ajax listener="#{AdministrarPaquetePersoJB.llenaCarnets()}" update="tbcarnets grow1" />
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                Cantidad de parcialidades:
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText readonly="#{AdministrarPaquetePersoJB.soloLectura}" label="Cantidad" value="#{AdministrarPaquetePersoJB.paquete.cantParcial}">
+                                                    <p:ajax listener="#{AdministrarPaquetePersoJB.llenaCarnets()}" update="tbcarnets grow1" />
+                                                </p:inputText>
+                                            </p:column>
+
+                                        </p:row>
+                                        <p:row>
+                                            <p:column  colspan="4">
+                                                <p:dataTable emptyMessage="Sin parcilidades registradas" editable="true"  id="tbcarnets" rowIndexVar="rowIndex" value="#{AdministrarPaquetePersoJB.carnetsPagos}" rows="6" paginator="true" paginatorPosition="bottom" var="carnetPago">
+                                                    <f:facet name="header">
+                                                        <h:outputText value="Descuentos Registrados"/>
+                                                    </f:facet> 
+                                                    <p:column>
+                                                        <f:facet name="header"> 
+                                                            Pago
+                                                        </f:facet>  
+                                                        <h:outputText value="#{rowIndex + 1}" />
+                                                    </p:column>
+                                                    <p:column >
+                                                        <f:facet name="header"> 
+                                                            Monto
+                                                        </f:facet>  
+                                                        <h:outputText value="#{carnetPago.monto}" />
+                                                    </p:column> 
+                                                    <p:column >
+                                                        <f:facet name="header"> 
+                                                            Pagar al
+                                                        </f:facet>  
+                                                        <p:inputText required="true" label="Pagar Al" value="#{carnetPago.pagarAl}" />
+                                                    </p:column> 
+                                                </p:dataTable>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>  
+                                    Otras observaciones:<p:inputText label="Otras observaciones" readonly="#{AdministrarPaquetePersoJB.soloLectura}"  value="#{AdministrarPaquetePersoJB.paquete.obs}"/>
+                                </p:panel>
+                                <p:panel id="panel4" >
+                                    <p:commandButton value="Registrar Paquete Personalizado" update="grow1"  icon="ui-icon-disk" action="#{AdministrarPaquetePersoJB.registraPaquete()}"/>
+                                </p:panel>
+                            </p:panel>
+                        </p:panel>
+
+                    </h:form>  
+
+                    <p:dialog id="dialogExito" closable="false" dynamic="true"  modal="true" appendTo="@(body)" header="¡Contratación exitosa!"  widgetVar="dlg" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="formExito"> 
+                            <p:panel styleClass="text-align: center;" style="" id="panelDialog" > 
+                                <center>
+                                    <p:panel>
+                                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                    </p:panel>
+                                </center> 
+                                <p:panelGrid styleClass="text-align: center;" columns="2">
+                                    Folio del paciente:<h:outputText value="#{AdministrarPaquetePersoJB.administrarPaquetePersoJB.paciente.folioPac}"/>
+                                    Nombre del paciente:<h:outputText value="#{AdministrarPaquetePersoJB.administrarPaquetePersoJB.paciente.nombreCompleto}"/>
+                                    Paquete contratado:<h:outputText value="#{AdministrarPaquetePersoJB.administrarPaquetePersoJB.paquete.nombre}"/>
+                                    Folio de contratación de Paquete:<h:outputText value="#{AdministrarPaquetePersoJB.administrarPaquetePersoJB.paqueteContratado.idpaqcont}"/>
+                                    Folio de servicio prestado:<h:outputText value="#{AdministrarPaquetePersoJB.administrarPaquetePersoJB.paqueteContratado.folioServ}"/>
+                                </p:panelGrid>                                
+                            </p:panel>
+                            <p:separator/>                      
+                            <p:commandButton  value="Imprimir" type="button" icon="ui-icon-print" >
+                                <p:printer target="panelDialog" />
+                            </p:commandButton>
+                            <p:commandButton disabled="true"  value="Imprimir Contrato" icon="ui-icon-document" />
+                            <p:commandButton rendered="#{AdministrarPaquetePersoJB.administrarPaquetePersoJB.carnetsPagos.size()>0}" value="Imprimir carnet de pagos" update=":formCarnetPagos" oncomplete="dlgcarnetPagos.show()"/> 
+                            <p:commandButton value="Regresar" icon="ui-icon-arrowreturnthick-1-w"  >
+                                <p:ajax listener="#{AdministrarPaquetePersoJB.regresaRegistraPaq()}"/>
+                            </p:commandButton>
+                        </h:form>    
+                    </p:dialog>                    
+
+
+                    <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="carnetPagos" header="Carnet de Pagos"  widgetVar="dlgcarnetPagos" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="formCarnetPagos"> 
+                            <p:panel id="panelCarnet">
+                                <center>
+                                    <p:panel>
+                                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                    </p:panel>
+                                </center>
+                                <h:outputText value="Anticipo:"/><h:outputText value="#{AdministrarPaquetePersoJB.administrarPaquetePersoJB.paqueteContratado.anticipo}"/>
+                                <p:dataTable emptyMessage="Sin parcilidades registradas" editable="true"  id="tb5" rowIndexVar="rowIndex" value="#{AdministrarPaquetePersoJB.administrarPaquetePersoJB.carnetsPagos}" rows="6" paginator="true" paginatorPosition="bottom" var="carnetPago">
+                                    <f:facet name="header">
+                                        <h:outputText value="Descuentos Registrados"/>
+                                    </f:facet> 
+                                    <p:column>
+                                        <f:facet name="header"> 
+                                            Pago
+                                        </f:facet>  
+                                        <h:outputText value="#{rowIndex + 1}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Monto
+                                        </f:facet>  
+                                        <h:outputText value="#{carnetPago.monto}" />
+                                    </p:column> 
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Pagar al
+                                        </f:facet>  
+                                        <h:outputText value="#{carnetPago.pagarAl}" />
+                                    </p:column> 
+                                </p:dataTable>
+                            </p:panel>
+                            <p:separator />
+                            <center>
+                                <p:commandButton  value="Imprimir" type="button" icon="ui-icon-print" >
+                                    <p:printer target="panelCarnet" />
+                                </p:commandButton>
+                                <p:commandButton value="Regresar"  oncomplete="dlgcarnetPagos.hide()"  icon="ui-icon-arrowreturnthick-1-w"/>
+                            </center>
+
+                        </h:form> 
+                    </p:dialog> 
+
+                </center>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Consultar Bóveda Fiscal</title>
+            <h:body onload="#{oBoveda.limpiar()}">
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    <p:selectOneRadio  id="customRadio" layout="custom" value="#{oBoveda.tipoFactura}">
+                        <p:ajax event="valueChange" listener="#{oBoveda.habilitaBuscar()}" update="selSerie txtFolio selProveedor txtFactura"/>
+                        <f:selectItem itemValue="1" />
+                        <f:selectItem itemValue="2" />
+                    </p:selectOneRadio>
+                    <center>
+                        <h2>Consultar Bóveda Fiscal</h2>
+                        <p:panelGrid style="width:800px">
+                            <p:row>
+                                <p:column>
+                                    <p:radioButton id="opt1" for="customRadio" itemIndex="0"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel for="opt1" value="CFDI Interno" />
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Serie:" />
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu id="selSerie" value="#{oBoveda.serie}">
+                                        <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                        <f:selectItems value="#{oBoveda.listSeries}" var="serie" itemLabel="#{serie.nombre}" itemValue="#{serie.nombre}"/>
+                                        <p:ajax/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Folio:" />
+                                </p:column>
+                                <p:column>
+                                    <p:inputText id="txtFolio" value="#{oBoveda.folio}"><p:ajax/></p:inputText>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:radioButton id="opt2" for="customRadio" itemIndex="1"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel for="opt1" value="Factura Proveedor" />
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Proveedor:" />
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu id="selProveedor" value="#{oBoveda.proveedor}">
+                                        <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                        <f:selectItems value="#{oBoveda.listProveedores}" var="prov" itemLabel="#{prov.nombreRazSoc}" itemValue="#{prov.idProv}"/>
+                                        <p:ajax/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Factura:" />
+                                </p:column>
+                                <p:column>
+                                    <p:inputText id="txtFactura" value="#{oBoveda.factura}"><p:ajax/></p:inputText> 
+                                </p:column>
+                            </p:row>
+                             <p:row>
+                                <p:column colspan="8">
+                                    <p:commandButton value="Buscar Facturas" id="btnBuscar">
+                                        <p:ajax listener="#{oBoveda.buscar()}" update="dtFacturas dtGastos msg"/>
+                                    </p:commandButton>
+                                </p:column>
+                             </p:row>  
+                        </p:panelGrid><br/><br/>
+                        <p:dataTable id="dtFacturas" var="oFact" 
+                                     value="#{oBoveda.listFacturas}" 
+                                     paginator="true" paginatorPosition="bottom" 
+                                     rows="6" emptyMessage="No hay registros" 
+                                     selection="#{oBoveda.selectedFactura}" 
+                                     rowKey="#{oFact.uuid}" 
+                                     style="width:800px; display:#{oBoveda.displayTable(1)}">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Origen">
+                                <p:outputLabel value="SH"/>
+                            </p:column>
+                            <p:column headerText="Identificador">
+                                <p:outputLabel value="#{oFact.nombreSerie} - #{oFact.folio}"/>
+                            </p:column>
+                            <p:column headerText="Fecha">
+                                <p:outputLabel value="#{oFact.expedicion}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Monto">
+                                <p:outputLabel value="#{oFact.importeTotal}"/>
+                            </p:column>
+                            <p:column headerText="Archivo">
+                                <p:outputLabel value="#{oFact.nombreXML}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Descargar XML" ajax="false"
+                                                 icon="ui-icon-arrowthick-1-s">
+                                    <p:fileDownload value="#{oBoveda.file}" />
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                        <p:dataTable id="dtGastos" var="oGas" value="#{oBoveda.listGastos}" paginator="true" paginatorPosition="bottom" rows="6" 
+                                     emptyMessage="No hay registros" selection="#{oBoveda.selectedGasto}" rowKey="#{oGas.idGasto}"
+                                     style="width:800px; display:#{oBoveda.displayTable(2)}">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Origen">
+                                <p:outputLabel value="Proveedor"/>
+                            </p:column>
+                            <p:column headerText="Identificador">
+                                <p:outputLabel value="#{oGas.factura}"/>
+                            </p:column>
+                            <p:column headerText="Fecha">
+                                <p:outputLabel value="#{oGas.registro}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Monto">
+                                <p:outputLabel value="#{oGas.monto}"/>
+                            </p:column>
+                            <p:column headerText="Archivo">
+                                <p:outputLabel value="#{oGas.XML}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Descargar XML" ajax="false"
+                                                 icon="ui-icon-arrowthick-1-s">
+                                    <p:fileDownload value="#{oBoveda.file}" />
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                    </center>
+                </h:form>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

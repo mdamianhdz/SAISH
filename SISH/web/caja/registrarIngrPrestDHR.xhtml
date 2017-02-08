@@ -1,0 +1,199 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Registrar Otros Ingresos</title>
+            <h:body>
+                <center><h3> Registrar Otros Ingresos</h3></center>
+                
+                <p:dialog id="dialogE" resizable="false" 
+                            header="Operación Exitosa" widgetVar="diaE" 
+                            modal="true" appendTo="@(body)" closable="false">
+                    <p:panel id="display">
+                        <h:panelGrid>
+                            <p:row>
+                                Se ha registrado ingreso por <br/>
+                                la cantidad de:  <p:outputLabel style="font-weight: bold" value="#{oRegIngrPresDHR.monto}"/><br></br>
+                                con motivo de: <p:outputLabel style="font-weight: bold" value="#{oRegIngrPresDHR.opeCaja.descripcion}"/>
+                            </p:row>
+                            <br></br>
+                            <p:row>
+                                Se ha generado el Folio de caja:  <p:outputLabel style="font-weight: bold" value="#{oRegIngrPresDHR.folioRet}"/>
+                            </p:row>
+                        </h:panelGrid> 
+                        <br></br>
+                        <center> 
+                            <h:panelGrid columns="2">
+                                <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" onclick="printTicket();"/>
+                                <p:commandButton label="Regresar" value="Regresar">
+                                    <p:ajax listener="#{oRegIngrPresDHR.regresa()}" />
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </center>
+                    </p:panel>  
+                </p:dialog>
+
+                <h:form id="formp">
+                    <p:growl id="msgs" showDetail="true"/>  
+                    <p:panel id="panelEmp" header="Registrar Otros  Ingresos">
+                        <h:panelGrid columns="4">
+                            <p:outputLabel value="Línea ingreso:"/>
+                            <p:selectOneMenu id="lineas" label="Línea ingreso: "
+                                             value="#{oRegIngrPresDHR.lineaSelec.cveLin}">
+                                <f:selectItem itemLabel="Selecciona" itemValue="" />
+                                <f:selectItems value="#{oRegIngrPresDHR.lineasIngreso}"
+                                               var="oLin" itemLabel="#{oLin.descrip}"
+                                               itemValue="#{oLin.cveLin}"/>
+                                <f:ajax listener="#{oRegIngrPresDHR.actualizaListaServicios()}"
+                                        render="panelEmp"/>
+                            </p:selectOneMenu>
+                            <p:outputLabel value="Servicio: "/> 
+                            <p:autoComplete id="servicios" size="50" 
+                                scrollHeight="300" 
+                                minQueryLength="4" 
+                                itemtipMyPosition="left center" 
+                                itemtipAtPosition="right center" 
+                                label="Servicio" 
+                                converter="ConverterServicio" 
+                                forceSelection="true"
+                                style="text-transform: uppercase"
+                                value="#{oRegIngrPresDHR.servicioSeleccionado}" 
+                                completeMethod="#{oRegIngrPresDHR.obtenerServicios}" 
+                                var="oServ" itemLabel="#{oServ.descripcion}" 
+                                itemValue="#{oServ}">
+                                <p:ajax update="panelEmp" 
+                                        event="valueChange"
+                                        listener="#{oRegIngrPresDHR.seleccionaServicio}" />
+                            </p:autoComplete>
+                            <p:outputLabel value="Monto: "/>
+                            <p:inputText value="#{oRegIngrPresDHR.monto}" label="Monto: " 
+                                         required="true" 
+                                         requiredMessage="Ingrese una Cantidad a registrar."/>
+                            <p:outputLabel value="Observaciones: " id="lbObs"
+                                           rendered="#{!oRegIngrPresDHR.mostrarPersonal}"/>
+                            <p:inputTextarea value="#{oRegIngrPresDHR.opeCaja.obs}" 
+                                             maxlength="50"
+                                             cols="50" rows="3" id="txtObs"
+                                             rendered="#{!oRegIngrPresDHR.mostrarPersonal}"/>
+                            <p:outputLabel value="Personal: " id="lbPers"
+                                           rendered="#{oRegIngrPresDHR.mostrarPersonal}"/>
+                            <p:selectOneMenu id="cmbPersonal" 
+                                filter="true"
+                                filterMatchMode="startsWith"
+                                value="#{oRegIngrPresDHR.opeCaja.obs}"
+                                rendered="#{oRegIngrPresDHR.mostrarPersonal}"> 
+                                <f:selectItem 
+                                    itemLabel="Selecciona" itemValue=""/>  
+                                <f:selectItems value="#{oRegIngrPresDHR.listPH}"
+                                        var="oPers" 
+                                        itemValue="#{oPers.nombreCompleto}"
+                                        itemLabel="#{oPers.nombreCompleto}"/> 
+                            </p:selectOneMenu>
+                            
+                            <h:outputText style="font-weight: bold;" value="Forma de Pago: " />
+                            <p:selectOneMenu required="true" 
+                                            requiredMessage="Se requiere una Forma de Pago" 
+                                            id="SL" 
+                                            value="#{oRegIngrPresDHR.forma}">
+                               <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                               <f:selectItems value="#{oFormaDePago.formasDePago}" 
+                                              var="oLP1"  itemLabel="#{oLP1.descripcion}" 
+                                              itemValue="#{oLP1.cveFrmPago}"/>
+                               <p:ajax update="pg1" listener="#{oRegIngrPresDHR.validaForma()}"/>
+                            </p:selectOneMenu>
+                            <h:outputText value=""/>
+                            <h:outputText value=""/>
+                        </h:panelGrid>
+                    </p:panel>
+                    <h:panelGrid id="pg1" columns="9">
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegIngrPresDHR.verBanco}"
+                                            style="font-weight: bold;" value="Banco : " />
+                                        <p:selectOneMenu rendered="#{oRegIngrPresDHR.verBanco}"
+                                            id="SB" value="#{oRegIngrPresDHR.opeCaja.datosPago}">
+                                            <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                            <f:selectItems value="#{oFormaDePago.bancos}" />
+                                            <p:ajax/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegIngrPresDHR.verCtaBanco}"
+                                                      style="font-weight: bold;" 
+                                                      value="Cuenta"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu rendered="#{oRegIngrPresDHR.verCtaBanco}"
+                                                         id="cbanco" 
+                                                         value="#{oRegIngrPresDHR.opeCaja.ctaBcoRecep}">
+                                            <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                            <f:selectItem itemLabel="BcmerSanatorio" itemValue="BcmerSanatorio" />
+                                            <f:selectItem itemLabel="BcmerDHR" itemValue="BcmerDHR" />
+                                            <p:ajax/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegIngrPresDHR.verFecRecep}"
+                                                      style="font-weight: bold;" 
+                                                      value="Fecha de recepción"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oRegIngrPresDHR.verFecRecep}"
+                                                     value="#{oRegIngrPresDHR.opeCaja.fecIngRecep}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegIngrPresDHR.verNumDcto}"
+                                                      style="font-weight: bold;" 
+                                                      value="Cheque/Transferencia/Tarjeta"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oRegIngrPresDHR.verNumDcto}"
+                                                     value="#{oRegIngrPresDHR.opeCaja.numDcto}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegIngrPresDHR.verTitularTarjeta}"
+                                                      style="font-weight: bold; text-transform: capitalize;" 
+                                                      value="Titular"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oRegIngrPresDHR.verTitularTarjeta}"
+                                                     value="#{oRegIngrPresDHR.opeCaja.nomTit}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                </h:panelGrid>
+                    <center>
+                        <p:commandButton value="Guardar">
+                            <p:ajax listener="#{oRegIngrPresDHR.validaRegistroPago}" 
+                                    process="@this,panelEmp" 
+                                    update=":formp:msgs :dialogE :ticketInfo"/>   
+                        </p:commandButton>
+                    </center>    
+                </h:form>
+                <h:panelGroup id="ticketInfo">
+                    <h:outputScript>
+                        var ticket;
+                        function printTicket() {
+                        ticket = {
+                        "reimpresion": false,
+                        "title": 10,
+                        "fecha": ""+getFecha(true)+"", 
+                        "hora": ""+getHora(true)+"",
+                        "monto": "#{oRegPagPrest.selectedPrestamo.monto}"
+                        };
+                        print(ticket);
+                        }
+                    </h:outputScript>
+                </h:panelGroup>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

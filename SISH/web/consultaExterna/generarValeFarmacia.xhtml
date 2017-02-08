@@ -1,0 +1,325 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Generar vale de Farmacia CE</title>
+            <h:body>
+                <center><h3>Generar vale de Farmacia CE</h3></center>
+                    #{oValeFarmacia.limpiaDatos()}
+                <p:dialog closable="false" dynamic="true"  appendTo="@(body)" modal="true" id="dlgCompBusq" header="Busqueda de paciente"  widgetVar="dlgCompBusqVar" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                    <h:form id="form">
+                        <p:growl id="grow3" sticky="true" /> 
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include> 
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar"  action="#{oValeFarmacia.obtenerDatos()}"  oncomplete="dlgCompBusqVar.hide()" update=":formulario:panel :formulario:grow1" icon="ui-icon-search"/>
+                        <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" action="#{oValeFarmacia.limpiaDatos()}" update=":formulario:panel" />
+                    </h:form>
+                </p:dialog>
+                <br/>
+                <h:form>
+                    <p:growl id="grow2" sticky="true" />
+                    <center>
+                        <p:commandButton value="Seleccionar paciente" update=":dlgCompBusq" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+                    </center>
+                </h:form>
+                <br/>
+                <center><h:form id="formulario">
+
+                        <p:growl id="grow1" sticky="true" />
+                        <p:panel visible="#{oValeFarmacia.validaUsuario()}" id="panel" style="width:90%">
+
+                            <p:panelGrid columns="6">
+
+                                <h:outputText value="Folio Paciente:" style="color: #1F587F" /><h:outputText value="#{oValeFarmacia.paciente.folioPac}"/>
+                                <h:outputText value="Nombre del Paciente:" style="color: #1F587F" /><h:outputText value="#{oValeFarmacia.paciente.nombreCompleto}"/>
+                                <h:outputText value="Género:" style="color: #1F587F" /><h:outputText value="#{oValeFarmacia.paciente.genero}"/>
+                                <h:outputText value="Habitación:" style="color: #1F587F" /><h:outputText value="#{oValeFarmacia.habitacion}"/> 
+                                <h:outputText value="Fecha y hora:" style="color: #1F587F" />
+                                <h:outputText value="#{oValeFarmacia.fecha}">
+                                    <f:convertDateTime pattern="dd-MMM-yyyy hh:mm a" timeZone="EST" />
+                                </h:outputText>
+                            </p:panelGrid>
+                            <p:panelGrid columns="2" >
+                                <p:outputLabel for="farmacia" value="Pedir a:" />
+                                <p:selectOneMenu id="farmacia" value="#{oValeFarmacia.farmaciaAPedir}" required="true" >
+                                    <f:selectItem itemLabel="Farmacia Siena S.A. de C.V." itemValue="1" />
+                                    <f:selectItem itemLabel="Farmacia Externa" itemValue="2" />
+                                    <p:ajax process="@this" update="@this tb2 formulario:grow1" />
+                                </p:selectOneMenu>
+                                Desea Factura<p:selectBooleanCheckbox value="#{oValeFarmacia.quererFactura}" />
+                                Tipo de paciente<p:selectOneMenu label="Tipo Paciente " value="#{oValeFarmacia.tipoPaciente}" >
+                                    <f:selectItem itemLabel="Selecciona" itemValue="1" />
+                                    <f:selectItems value="#{oValeFarmacia.tiposPacientes}" />
+                                </p:selectOneMenu>
+                            </p:panelGrid>
+
+                            <p:separator/>
+                            Fecha de vencimiento: 
+                            <h:outputText value="#{oValeFarmacia.fechaVencimiento}">
+                                <f:convertDateTime pattern="dd-MMM-yyyy" timeZone="EST" />
+                            </h:outputText>
+                            <h:panelGrid id="panelBusqueda" columns="4" style="margin-bottom:10px" cellpadding="5">
+                                <h:panelGrid columns="1">
+                                    <p:outputLabel for="busquedaDe" value="Buscar:" />
+                                    <p:selectOneRadio id="busquedaDe" value="#{oValeFarmacia.busquedaDe}" layout="grid" columns="1">
+                                        <f:selectItem itemLabel="Material de curacion" itemValue="1" />
+                                        <f:selectItem itemLabel="Medicamento" itemValue="2" />
+                                    </p:selectOneRadio>
+                                </h:panelGrid>
+                                <h:panelGrid columns="1">
+                                    <p:outputLabel for="tipoBusqueda" value="Filtro por:" />
+                                    <p:selectOneRadio id="tipoBusqueda" value="#{oValeFarmacia.tipoBusqueda}" layout="grid" columns="1">
+                                        <f:selectItem itemLabel="Sustancia Activa" itemValue="1" />
+                                        <f:selectItem itemLabel="Descripci&oacute;n" itemValue="2" />
+                                    </p:selectOneRadio>
+                                </h:panelGrid>
+                                <p:inputText id="valorBusqueda" value="#{oValeFarmacia.valorBusqueda}" />
+                                <p:commandButton value="Buscar" >
+                                    <p:ajax update="formulario:grow1 resultados" process="panelBusqueda" listener="#{oValeFarmacia.buscarLocal()}" />
+                                </p:commandButton>
+                            </h:panelGrid>
+                            <br/>
+                            <p:panel id="panel2" style="width:90%" >
+                                <p:dataTable id="resultados" emptyMessage="No se encontraron resultados" var="pedido" scrollable="true" scrollHeight="300" value="#{oValeFarmacia.resultadosBusqueda}" selectionMode="single" selection="#{oValeFarmacia.selectedPedido}" rowKey="#{pedido.cveMedicamento}">
+                                    <f:facet name="header">
+                                        Resultados de b&uacute;squeda: (#{oValeFarmacia.resultadosBusqueda.size()} productos)
+                                    </f:facet>
+                                    <p:ajax event="rowSelect" listener="#{oValeFarmacia.onRowSelect}" update=":formulario:grow1" />
+                                    <p:ajax event="rowUnselect" listener="#{oValeFarmacia.onRowUnselect}" update=":formulario:grow1" />
+                                    <p:column headerText="Clave">
+                                        <h:outputText value="#{pedido.codigo}" />
+                                    </p:column>
+                                    <p:column headerText="Nombre">
+                                        <h:outputText value="#{pedido.nomMedicamento}" />
+                                    </p:column>
+                                    <p:column headerText="Sustancia Activa">
+                                        <h:outputText value="#{pedido.sustanciaActiva}" />
+                                    </p:column>
+                                    <p:column headerText="Laboratorio">
+                                        <h:outputText value="#{pedido.laboratorio}" />
+                                    </p:column>
+                                    <p:column headerText="Precio Unitario">
+                                        <h:outputText value="#{pedido.costoUnitario}" >
+                                            <f:convertNumber type="currency"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+
+                                <h:panelGrid columns="5" style="margin-bottom:10px" cellpadding="5">
+                                    <h:outputLabel for="cantidadPedir" value="Cantidad: " />
+                                    <p:outputPanel>
+                                        <p:spinner id="cantidadPedir" value="#{oValeFarmacia.cantidad}">
+                                            <p:ajax process="@this" update="@this formulario:grow1" />
+                                        </p:spinner>
+                                    </p:outputPanel>
+                                    <h:outputLabel for="unidadaMed" value="Unidad de medida: " />
+                                    <p:selectOneMenu id="unidadaMed" 
+                                                     converter="oConverterUnidMed" value="#{oValeFarmacia.unidadMedida}" >
+                                        <f:selectItem itemLabel="Selecciona" itemValue="" />
+                                        <f:selectItems value="#{oValeFarmacia.listaUnidades}"  
+                                                       var="oUnidad1" 
+                                                       itemLabel="#{oUnidad1.descrip}" 
+                                                       itemValue="#{oUnidad1}" />
+                                    </p:selectOneMenu>
+                                    <p:commandButton value="Agregar" >
+                                        <p:ajax process="@this cantidadPedir formulario:unidadaMed" update="formulario:grow1 :formulario:total cantidadPedir resultados formulario:tb2" listener="#{oValeFarmacia.agregaPedido()}" />
+                                    </p:commandButton>
+                                </h:panelGrid><br/>
+
+                                <p:separator/><br/>
+                                <p:dataTable emptyMessage="Sin medicamentos agregados"  id="tb2" value="#{oValeFarmacia.listaPedidos}" rows="5" paginator="true" editable="true" editMode="cell" paginatorPosition="bottom" var="listaPedido">
+                                    <f:facet name="header">
+                                        <h:outputText value="Pedido"/>
+                                    </f:facet>                                   
+                                    <p:column>
+                                        <f:facet name="header">
+                                            Clave
+                                        </f:facet>
+                                        <h:outputText value="#{listaPedido.cveMedicamento}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            Nombre
+                                        </f:facet>
+                                        <h:outputText value="#{listaPedido.nomMedicamento}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Sustancia Activa
+                                        </f:facet>
+                                        <h:outputText value="#{listaPedido.sustanciaActiva}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Laboratorio
+                                        </f:facet>
+                                        <h:outputText value="#{listaPedido.laboratorio}" />
+                                    </p:column>
+                                    <p:column style="text-align: center;" >
+                                        <f:facet name="header">
+                                            Cantidad(editable)
+                                        </f:facet>
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{listaPedido.cantidadActualizada}" rendered="#{listaPedido.cantidadActualizada > 0}"/>
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:spinner id="cantidad" min="1" max="20" size="2" value="#{listaPedido.cantidadActualizada}">
+                                                    <p:ajax process="@this" update="@this tb2 :formulario:total :formulario:grow1" listener="${oValeFarmacia.actualizaTotal()}"/>
+                                                </p:spinner>
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            Unidad de medida
+                                        </f:facet>
+                                        <h:outputText value="#{listaPedido.unidadMedida.descrip}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Costo unitario
+                                        </f:facet>
+
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{listaPedido.costoUnitario}" rendered="#{listaPedido.costoUnitario > 0}">
+                                                    <f:convertNumber type="currency"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText id="costoUnitarioEdit" value="#{listaPedido.costoUnitario}" rendered="#{oValeFarmacia.mostrarCosto()}">
+                                                    <p:ajax process="@this" update="@this tb2 :formulario:total :formulario:grow1" listener="${oValeFarmacia.actualizaTotal()}"/>
+                                                </p:inputText>
+                                                <h:outputText value="#{listaPedido.costoUnitario}" rendered="#{!oValeFarmacia.mostrarCosto()}">
+                                                    <f:convertNumber type="currency"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:cellEditor>
+
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Eliminar
+                                        </f:facet>
+                                        <p:commandButton process="@this" icon="ui-icon-disk" title="Eliminar" >
+                                            <p:ajax update="tb2 :formulario:total @this" listener="#{oValeFarmacia.eliminaPedido(listaPedido.cveMedicamento)}" />
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                                <br/>
+                                Costo total: <h:outputText id="total" value="#{oValeFarmacia.total}">
+                                    <f:convertNumber type="currency"/>
+                                </h:outputText>
+                            </p:panel>
+                            <br/>
+                            <p:commandButton value="Generar vale" >
+                                <p:ajax update="grow1 dialogSuccess" listener="#{oValeFarmacia.generaPedido()}" />
+                            </p:commandButton>
+                            <p:commandButton update="grow1" action="generarValeFarmacia.xhtml?faces-redirect=true" value="Regresar" />
+
+                        </p:panel>
+
+                        <p:dialog closable="false" appendToBody="true" dynamic="true" modal="true" id="dialogSuccess" header="Vale de farmacia exitoso!"  widgetVar="dlg1" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+
+                            <p:panel id="panelDialog">
+                                <center>
+                                    Vale de farmacia
+                                </center>
+                                <p:separator/>
+                                <h:panelGrid columns="2" cellpadding="5">
+                                    Folio de pedido: <h:outputText value="#{oValeFarmacia.requisicion.cveRequisicion}" rendered="#{!oValeFarmacia.mostrarCosto()}"/>
+                                    <h:outputText value="SIN NUMERO DE PEDIDO PARA FARMACIA EXTERNA" rendered="#{oValeFarmacia.mostrarCosto()}"/>
+                                    Folio de cargo: <p:dataTable emptyMessage="Sin servicios agregados"  id="tb4" value="#{oValeFarmacia.folios}" var="folio">
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Folios
+                                            </f:facet>  
+                                            <h:outputText value="#{folio}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                    Paciente: <h:outputText value="#{oValeFarmacia.paciente.folioPac} #{oValeFarmacia.paciente.nombreCompleto}" />
+                                    Fecha y hora: 
+                                    <h:outputText value="#{oValeFarmacia.fecha}">
+                                        <f:convertDateTime pattern="dd-MMM-yyyy hh:mm a" timeZone="EST" />
+                                    </h:outputText>
+                                    Medicamento y/o material solicitados:
+
+                                    <p:dataTable emptyMessage="Sin medicamentos agregados"  id="tb3" value="#{oValeFarmacia.listaPedidos}" var="pedidosConfirm">
+                                        <f:facet name="header">
+                                            <h:outputText value="Detalle de requisición"/>
+                                        </f:facet>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Clave
+                                            </f:facet>  
+                                            <h:outputText value="#{pedidosConfirm.codigo}" />
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Nombre
+                                            </f:facet>  
+                                            <h:outputText value="#{pedidosConfirm.nomMedicamento}" />
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Sustancia activa
+                                            </f:facet>  
+                                            <h:outputText value="#{pedidosConfirm.sustanciaActiva}" />
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Laboratorio
+                                            </f:facet>  
+                                            <h:outputText value="#{pedidosConfirm.laboratorio}"/>
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Cantidad
+                                            </f:facet>  
+                                            <h:outputText value="#{pedidosConfirm.cantidadActualizada}"/>
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Costo unitario
+                                            </f:facet>  
+                                            <h:outputText value="#{pedidosConfirm.costoUnitario}">
+                                                <f:convertNumber type="currency"/>
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
+                                    <br/>
+                                    Costo total: <h:outputText value="#{oValeFarmacia.total}">
+                                        <f:convertNumber type="currency"/>
+                                    </h:outputText> 
+                                    Fecha de vencimiento del vale: 
+                                    <h:outputText value="#{oValeFarmacia.fechaVencimiento}">
+                                        <f:convertDateTime pattern="dd-MMM-yyyy" timeZone="EST" />
+                                    </h:outputText>
+                                </h:panelGrid>  
+
+                                <p:separator />
+                                <center>
+                                    <p:commandButton value="Imprimir" type="button" >
+                                        <p:printer target="panelDialog" />
+                                    </p:commandButton>
+
+                                    <p:commandButton value="Salir" >
+                                        <p:ajax listener="#{oValeFarmacia.salir()}"/>
+                                    </p:commandButton>
+                                </center>
+
+                            </p:panel> 
+                        </p:dialog>
+
+                    </h:form>
+                </center>        
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

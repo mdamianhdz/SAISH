@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <f:view contentType="text/html">
+
+        <h:head>
+            <f:facet name="first">
+                <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+            </f:facet>
+            <h:outputScript name="js/security.js"></h:outputScript>
+            <!-- <h:outputScript name="js/ajaxStatus.js"></h:outputScript> -->
+
+            <!--                 IMPRESION DE TICKETS            -->
+            <input type="hidden" id="contextPath" value="#{oValNav.obtenerPath()}"></input>
+            <script>
+                var content;
+                var meses = new Array("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre");
+                var f = new Date();
+                function print(source) {
+                    popup = window.open(document.getElementById("contextPath").value + 'impresion/ticket.html', '',
+                            'height=' + screen.height * 0.30 + ',width=400,toolbar=no,menubar=no,'
+                            + 'scrollbars=yes');
+                    content = source;
+                    popup.name = JSON.stringify(content);
+                    popup.openerFormId = source.form.id;
+                    popup.focus();
+                }
+                ;
+                function getFecha(b) {
+                    return f.getDate() + "-" + meses[f.getMonth()] + "-" + f.getFullYear();
+                }
+                ;
+                function getHora(b) {
+                    return f.getHours() + ":" + f.getMinutes();
+                }
+                ;
+                function fechaConFormato(param) {
+                    if (param.length === 10) {
+                        anio = param.substring(0, 4);
+                        mes = param.substring(5, 7);
+                        dia = param.substring(8);
+                        return dia + "-" + meses[parseInt(mes)-1] + "-" + anio;
+                    } else {
+                        return param;
+                    }
+                }
+                ;
+            </script>
+
+            <style type="text/css">
+
+
+                .ui-layout-unit-content{
+                    font-size:12px !important;
+                }
+
+                .ui-widget{
+                    font-size:12px !important;
+                }
+
+                .ui-layout, .ui-layout-unit-top, .ui-layout-unit-doc, .ui-layout-unit, .ui-layout-wrap, .ui-layout-bd, .ui-layout-hd{
+                    border: 0px !important;
+                    margin: 0px !important;
+                    padding: 1px;
+                    font-size:12px ;
+                }
+
+                textarea{
+                    resize: none;
+                }
+
+
+            </style>
+
+            <script type="text/javascript">
+                PrimeFaces.locales['es'] = {
+                    closeText: 'Cerrar',
+                    prevText: 'Anterior',
+                    nextText: 'Siguiente',
+                    monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+                    monthNamesShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                    dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+                    dayNamesShort: ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'],
+                    dayNamesMin: ['D', 'L', 'M', 'X', 'J', 'V', 'S'],
+                    weekHeader: 'Semana',
+                    firstDay: 1,
+                    isRTL: false,
+                    showMonthAfterYear: false,
+                    yearSuffix: '',
+                    timeOnlyTitle: 'Sólo hora',
+                    timeText: 'Tiempo',
+                    hourText: 'Hora',
+                    minuteText: 'Minuto',
+                    secondText: 'Segundo',
+                    currentText: 'Fecha actual',
+                    ampm: false,
+                    month: 'Mes',
+                    week: 'Semana',
+                    day: 'Día',
+                    allDayText: 'Todo el día'
+                };
+            </script>
+            <link  rel="icon" type="image/x-icon" href="../utilidades/favicon.ico"   />
+
+        </h:head>
+
+        <h:body class="contenido">
+            #{oValNav.validaPermisoPagina()}
+            <p:ajaxStatus onstart="statusDialog.show();" onsuccess="statusDialog.hide();"/>  
+
+            <p:dialog appendTo="@(body)" style="font-size:12px;" styleClass="text-align: center;" position="center"  modal="true" widgetVar="statusDialog" showHeader="Cargando..."    
+                      draggable="false" closable="false">  
+                <p:graphicImage url="${facesContext.externalContext.requestContextPath}../../utilidades/ajax-loader.gif"/>  
+            </p:dialog> 
+
+            <ui:include src="sessionOut.xhtml"></ui:include> 
+                #{oValNav.validaSesion()}
+
+
+            <p:layout fullPage="true">
+
+                <p:layoutUnit position="north"  size="150">
+                    <ui:include src="encabezado.xhtml"></ui:include>
+                        #{oPlantilla.validaLogo("P")}
+
+                </p:layoutUnit>
+
+                <p:layoutUnit position="south" size="50">
+                    <ui:include src="pie.xhtml"></ui:include>                    
+                </p:layoutUnit>
+
+                <p:layoutUnit rendered="#{oUsuario.cargaMenu}" position="west" size="180" header="Menú operacional">
+                    <ui:include src="menu.xhtml"></ui:include>
+                </p:layoutUnit>
+                <p:layoutUnit position="center">
+
+                    <ui:insert name="cuerpo">
+                        ¡Contenido!
+                    </ui:insert>
+
+                </p:layoutUnit>
+
+            </p:layout>
+
+        </h:body>
+
+    </f:view>
+</html>

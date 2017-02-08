@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <f:view contentType="text/html">
+        <h:head>
+            <f:facet name="first">
+                <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+                
+            </f:facet>
+            <h:outputScript name="js/security.js"></h:outputScript>
+            <style type="text/css">
+                
+             
+                .ui-layout-unit-content{
+                    font-size:12px !important;
+                }
+                
+                .ui-widget{
+                    font-size:12px !important;
+                }
+                
+                .ui-layout, .ui-layout-unit-top, .ui-layout-unit-doc, .ui-layout-unit, .ui-layout-wrap, .ui-layout-bd, .ui-layout-hd{
+                    border: 0px !important;
+                    margin: 0px !important;
+                    padding: 1px;
+                    font-size:12px ;
+                }   
+               
+            </style>
+            <link  rel="icon" type="image/x-icon" href="utilidades/favicon.ico"   />
+            
+        </h:head>
+        
+
+        <h:body>
+            
+             <p:ajaxStatus onstart="statusDialog.show();" onsuccess="statusDialog.hide();"/>  
+
+                <p:dialog appendTo="@(body)" style="font-size:12px;" styleClass="text-align: center;" position="center"  modal="true" widgetVar="statusDialog" showHeader="Cargando..."    
+                            draggable="false" closable="false">  
+                    <p:graphicImage url="${facesContext.externalContext.requestContextPath}../../utilidades/ajax-loader.gif"/>  
+                </p:dialog> 
+            
+            
+                <p:layout fullPage="true">
+                #{oPlantilla.validaLogo("PSM")}
+                <p:layoutUnit position="north" size="150" resizable="true" closable="true" collapsible="true">
+                    <ui:include src="encabezado.xhtml"></ui:include>
+                   
+                    
+                </p:layoutUnit>
+
+                <p:layoutUnit position="south" size="50" closable="true" collapsible="true">
+                    <ui:include src="pie.xhtml"></ui:include>
+                </p:layoutUnit>
+
+                <p:layoutUnit position="center">
+                    <ui:insert name="cuerpo">
+                    ¡Contenido!
+                    </ui:insert>
+                </p:layoutUnit>
+
+            </p:layout>
+
+        </h:body>
+
+    </f:view>
+</html>

@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+<ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+<ui:define name="cuerpo">
+<title>Agenda de servicios - nueva cita servicios</title>
+<h:body>
+    
+    <p:dialog closable="false" dynamic="true"  appendTo="@(body)" modal="true" id="dlgCompBusq" header="Busqueda de paciente"  widgetVar="dlgCompBusqVar" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+        <h:form id="formBuscarPaciente">
+            <p:growl id="grow3" sticky="true" /> 
+                <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include> 
+            <p:separator/>
+            <p:commandButton value="Seleccionar"  action="#{oAgServ.llena()}"  oncomplete="dlgCompBusqVar.hide()" update=":form:pantalla " icon="ui-icon-search"/>
+            <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" action="#{oAgServ.limpiarAgenda()}" update=":form:pantalla" />
+        </h:form> 
+    </p:dialog>  
+    <h:form>
+        <p:growl id="grow2" sticky="true" />        
+            <center>
+                <p:commandButton value="Seleccionar paciente" update=":dlgCompBusq" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+            </center>
+    </h:form>
+            
+       <h:form id="form" >  
+           <p:growl id="grow1" sticky="true" />
+           <p:panel header="Nueva cita de servicio" id="pantalla" 
+                    style="margin-bottom:10px;">  
+              <p:panelGrid id="datos" style=" width: 97%;">
+                  <p:row>
+                      <p:column><h:outputText value="Servicio: "/></p:column>
+                      <p:column><p:inputText value="#{oAgServ.selectedCitaServicio.areaServicio.descrip}" size="40"/></p:column>
+                      <p:column><h:outputText value="Fecha: "/></p:column>
+                      <p:column>
+                          <p:inputText value="#{oAgServ.selectedCitaServicio.fecCita}" style=" text-transform: capitalize;">
+                            <f:convertDateTime pattern="dd-MMMM-yyyy" timeZone="EST" />
+                          </p:inputText>
+                      </p:column>
+                      <p:column><h:outputText value="Hora: "/></p:column>
+                      <p:column>
+                          <p:inputText value="#{oAgServ.selectedCitaServicio.fecCita}">
+                            <f:convertDateTime pattern="HH:mm" timeZone="EST" />
+                          </p:inputText>
+                      </p:column>
+                  </p:row>
+                  <p:row>
+                      <p:column><h:outputText value="Nombre del paciente: "/></p:column>
+                      <p:column><p:inputText value="#{oAgServ.selectedCitaServicio.paciente.nombre} #{oAgMedico.selectedCitaMedica.paciente.apellidoPaterno} #{oAgMedico.selectedCitaMedica.paciente.apellidoMaterno}" size="40"/></p:column>
+                      <p:column><h:outputText value="Folio del paciente: "/></p:column>
+                      <p:column><p:inputText value="#{oAgServ.selectedCitaServicio.paciente.folioPac}"/></p:column>
+                      <p:column><h:outputText value="Sexo: "/></p:column>
+                      <p:column><p:inputText value="#{oAgServ.selectedCitaServicio.paciente.genero}"/></p:column>
+                  </p:row>
+                  <p:row>
+                      <p:column><h:outputText value="Edad: "/></p:column>
+                      <p:column><p:inputText value="#{oAgServ.selectedCitaServicio.paciente.edad}" /></p:column>
+                      <p:column><h:outputText value="Duración: "/></p:column>
+                      <p:column>
+                          <p:selectOneMenu id="duracion" value="#{oAgServ.selectedCitaServicio.duracion}" required="true" >  
+                            <f:selectItem itemLabel="30 min" itemValue="1" />  
+                            <f:selectItem itemLabel="1 hr" itemValue="2" />  
+                            <f:selectItem itemLabel="1 hr 30 min" itemValue="3" />  
+                            <f:selectItem itemLabel="2 hr" itemValue="4" />  
+                            <p:ajax update=":form"/>
+                          </p:selectOneMenu>
+                      </p:column>
+                  </p:row> 
+                  <p:row>
+                      <p:column><h:outputText value="Observaciones:  "/></p:column>
+                      <p:column colspan="5">
+                          <p:inputTextarea value="#{oAgServ.selectedCitaServicio.obs}" cols="100" queryDelay="200" minQueryLength="" >
+                              <p:ajax update=":form"/>
+                          </p:inputTextarea>
+                      </p:column>
+                  </p:row>
+                  <p:row>
+                      <p:column><h:outputText value="Tipo:  "/></p:column>
+                      <p:column colspan="5">
+                            <p:selectOneRadio id="options" value="#{oAgServ.selectedCitaServicio.tipoPrincipal}">  
+                                <f:selectItem itemLabel="Contado" itemValue="0" />  
+                                <f:selectItem itemLabel="Crédito" itemValue="1" />  
+                                <f:selectItem itemLabel="Paquete" itemValue="2" />   
+                                <p:ajax update=":form"/>
+                            </p:selectOneRadio>
+                      </p:column>
+                  </p:row>
+              </p:panelGrid>
+                   
+              <h:panelGrid id="datos2" columns="2"  style="float:right;">
+                  <p:commandButton value="Guardar" id="btnThis" process="@parent" update=":form:grow1 btnThis"
+                                    actionListener="#{oAgServ.insertarCita()}" disabled="#{oAgServ.disable}" />
+                  <p:button outcome="agendaServicios.xhtml?faces-redirect=true" value="Regresar" >
+                  </p:button>   
+              </h:panelGrid>                
+   </p:panel>  
+  </h:form>     
+</h:body>
+</ui:define> 
+</ui:composition> 
+</html>

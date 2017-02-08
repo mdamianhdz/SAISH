@@ -1,0 +1,248 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Administrar Rentas</title>
+            <h:body> 
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    <center>
+                        <h2>Administrar Rentas</h2>
+                        <p:dialog id="dlgAdmRentas" widgetVar="dlgRentas" appendTo="@(body)" closable="false" resizable="false"  
+                                  dynamic="true" modal="false" >
+                            <center>
+                                <h3>Administrar Rentas</h3>
+                                <h:form id="formDlg">
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Tipo de Espacio: " style=" font-weight:bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="#{oAdmRentas.currentEspacio.tipoEspacio.descripcion}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Espacio: " style=" font-weight:bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="#{oAdmRentas.currentEspacio.descripcion}"/>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="2">
+                                                <p:selectOneRadio value="#{oAdmRentas.tipoRenta}" disabled="#{oAdmRentas.consulta}">
+                                                    <f:selectItem itemLabel="Renta Anual - $#{oAdmRentas.currentEspacio.rentaAnual}" itemValue="Anual"/>
+                                                    <f:selectItem itemLabel="Renta Mensual - $#{oAdmRentas.currentEspacio.rentaMensual}" itemValue="Mensual"/>
+                                                    <p:ajax listener="#{oAdmRentas.calculaMensualidad()}" update="txtMensualidad"/>
+                                                </p:selectOneRadio>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Depósito: " style=" font-weight:bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="$ #{oAdmRentas.currentEspacio.deposito}"/>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Inicio de Contrato: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:calendar showOn="button" value="#{oAdmRentas.currentEspacio.contratoRenta.inicio}" disabled="#{oAdmRentas.consulta or oAdmRentas.valueBoton=='Renovar'}">
+                                                    <p:ajax event="dateSelect" listener="#{oAdmRentas.validaFecha}" update=":form:msg" />
+                                                </p:calendar>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Fin de Contrato: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:calendar showOn="button" value="#{oAdmRentas.currentEspacio.contratoRenta.fin}" disabled="#{oAdmRentas.consulta}">
+                                                    <p:ajax event="dateSelect" listener="#{oAdmRentas.validaFecha}" update=":form:msg" />
+                                                </p:calendar>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Deposito: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oAdmRentas.currentEspacio.contratoRenta.deposito}" disabled="#{oAdmRentas.consulta}"><p:ajax/></p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Renta Mensual: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtMensualidad" value="#{oAdmRentas.currentEspacio.contratoRenta.rentaMensual}" disabled="#{oAdmRentas.consulta}"><p:ajax/></p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                       <p:row rendered="#{!oAdmRentas.nuevoArrendatario}">
+                                            <p:column>
+                                                <p:outputLabel value="Arrendatario: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column colspan="2">
+                                                <p:selectOneMenu value="#{oAdmRentas.currentEspacio.contratoRenta.receptor.rfc}" disabled="#{oAdmRentas.consulta or oAdmRentas.valueBoton=='Renovar'}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                                    <f:selectItems value="#{oAdmRentas.listReceptores}" var="oRec" itemLabel="#{oRec.rfc}-#{oRec.nombre}" itemValue="#{oRec.rfc}"/>
+                                                    <p:ajax/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:commandButton value="Nuevo Arrendatario" disabled="#{oAdmRentas.consulta}">
+                                                    <p:ajax listener="#{oAdmRentas.confNuevoArr()}" update="panelDatos"/>
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row rendered="#{oAdmRentas.nuevoArrendatario}">
+                                            <p:column>
+                                                <p:outputLabel value="RFC Arrendatario: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oAdmRentas.currentEspacio.contratoRenta.receptor.rfc}"><p:ajax/></p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Nombre: " style=" font-weight:bold"/>
+                                                <p:outputLabel value="*" style="color:red; font-weight: bolder"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oAdmRentas.currentEspacio.contratoRenta.receptor.nombre}"><p:ajax/></p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Calendario de Pagos " style=" font-weight:bold"/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:commandButton value="Calcular" disabled="#{oAdmRentas.consulta}">
+                                                    <p:ajax listener="#{oAdmRentas.calculaPagosContrato()}" update="dtPagos"/>
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="4">
+                                                <p:dataTable id="dtPagos" var="oPago" value="#{oAdmRentas.currentEspacio.contratoRenta.listPagos}" paginator="true" 
+                                                             paginatorPosition="bottom" rows="3" emptyMessage="No hay registros" style="width:800px">
+                                                    <p:column headerText="Mensualidad">
+                                                        <p:outputLabel rendered="#{(oPago.mensualidad>0)}" value="#{oPago.mensualidad}"/>
+                                                        <p:outputLabel rendered="#{!(oPago.mensualidad>0)}" value="DEPÓSITO"/>
+                                                    </p:column>
+                                                    <p:column headerText="Fecha Programada">
+                                                        <p:outputLabel value="#{oPago.programada}">
+                                                            <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                                        </p:outputLabel>
+                                                    </p:column>
+                                                    <p:column headerText="Fecha de Pago">
+                                                        <p:outputLabel value="#{oPago.operacionCaja.opeCaja.fechaOp}">
+                                                            <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                                        </p:outputLabel>
+                                                    </p:column>
+                                                    <p:column headerText="Factura">
+                                                        <p:outputLabel rendered="#{oPago.operacionCaja.folioCFDI>0}" value="#{oPago.operacionCaja.nombreSerie}-#{oPago.operacionCaja.folioCFDI}"/>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row rendered="#{oAdmRentas.valueBoton=='Cancelar'}">
+                                            <p:column>
+                                                <p:outputLabel value="Motivo de cancelación: " style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputTextarea value="#{oAdmRentas.currentEspacio.contratoRenta.razonCancelado}" autoResize="false" rows="2" cols="85"><p:ajax/></p:inputTextarea>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="4">
+                                                <p:commandButton value="#{oAdmRentas.valueBoton}" oncomplete="PF('dlgRentas').hide()" rendered="#{oAdmRentas.valueBoton!='Consultar'}">
+                                                    <p:ajax listener="#{oAdmRentas.guardar()}" update=":form:msg :form:dtEspacios"/>
+                                                </p:commandButton>
+                                                <p:commandButton value="Regresar" oncomplete="PF('dlgRentas').hide()" >
+                                                    <p:ajax listener="#{oAdmRentas.buscaEspacios()}" update=":form:dtEspacios"/>
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Tipo de Espacio: " style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu value="#{oAdmRentas.tipoEspacio}">
+                                        <f:selectItem itemValue="0" itemLabel="Seleccione"/>
+                                        <f:selectItems value="#{oAdmRentas.tiposEspacio}" var="oTE" itemValue="#{oTE.idTipoEsp}" itemLabel="#{oTE.descripcion}"/>
+                                        <p:ajax/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Buscar">
+                                        <p:ajax update="dtEspacios" listener="#{oAdmRentas.buscaEspacios()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/>
+                        <p:dataTable id="dtEspacios" var="oEsp" value="#{oAdmRentas.listEspacios}" paginator="true" paginatorPosition="bottom" rows="6" 
+                                     emptyMessage="No hay registros" selection="#{oAdmRentas.currentEspacio}" rowKey="#{oEsp.compositeKey}" style="width:900px">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Id. Espacio">
+                                <p:outputLabel value="#{oEsp.idEspacio}"/>
+                            </p:column>
+                            <p:column headerText="Descripción">
+                                <p:outputLabel value="#{oEsp.descripcion}"/>
+                            </p:column>
+                            <p:column headerText="Rentado">
+                                <p:outputLabel rendered="#{oEsp.rentado}" value="Sí"/>
+                                <p:outputLabel rendered="#{!oEsp.rentado}" value="No"/>
+                            </p:column>
+                            <p:column headerText="Arrendatario">
+                                <p:outputLabel value="#{oEsp.contratoRenta.receptor.rfc}"/>
+                            </p:column>
+                            <p:column headerText="Fecha Inicio">
+                                <p:outputLabel value="#{oEsp.contratoRenta.inicio}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Fecha Fin">
+                                <p:outputLabel value="#{oEsp.contratoRenta.fin}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Alertas">
+                                <p:outputLabel value="#{oAdmRentas.buscaAlertas(oEsp.contratoRenta.idContratoRenta)}" style=" font-weight:bolder; color: red"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Rentar Espacio">
+                                    <p:ajax update=":form:msg :form:dlgAdmRentas" listener="#{oAdmRentas.confOpe(1)}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Consultar Renta">
+                                    <p:ajax update=":form:msg :form:dlgAdmRentas" listener="#{oAdmRentas.confOpe(2)}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Cancelar Contrato">
+                                    <p:ajax update=":form:msg :form:dlgAdmRentas" listener="#{oAdmRentas.confOpe(3)}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Renovar Contrato">
+                                    <p:ajax update=":form:msg :form:dlgAdmRentas" listener="#{oAdmRentas.confOpe(4)}"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                    </center>
+                </h:form>                     
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>
+

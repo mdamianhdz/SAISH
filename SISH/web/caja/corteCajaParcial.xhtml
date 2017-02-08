@@ -1,0 +1,167 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Corte de Caja Parcial</title>
+            <h:body>
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    <center>
+                        <h2>Corte de Caja Parcial</h2>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Corte al:  " style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="#{oCorteCaja.currentDate}">
+                                        <f:convertDateTime pattern="dd/MMMM/yyyy HH:mm" timeZone="Mexico/General"/>
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Realizar">
+                                        <p:ajax update="dtCaja lblHosp lblExt lblNoHosp lblEgre" listener="#{oCorteCaja.buscarOperaciones()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/>
+                        <p:dataTable id="dtCaja" var="op" value="#{oCorteCaja.listOperaciones}" 
+                                     paginator="true" paginatorPosition="bottom" 
+                                     rows="10" emptyMessage="No hay registros" 
+                                     style="width:95%">
+                            <p:column headerText="Folio">
+                                <p:outputLabel rendered="#{op.opeCC.opeCaja.folio>0}" 
+                                               value="#{op.opeCC.opeCaja.folio}"/>
+                            </p:column>
+                            <p:column headerText="Fecha">
+                                <p:outputLabel value="#{op.opeCC.opeCaja.fechaOp}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Concepto">
+                                <p:outputLabel rendered="#{op.opeCC.opeCaja.folio>0}" 
+                                               value="#{op.concepto}"/>
+                                <p:outputLabel rendered="#{!(op.opeCC.opeCaja.folio>0)}" 
+                                               value="#{op.concepto}" 
+                                               style="font-weight:bolder"/>
+                            </p:column>
+                            <p:column headerText="Forma de Pago">
+                                <p:outputLabel value="#{op.formaPago.descripcion}"/>
+                            </p:column>
+                            <p:column headerText="Monto Ingreso">
+                                <p:outputLabel rendered="#{(op.monto>0 and op.tipoOperacion=='I') and op.opeCC.opeCaja.folio>0}" 
+                                               value="#{op.monto}">
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                                <p:outputLabel rendered="#{op.concepto=='TOTAL'}" 
+                                               value="#{oCorteCaja.hosp+oCorteCaja.ext+oCorteCaja.noHosp}" 
+                                               style="font-weight:bolder">
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Monto Egreso">
+                                <p:outputLabel rendered="#{(op.monto>0 and op.tipoOperacion=='E') and op.opeCC.opeCaja.folio>0}" 
+                                               value="#{op.monto}">
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                                <p:outputLabel rendered="#{op.concepto=='TOTAL'}" 
+                                               value="#{oCorteCaja.totalE}" 
+                                               style="font-weight:bolder">
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Saldo">
+                                <p:outputLabel rendered="#{op.opeCC.opeCaja.folio>0}" 
+                                               value="#{oCorteCaja.calculaSaldo(op.opeCC.opeCaja.folio, op.monto)}">
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                                <p:outputLabel rendered="#{!(op.opeCC.opeCaja.folio>0)}" 
+                                               value="#{oCorteCaja.calculaSaldo(op.opeCC.opeCaja.folio, op.monto)}" 
+                                               style="font-weight:bolder">
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                            </p:column>
+                        </p:dataTable><br/>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column colspan="2">
+                                     <p:outputLabel value="INGRESOS" style="font-weight:bolder"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Por Hospitalización:" style="font-weight:bold"/>
+                                </p:column>
+                                <p:column style="text-align: right">
+                                    <p:outputLabel id="lblHosp" value="#{oCorteCaja.hosp}">
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Por Servicios Externos:" style="font-weight:bold"/>
+                                </p:column>
+                                <p:column style="text-align: right">
+                                    <p:outputLabel id="lblExt" value="#{oCorteCaja.ext}">
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:row> 
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Por Servicios No Hosp:" style="font-weight:bold"/>
+                                </p:column>
+                                <p:column style="text-align: right">
+                                    <p:outputLabel id="lblNoHosp" 
+                                                   value="#{oCorteCaja.noHosp}">
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2">
+                                     <p:outputLabel value="EGRESOS" style="font-weight:bolder"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Totales:" style="font-weight:bold"/>
+                                </p:column>
+                                <p:column style="text-align: right">
+                                    <p:outputLabel id="lblEgre" value="#{oCorteCaja.totalE}">
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:row> 
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Por comprobar:" 
+                                                   style="font-weight:bold"/>
+                                </p:column>
+                                <p:column style="text-align: right">
+                                    <p:outputLabel id="lbGtosPend" value="#{oCorteCaja.gtosPend}">
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                                    <br/>
+                                    <p:password rendered="#{oCorteCaja.gtosPend>0}">
+                                        <p:ajax/>
+                                    </p:password>
+                                    <p:commandButton value="Autorizar"  
+                                                     rendered="#{oCorteCaja.gtosPend>0}">
+                                        <p:ajax/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>      
+                        </p:panelGrid>
+                    </center>
+                </h:form>
+            </h:body>
+        </ui:define>
+    </ui:composition>
+</html>

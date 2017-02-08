@@ -1,0 +1,160 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Emitir nota de crédito</title>
+    <h:body> 
+        #{oComprobante.limpiarNotaCredito()}
+        <h:form id="formulario"> 
+            <p:growl id="messages" showDetail="true"/>
+            <center>
+                <p:panel id="datosFactura" style="margin-bottom:10px;">  
+                    <h:panelGrid id="datosBusqueda" columns="4">
+                        <h:outputLabel value="Serie" for="txtNombre"/>
+                        <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                        <h:inputText id="txtNombre" value="#{oComprobante.factura.nombreSerie}"/>
+                        <h:outputText value=" "/>
+                        <h:outputLabel value="Folio" for="txtFolio"/>
+                        <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                        <p:inputText id="txtFolio" value="#{oComprobante.factura.folio}"/> 
+                        <p:commandButton value="Consultar factura"  
+                                         update=":formulario:messages :formulario:datosBusqueda :formulario:datosFactura :formEmitirFactura:generacionNotaCred" 
+                                         actionListener="#{oComprobante.obtenerFacturaParaNotaCredito()}"/>
+                    </h:panelGrid>
+                    <p:panel header="Datos de la factura consultada" style="margin-bottom:10px;">     
+                        <h:panelGrid   columns="4" rendered="#{not empty oComprobante.factura.rfcEmisor}">
+                            <h:outputLabel value="RFC del emisor" for="txtEmisor"  />
+                            <p:inputText id="txtEmisor" value="#{oComprobante.factura.rfcEmisor}" readonly="true" ></p:inputText>
+                            <h:outputLabel value="Subtotal" for="txtSubtotal"/>
+                            <p:inputText id="txtSubtotal" value="#{oComprobante.factura.subtotal}" readonly="true"></p:inputText>
+                            <h:outputLabel value="RFC del receptor" for="txtReceptor"/>
+                            <p:inputText id="txtReceptor" value="#{oComprobante.factura.rfcReceptor}" readonly="true"></p:inputText>
+                            <h:outputLabel value="Impuestos" for="txtImpuestos" rendered="#{oComprobante.factura.impuestos!=0.0 }"/>
+                            <p:inputText id="txtImpuestos" value="#{oComprobante.factura.impuestos }" readonly="true"></p:inputText>
+                            <h:outputLabel value="Fecha de expedición" for="txtFecha"/>
+                            <p:inputText id="txtFecha" value="#{oComprobante.factura.expedicion}" readonly="true"></p:inputText>
+                            <h:outputLabel value="Total" for="txtTotal" />
+                            <p:inputText id="txtTotal" value="#{oComprobante.factura.importeTotal}" readonly="true"></p:inputText>
+                            <h:outputText value=" " rendered="#{oComprobante.factura.importeCoaseguro!=0}"/>
+                            <h:outputText value=" " rendered="#{oComprobante.factura.importeCoaseguro!=0}"/>
+                            <h:outputLabel value="Importe de coaseguro" for="txtCoaseguro" rendered="#{oComprobante.factura.importeCoaseguro!=0}"/>
+                            <p:inputText id="txtCoaseguro" value="#{oComprobante.factura.importeCoaseguro}" readonly="true" rendered="#{oComprobante.factura.importeCoaseguro!=0}"></p:inputText>
+                            <h:outputText value=" " rendered="#{oComprobante.factura.importeDeducible!=0}"/>
+                            <h:outputText value=" " rendered="#{oComprobante.factura.importeDeducible!=0}"/>
+                            <h:outputLabel value="Importe de deducible" for="txtDeducible" rendered="#{oComprobante.factura.importeDeducible!=0}"/>
+                            <p:inputText id="txtDeducible" value="#{oComprobante.factura.importeDeducible}" readonly="true" rendered="#{oComprobante.factura.importeDeducible!=0}"></p:inputText>
+                        </h:panelGrid>         
+                    </p:panel>
+                    <p:panel header="Datos del comprobante" style="margin-bottom:10px;">     
+                        <h:panelGrid  columns="3"  rendered="#{not empty oComprobante.factura.rfcEmisor}"> 
+                            <h:outputLabel value="Tipo de comprobante" for="txtTipoComprobante"/>
+                            <h:outputText value=""/>
+                            <p:inputText id="txtTipoComprobante" size="25" value="#{oComprobante.comprobanteCreado.tipoDeComprobante}" readonly="true"></p:inputText>
+                            Serie 
+                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                            <p:selectOneMenu id="series" value="#{oComprobante.comprobanteCreado.serie}"> 
+                                <f:selectItem itemLabel="Selecciona" itemValue="" />
+                                <f:selectItems value="#{oComprobante.seriesPorDocumentoNotaCredito}" var="serie" itemLabel="#{serie.nombre}" itemValue="#{serie.nombre}"/>
+                            </p:selectOneMenu> 
+                            <h:outputLabel value="Lugar de expedición" for="txtLugarExp"/>
+                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                            <p:inputText id="txtLugarExp" value="#{oComprobante.comprobanteCreado.lugarExpedicion}" size="25"></p:inputText>
+                            Regimen fiscal 
+                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                            <p:selectOneMenu value="#{oComprobante.regimen}">  
+                                <f:selectItem itemLabel="Selecciona" itemValue="" />  
+                                <f:selectItem itemLabel="Régimen de Incorporacion Fiscal" itemValue="Regimen de Incorporacion Fiscal" />  
+                                <f:selectItem itemLabel="Régimen General Actividad empresarial profesional" itemValue="Regimen General Actividad empresarial profesional" />  
+                                <f:selectItem itemLabel="Arrendamiento" itemValue="Arrendamiento" />
+                                <f:selectItem itemLabel="Salarios" itemValue="Salarios" />
+                                <f:selectItem itemLabel="Intereses y Dividendos" itemValue="Intereses y Dividendos" />
+                        </p:selectOneMenu>
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel header="Concepto de la nota de crédito" style="margin-bottom:10px;">  
+                        <h:panelGrid  columns="6" rendered="#{not empty oComprobante.factura.rfcEmisor}">
+                            <h:outputLabel value="Cantidad" for="txtCantidad"/>
+                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                            <p:inputText id="txtCantidad" value="#{oComprobante.cantidadDetalleCFDI}" ></p:inputText>
+                            <h:outputLabel value="Unidad" for="txtUnidad"/>
+                            <h:outputText value=" * " style="font-weight:bold;color: red" />
+                            <p:selectOneMenu id="txtUnidad" value="#{oComprobante.unidadDetalleCFDI}">  
+                                <f:selectItem itemLabel="Selecciona" itemValue="" />  
+                                <f:selectItem itemLabel="Centímetros" itemValue="cms" />  
+                                <f:selectItem itemLabel="Kilogramos" itemValue="kgs" />  
+                                <f:selectItem itemLabel="Litros" itemValue="ls" />
+                                <f:selectItem itemLabel="Metros cúbicos" itemValue="m3" />
+                                <f:selectItem itemLabel="Miligramos" itemValue="mg" />
+                                <f:selectItem itemLabel="Milímetros" itemValue="mms" />
+                                <f:selectItem itemLabel="No Aplica" itemValue="NA" />
+                                <f:selectItem itemLabel="Tanque" itemValue="tq" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Descripción" for="txtDescripcion"/>
+                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                            <p:inputText id="txtDescripcion" value="#{oComprobante.descripcionDetalleCFDI}"></p:inputText>
+                            <h:outputLabel value="Monto" for="txtMonto"/>
+                            <h:outputText value=" * " style="font-weight:bold;color: red"/>
+                            <p:inputText id="txtMonto" value="#{oComprobante.montoDetalleCFDI}"></p:inputText>
+                        </h:panelGrid>   
+                    </p:panel>
+                    <p:commandButton value="Generar Nota de Crédito" oncomplete="dialogEmitirFactura.show()" update=":formulario:messages :formEmitirFactura:generacionNotaCred" actionListener="#{oComprobante.revisarNotaCredito()}" rendered="#{not empty oComprobante.factura.rfcEmisor}"></p:commandButton>
+                    <p:commandButton value="Cancelar" update=":formulario:datosBusqueda :formulario:datosFactura" actionListener="#{oComprobante.limpiarNotaCredito()}"  rendered="#{not empty oComprobante.factura.rfcEmisor}"></p:commandButton>  
+                </p:panel>
+            </center>
+        </h:form>
+        <p:dialog id="idDialogResumenFactura" appendTo="@(body)" widgetVar="dialogResumenFactura" resizable="true" showEffect="fade" hideEffect="explode" modal="true"> 
+            <h:form id="formResumen">
+                Se ha generado una Nota de crédito con los siguientes datos
+                <h:panelGrid  columns="2" id="datosFactura">
+                        <h:outputText value="Datos del comprobante" style="font-weight:bold" />
+                        <h:outputText value=" " />
+                         <h:outputLabel value="Serie" for="txtSerie" />
+                        <p:inputText id="txtSerie" value="#{oComprobante.facturaResultante.nombreSerie}"  readonly="true"></p:inputText>
+                         <h:outputLabel value="Folio" for="txtFolio" />
+                        <p:inputText id="txtFolio" value="#{oComprobante.facturaResultante.folio}"  readonly="true"></p:inputText>
+                        <h:outputLabel value="RFC del emisor" for="txtEmisor" />
+                        <p:inputText id="txtEmisor" value="#{oComprobante.facturaResultante.rfcEmisor}"  readonly="true"></p:inputText>
+                        <h:outputLabel value="RFC del receptor" for="txtReceptor" />
+                        <p:inputText id="txtReceptor" value="#{oComprobante.facturaResultante.rfcReceptor}" readonly="true"></p:inputText>
+                        <h:outputLabel value="Fecha de expedición" for="txtFecha" />
+                        <p:inputText id="txtFecha" value="#{oComprobante.facturaResultante.expedicion}" readonly="true"></p:inputText>
+                        <h:outputText value=" " />
+                        <h:outputText value=" " />
+                        <h:outputText value="Costos" style="font-weight:bold"/>
+                        <h:outputText value=" "/>
+                        <h:outputLabel value="Subtotal" for="txtSubtotal"/>
+                        <p:inputText id="txtSubtotal" value="#{oComprobante.facturaResultante.subtotal}" readonly="true"></p:inputText>
+                        <h:outputLabel value="Impuestos" for="txtImpuestos"/>
+                        <p:inputText id="txtImpuestos" value="#{oComprobante.facturaResultante.impuestos }"  readonly="true"></p:inputText>
+                        <h:outputLabel value="Importe de coaseguro" for="txtCoaseguro" rendered="#{oComprobante.facturaResultante.importeCoaseguro!=0.0}" />
+                        <p:inputText id="txtCoaseguro" value="#{oComprobante.facturaResultante.importeCoaseguro}" rendered="#{oComprobante.facturaResultante.importeCoaseguro!=0.0}" readonly="true"></p:inputText>
+                        <h:outputLabel value="Importe de deducible" for="txtDeducible" rendered="#{oComprobante.facturaResultante.importeDeducible!=0.0}"/>
+                        <p:inputText id="txtDeducible" value="#{oComprobante.facturaResultante.importeDeducible}" rendered="#{oComprobante.facturaResultante.importeDeducible!=0.0}" readonly="true"></p:inputText>
+                        <h:outputLabel value="Total" for="txtTotal"/>
+                        <p:inputText id="txtTotal" value="#{oComprobante.facturaResultante.importeTotal}"  readonly="true"></p:inputText>
+                        <h:outputText value=" " />
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        <p:dialog id="idDialogEmitirFactura" appendTo="@(body)" widgetVar="dialogEmitirFactura" resizable="true" showEffect="fade" hideEffect="explode" modal="true"> 
+            <h:form id="formEmitirFactura">
+                <h:panelGrid  columns="2" id="generacionNotaCred">
+                        <h:outputLabel value="Contraseña del CSD" for="txtContrasenia"/>
+                        <p:inputText id="txtContrasenia" value="#{oComprobante.factura.emisor.contrasenia}"></p:inputText>
+                        <p:commandButton value="Generar Nota de Crédito" actionListener="#{oComprobante.generarNotaCredito()}" 
+                                          rendered="#{oComprobante.comprobanteValido==true}" 
+                                         update=":formResumen:datosFactura :formulario:messages :formEmitirFactura:generacionNotaCred :formulario:datosBusqueda" 
+                                             oncomplete="dialogResumenFactura.show()"></p:commandButton>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+   </h:body>
+   </ui:define> 
+    </ui:composition>
+</html>

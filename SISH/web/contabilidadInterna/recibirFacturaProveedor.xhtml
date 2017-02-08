@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Controlar Movimientos a Bancos</title>
+            <h:body>
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    <center>
+                        <h2>Recibir Factura de Proveedor</h2>
+                        <p:dialog id="dlgRecibirFactura" widgetVar="dlgRecFac" appendTo="@(body)" closable="false" resizable="false"  
+                                  dynamic="true" modal="false" >
+                            <center>
+                                <h3>Recibir Factura de Proveedor</h3>
+                                <h:form id="formDlg">
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Proveedor:" style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="#{oFactProv.selectedGasto.prov.nombreRazSoc}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Fecha:" style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="#{oFactProv.selectedGasto.registro}">
+                                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Descripción: " style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:outputLabel value="#{oFactProv.selectedGasto.descripcion}"/>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Concepto Egreso: " style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column >
+                                                <p:outputLabel value="#{oFactProv.selectedGasto.concEgreso.descripcion}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Factura: " style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oFactProv.selectedGasto.factura}"><p:ajax/></p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Archivo XML: " style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:fileUpload id="fileXML" fileUploadListener="#{oFactProv.handleFileUpload}" mode="advanced" update=":form:msg" uploadLabel="Cargar"
+                                                              fileLimit="1" allowTypes="/(\.|\/)(xml)$/" label="Archivo XML" cancelLabel="Cancelar"/>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="4">
+                                                <p:commandButton value="Guardar"><p:ajax listener="#{oFactProv.recibir()}" update=":form:dtGastos"/></p:commandButton>
+                                                <p:commandButton value="Regresar" oncomplete="PF('dlgRecFac').hide()"/>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Proveedor: " style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu value="#{oFactProv.selectedProv}">
+                                        <f:selectItem itemValue="0" itemLabel="Seleccione"/>
+                                        <f:selectItems value="#{oFactProv.listProveedores}" var="oProv" itemValue="#{oProv.idProv}" itemLabel="#{oProv.nombreRazSoc}"/>
+                                        <p:ajax/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Buscar">
+                                        <p:ajax update="dtGastos" listener="#{oFactProv.buscar()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/>
+                        <p:dataTable id="dtGastos" var="oGasto" value="#{oFactProv.listGastos}" paginator="true" paginatorPosition="bottom" rows="6" 
+                                     emptyMessage="No hay registros" selection="#{oFactProv.selectedGasto}" rowKey="#{oGasto.idGasto}" style="width:800px">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Proveedor">
+                                <p:outputLabel value="#{oGasto.prov.nombreRazSoc}"/>
+                            </p:column>
+                            <p:column headerText="Fecha">
+                                <p:outputLabel value="#{oGasto.registro}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Descripción">
+                                <p:outputLabel value="#{oGasto.descripcion}"/>
+                            </p:column>
+                            <p:column headerText="Factura">
+                                <p:outputLabel value="#{oGasto.factura}"/>
+                            </p:column>
+                            <p:column headerText="Situación">
+                                <p:outputLabel value="#{oFactProv.cambiaSituacion(oGasto.situacion)}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Recibir Factura" oncomplete="PF('dlgRecFac').show()">
+                                    <p:ajax listener="#{oFactProv.recibir()}" update=":form:dlgRecibirFactura :form:msg"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                    </center>
+                </h:form>                     
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

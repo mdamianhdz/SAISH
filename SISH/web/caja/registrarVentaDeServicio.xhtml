@@ -1,0 +1,323 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inicio</title>
+            <h:body>
+                <center><h2>Registrar Venta de Servicio</h2></center>
+                    #{oRegVntSr.limpiaPagina()}
+
+                <p:dialog closable="false" dynamic="true" appendTo="@(body)" 
+                          modal="true" id="dlgCompBusq" header="Búsqueda de paciente" 
+                          widgetVar="dlgCompBusqVar" style="font-size: 12px" 
+                          styleClass="text-align: center;" position="center" 
+                          showEffect="clip" hideEffect="fold">
+                    <h:form id="form">
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include>
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar" update=":formp:panelP " 
+                                         oncomplete="dlgCompBusqVar.hide()" 
+                                         icon="ui-icon-search">
+                            <p:ajax listener="#{oRegVntSr.cargaServiciosPrestados()}"/>
+                        </p:commandButton>
+                        <p:commandButton value="Cancelar" 
+                                         oncomplete="dlgCompBusqVar.hide()" />
+                    </h:form>
+                </p:dialog>
+                <br/>
+                <h:form>
+                    <center>
+                        <p:commandButton value="Seleccionar paciente" 
+                                         update=":dlgCompBusq :formp:panelP  " 
+                                         oncomplete="dlgCompBusqVar.show()" 
+                                         icon="ui-icon-search"/>
+                    </center>
+                </h:form>
+                <br/>
+                <h:form id="formp">
+                    <p:growl id="grow" sticky="true" showDetail="true"/> 
+
+                    <p:panel header="Registrar Venta de Servicio" id="panelP"
+                             style="margin-bottom:10px;"
+                             visible="#{oRegVntSr.validaPaciente()}"> 
+                        Paciente: <p:outputLabel rendered="#{oRegVntSr.validaPaciente()}" 
+                                                 style="font-weight: bold" 
+                                                 value="#{oRegVntSr.paciente.nombreCompleto}"/> 
+                        <p:dataTable selection="#{oRegVntSr.listServSelec}" 
+                                     value="#{oRegVntSr.listSP}" var="oRS" 
+                                     rowKey="#{oRS.idFolio}" id="ventaServ"
+                                     style="margin-bottom: 0px"
+                                     paginator="true" paginatorPosition="bottom"
+                                     rows="6" filteredValue="#{oRegVntSr.listaFiltrada}"
+                                     emptyMessage="No se encontraron servicios">
+                            <p:ajax event="rowSelectCheckbox" 
+                                    listener="#{oRegVntSr.habilitaBoton()}" 
+                                    update="btnCapturaPago totalClte"/>
+                            <p:ajax event="rowUnselectCheckbox" 
+                                    listener="#{oRegVntSr.habilitaBoton()}" 
+                                    update="btnCapturaPago totalClte"/>
+                            <p:ajax event="toggleSelect" 
+                                    listener="#{oRegVntSr.habilitaBoton()}"
+                                    update="btnCapturaPago totalClte" />
+                            <f:facet name="header">
+                                Servicios por Pagar
+                            </f:facet>
+                            <p:column selectionMode="multiple"/>
+                            <p:column headerText="Folio Servicio">
+                                <h:outputText value="#{oRS.idFolio}"/>
+                            </p:column>
+                            <p:column headerText="Número de Orden">
+                                <h:outputText value="#{oRS.numOrden}"/>
+                            </p:column>
+                            <p:column headerText="Folio Paciente" >
+                                <h:outputText value="#{oRS.paciente.folioPac}"/>
+                            </p:column>
+                            <p:column headerText="Nombre" >
+                                <h:outputText value="#{oRS.paciente.nombreCompleto}"/>
+                            </p:column>
+                            <p:column headerText="L&iacute;nea" 
+                                    filterBy="#{oRS.concepPrestado.lineaIngreso.descrip}"
+                                    filterMatchMode="contains">
+                                <h:outputText value="#{oRS.concepPrestado.lineaIngreso.descrip}"/>
+                            </p:column>
+                            <p:column headerText="Concepto" >
+                                <h:outputText value="#{oRS.concepPrestado.descripConcep}"/>
+                            </p:column>
+                            <p:column headerText="Monto Total">
+                                <h:outputText value="#{oRS.costoOriginal*oRS.cantidad}">
+                                    <f:convertNumber pattern="#.00"/>
+                                </h:outputText>    
+                            </p:column>
+                            <p:column headerText="Quién Paga">
+                                <h:outputText value="#{oRS.convQuienPaga}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <h:outputText value="Total a pagar " 
+                                              style="font-weight: bold"/>
+                                <h:outputText value="#{oRegVntSr.totalPagar}"
+                                              id="totalClte">
+                                    <f:convertNumber type="currency"/>
+                                </h:outputText>
+                                <p:commandButton value="Pagar" 
+                                                 widgetVar="btnCapturaPagoClte"
+                                                 id="btnCapturaPago">
+                                    <p:ajax listener="#{oRegVntSr.seleccion()}"
+                                            disabled="#{oRegVntSr.botonPagar}"
+                                            update=":formp:grow :dialogs:display 
+                                            :dialogsop:dialogOP" />
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable> 
+                    </p:panel>
+                </h:form>
+                <p:dialog id="dialog" header="Registrar Venta de Servicio Pago" 
+                          widgetVar="selDialog" showEffect="clip" 
+                          appendTo="@(body)" modal="true" closable="false">
+                    <h:form id="dialogs">
+                        <p:panel id="display">
+                            <h:panelGrid columns="4" cellpadding="7">
+                                <p:column><h:outputText style="font-weight: bold;" value="Folio Paciente"/> </p:column>
+                                <p:column><h:outputText value="#{oRegVntSr.selectedServ.paciente.folioPac}"/></p:column>
+                                <p:column><h:outputText style="font-weight: bold;" value="Nombre"/></p:column>
+                                <p:column><h:outputText value="#{oRegVntSr.selectedServ.paciente.nombreCompleto}"/></p:column>
+                            </h:panelGrid>
+                            <p:dataTable value="#{oRegVntSr.listServSelec}"
+                                         var="oRS">
+                                <p:column headerText="Folio Servicio">
+                                    <h:outputText value="#{oRS.idFolio}"/>
+                                </p:column>
+                                <p:column headerText="Número de Orden">
+                                    <h:outputText value="#{oRS.numOrden}"/>
+                                </p:column>
+                                <p:column headerText="Concepto" >
+                                    <h:outputText value="#{oRS.concepPrestado.descripConcep}"/>
+                                </p:column>
+                                <p:column headerText="Monto">
+                                    <h:outputText value="#{oRS.costoOriginal*oRS.cantidad}">
+                                        <f:convertNumber pattern="#.00"/>
+                                    </h:outputText>    
+                                </p:column>
+                                <p:column headerText="Quién Paga">
+                                    <h:outputText value="#{oRS.convQuienPaga}"/>
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:panel>
+                                <h:panelGrid columns="4">
+                                    <p:column>
+                                        <h:outputText style="font-weight: bold;" 
+                                                      value="Monto Real a Pagar"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText value="#{oRegVntSr.totalPagar}"
+                                                     required="true" disabled="true">
+                                            <f:convertNumber pattern="#.00"/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText style="font-weight: bold;" value="Forma de Pago: " />
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu required="true" 
+                                                         requiredMessage="Se requiere una Forma de Pago" 
+                                                         id="SL" 
+                                                         value="#{oRegVntSr.forma}">
+                                            <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                            <f:selectItems value="#{oFormaDePago.formasDePago}" 
+                                                           var="oLP1"  itemLabel="#{oLP1.descripcion}" 
+                                                           itemValue="#{oLP1.cveFrmPago}"/>
+                                            <p:ajax update="pg1" listener="#{oRegVntSr.validaForma()}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </h:panelGrid>
+                                <h:panelGrid id="pg1" columns="9">
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegVntSr.verBanco}"
+                                                      style="font-weight: bold;" value="Banco : " />
+                                        <p:selectOneMenu rendered="#{oRegVntSr.verBanco}"
+                                                         id="SB" value="#{oRegVntSr.opeCaja.datosPago}">
+                                            <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                            <f:selectItems value="#{oFormaDePago.bancos}" />
+                                            <p:ajax/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegVntSr.verCtaBanco}"
+                                                      style="font-weight: bold;" 
+                                                      value="Cuenta"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu rendered="#{oRegVntSr.verCtaBanco}"
+                                                         id="cbanco" 
+                                                         value="#{oRegVntSr.opeCaja.ctaBcoRecep}">
+                                            <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                            <f:selectItem itemLabel="BcmerSanatorio" itemValue="BcmerSanatorio" />
+                                            <f:selectItem itemLabel="BcmerDHR" itemValue="BcmerDHR" />
+                                            <p:ajax/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegVntSr.verFecRecep}"
+                                                      style="font-weight: bold;" 
+                                                      value="Fecha de recepción"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oRegVntSr.verFecRecep}"
+                                                     value="#{oRegVntSr.opeCaja.fecIngRecep}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegVntSr.verNumDcto}"
+                                                      style="font-weight: bold;" 
+                                                      value="Cheque/Transferencia/Tarjeta"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oRegVntSr.verNumDcto}"
+                                                     value="#{oRegVntSr.opeCaja.numDcto}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText rendered="#{oRegVntSr.verTitularTarjeta}"
+                                                      style="font-weight: bold;" 
+                                                      value="Titular"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText rendered="#{oRegVntSr.verTitularTarjeta}"
+                                                     value="#{oRegVntSr.opeCaja.nomTit}">
+                                            <p:ajax/>
+                                        </p:inputText>
+                                    </p:column>
+                                </h:panelGrid>
+                            </p:panel>
+                            <p:commandButton value="Guardar" type="button"
+                                             widgetVar="btnGuardar"
+                                             disabled="#{!oRegVntSr.autorizado}">
+                                <p:ajax update=":formp:ventaServ :dialogsop:dialogOP  " 
+                                        listener="#{oRegVntSr.validaPagoDeServicio()}" />
+                            </p:commandButton>
+                            <p:commandButton value="Regresar">
+                                <p:ajax listener="#{oRegVntSr.regresarSeleccion()}"/>
+                            </p:commandButton>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog id="dlgOP" header="Operación Exitosa" modal="true" 
+                          appendTo="@(body)" widgetVar="dlg1" closable="false" >
+                    <h:form id="dialogsop">
+                        <p:panel id="dialogOP">
+                            <h:panelGrid columns="2" cellpadding="5" >
+                                <h:outputText style="font-weight: bold;" value="Folio(s) Operación"/>
+                                <h:outputText value="#{oRegVntSr.opeCaja.folioRet} "/>
+                            </h:panelGrid>
+                            <h:panelGrid cellpadding="5" id="pnloe">
+                                <p:row>
+                                    <p:column>
+                                        <h:outputText style="font-weight: bold;" value="Paciente "/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:panelGroup>
+                                            <h:outputText value=" #{oRegVntSr.selectedServ.paciente.folioPac} "/>
+                                            <h:outputText value=" #{oRegVntSr.selectedServ.paciente.nombreCompleto} "/>
+                                        </h:panelGroup>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column colspan="2">
+                                        <p:dataTable value="#{oRegVntSr.infoTickets}" widgetVar="dtTickets" id="dtTickets" var="oFol" emptyMessage="No se han encontrado tickets generados para esta operacion" >
+                                            <f:facet name="header">
+                                                Tickets generados
+                                            </f:facet>
+                                            <p:column headerText="Area de Servicio">
+                                                <h:outputText value="#{oFol.ticketLabel}"/>
+                                            </p:column>
+                                            <p:column headerText="Impresion de ticket">
+                                                <p:commandButton value="Folio #{oFol.ticketFolio}" type="button" 
+                                                                 icon="ui-icon-print" onclick="print(#{oRegVntSr.createTicket(oFol.ticketFolio)});" />
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column colspan="2">
+                                        <p:commandButton value="Regresar">
+                                            <p:ajax listener="#{oRegVntSr.regresarVenta()}"/>
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:row>
+                            </h:panelGrid>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+                <h:form>
+                    <p:dialog id="dilogE" resizable="false" widgetVar="diaE" modal="true" appendTo="@(body)">
+                        <p:outputLabel value="No hay servicio seleccionado" />
+                    </p:dialog>
+                </h:form>
+                <h:form>
+                    <p:dialog id="dilogEE" resizable="false" widgetVar="diaEE" modal="true" appendTo="@(body)">
+                        <p:outputLabel value="El método de pago para Empresa debe ser Crédito(Empresa)" />
+                    </p:dialog>
+                </h:form>
+                <h:form>
+                    <p:dialog id="dilogFD" resizable="false" widgetVar="diaFD" modal="true" appendTo="@(body)">
+                        <p:outputLabel value="No se ha seleccionado un método de pago" />
+                    </p:dialog>
+                </h:form>
+                <h:form>
+                    <p:dialog id="dilogFDP" resizable="false" widgetVar="diaFDP" modal="true" appendTo="@(body)">
+                        <p:outputLabel value="Faltan Datos" />
+                    </p:dialog>
+                </h:form>
+
+            </h:body>
+        </ui:define> 
+    </ui:composition>    
+</html>

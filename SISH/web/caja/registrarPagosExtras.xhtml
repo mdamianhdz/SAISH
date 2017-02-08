@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Registrar Egreso por Pagos Extras</title>
+            <h:body>
+                <center><h3> Registrar Egreso por Pagos Extras</h3></center>
+                    #{oRegPagExt.limpiaPagina()}
+                <h:form id="form">
+
+                    <p:dialog id="dialogE" resizable="false" header="Operacion Exitosa" widgetVar="diaE" modal="true" appendTo="@(body)" closable="false">
+                        <p:panel id="display">
+                            <h:panelGrid>
+                                <p:row>
+                                    Se ha registrado egreso por la cantidad de: 
+                                    <p:outputLabel style="font-weight: bold" 
+                                                   value="#{oRegPagExt.registroSeleccionado.monto}"/> <br></br>
+                                    por concepto de Pago Extra a nombre de:  
+                                    <p:outputLabel style="font-weight: bold" 
+                                                   value="#{oRegPagExt.registroSeleccionado.personal.nombreCompleto}"/>
+                                </p:row>
+                                <br></br>
+                                <p:row>
+                                    Se ha generado el Folio de caja:  <p:outputLabel style="font-weight: bold" value="#{oRegPagExt.folioRet}"/>
+                                </p:row>
+                                
+                            </h:panelGrid>
+                            <br></br>
+                            <center>
+                                <h:panelGrid columns="2">   
+                                    <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" onclick="printTicket();
+                                            return false;"/>
+                                    <p:commandButton label="Regresar" value="Regresar">
+                                        <p:ajax listener="#{oRegPagExt.regresar()}" />
+                                    </p:commandButton>
+                                </h:panelGrid>
+                            </center>
+
+                        </p:panel>  
+                    </p:dialog>
+
+
+                    <p:growl id="msgs" showDetail="true"/>
+                    <p:panel id="panelP" header="Pagos Extras Pendientes">
+                        <p:dataTable id="tablaPres" 
+                                     selection="#{oRegPagExt.registroSeleccionado}"
+                                     value="#{oRegPagExt.pagosPendientes}" var="oPE" rowKey="#{oPE.idPagoRegalias}" emptyMessage="No hay datos" paginator="true" rows="6" paginatorPosition="bottom" style="margin-bottom: 0px">
+                            <p:column selectionMode="single" style="width: 16px; text-align: center"/>
+                            <p:column headerText="Folio Regalia" style="width: 16px; text-align: center">
+                                <h:outputText value="#{oPE.idPagoRegalias}"/>
+                            </p:column>
+                            <p:column headerText="Clave Personal" style="width: 16px; text-align: center">
+                                <h:outputText value="#{oPE.personal.folioPers}"/>
+                            </p:column>
+                            <p:column headerText="Apellido Paterno" style="width: 16px; text-align: center">
+                                <h:outputText value="#{oPE.personal.apellidoPaterno}"/>
+                            </p:column>
+                            <p:column headerText="Apellido Materno" style="width: 16px; text-align: center">
+                                <h:outputText value="#{oPE.personal.apellidoMaterno}"/>
+                            </p:column>
+                            <p:column headerText="Nombre" style="width: 16px; text-align: center">
+                                <h:outputText value="#{oPE.personal.nombre}"/>
+                            </p:column>
+                            <p:column headerText="Monto" style="width: 16px; text-align: center">
+                                <h:outputText value="#{oPE.monto}">
+                                    <f:convertNumber pattern="#0.00" />
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+                        <br/>
+                        <br/>
+                        <h:panelGrid columns="4" cellpadding="5">
+                            <p:column>
+                                <h:outputText style="font-weight: bold;" value="Forma de Pago: " />
+                                <p:selectOneMenu required="true" requiredMessage="Se requiere una Forma de Pago" id="SL" value="#{oRegPagExt.forma}">
+                                    <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                    <f:selectItems value="#{oFormaDePago.formasDePago}" 
+                                                   var="oLP1"  itemLabel="#{oLP1.descripcion}" 
+                                                   itemValue="#{oLP1.cveFrmPago}"/>
+                                    <p:ajax update="pg1" listener="#{oRegPagExt.validaForma()}"/>
+                                </p:selectOneMenu>
+                            </p:column>
+                            <p:column>
+                                <h:outputText style="font-weight: bold;" value="Banco : " />
+                                <p:selectOneMenu requiredMessage="Seleccione un banco" id="SB" value="" required="true">
+                                    <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                    <f:selectItems value="#{oFormaDePago.bancos}" />
+                                </p:selectOneMenu>
+                            </p:column>
+                        </h:panelGrid> 
+                        <h:panelGrid id="pg1">
+                            <p:column>  <h:outputText    rendered="#{oRegPagExt.cheque}" style="font-weight: bold;" value="N&uacute;mero de cheque" /> </p:column> 
+                            <p:column> <p:inputText  rendered="#{oRegPagExt.cheque}" value="" label="N&uacute;mero de cheque"/> </p:column>
+                            <p:column><h:outputText  rendered="#{oRegPagExt.transferencia}" style="font-weight: bold;" value="N&uacute;mero de transferencia" /> </p:column> 
+                            <p:column> <p:inputText  rendered="#{oRegPagExt.transferencia}" label="N&uacute;mero de transferencia"/> </p:column>
+                        </h:panelGrid>
+                    </p:panel> 
+                    <center>
+                        <p:commandButton value="Guardar">
+                            <p:ajax listener="#{oRegPagExt.validaRegistro()}" process="@this,tablaPres" update=":form:msgs :form:display"/>
+                        </p:commandButton>
+                    </center>
+
+                </h:form> 
+
+
+                <script>
+                                        var ticket;
+                                        function printTicket() {
+                                            ticket = {
+                                                "reimpresion": false,
+                                                "title": 1,
+                                                "fecha": "03-MAR-14",
+                                                "hora": "10:34",
+                                                "folioope": #{oRegPagExt.folioRet},
+                                                "doctor": "Dr. Miguel Ángel Dámian Hernández",
+                                                "recfiscal": "",
+                                                "mes": "SEPTIEMBRE",
+                                                "anio": "2013",
+                                                "usuario": "Fernando Cabrera Brenis",
+                                                "servicios": [
+                                                    {
+                                                        "cantidad": 1,
+                                                        "descripcion": "PAGO DE RENTA",
+                                                        "precio": 1000
+                                                    }
+                                                ]
+                                            };
+                                            print(ticket);
+                                        }
+                </script>
+
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

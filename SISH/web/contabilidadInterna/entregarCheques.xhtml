@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inicio</title>
+            <h:body>
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    <center>
+                        <h2>Entregar Cheques</h2>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Proveedor: "/>
+                                </p:column>
+                                <p:column>
+                                     <p:selectOneMenu value="#{oCheques.selectedProv}">
+                                        <f:selectItem itemValue="S" itemLabel="Seleccione"/>
+                                        <f:selectItems value="#{oCheques.listProveedores}" var="oProv" itemValue="#{oProv.idProv}" itemLabel="#{oProv.nombreRazSoc}"/>
+                                        <p:ajax/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Buscar">
+                                        <p:ajax update="dtCheques" listener="#{oCheques.buscar()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/>
+                        <p:dataTable id="dtCheques" var="oCheque" value="#{oCheques.listCheques}" paginator="true" paginatorPosition="bottom" rows="6" 
+                                     emptyMessage="No hay registros" selection="#{oCheques.selectedCheques}" rowKey="#{oCheque.idGasto}" style="width:600px">
+                            <p:ajax event="rowSelectCheckbox"/>
+                            <p:column selectionMode="multiple"/>
+                            <p:column headerText="Número de Cheque">
+                                <p:outputLabel value="#{oCheque.movCtaBan.numDocto}"/>
+                            </p:column>
+                            <p:column headerText="Fecha Planeada de Pago">
+                                <p:outputLabel value="#{oCheque.propPago}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Descripción">
+                                <p:outputLabel value="#{oCheque.descripcion}"/>
+                            </p:column>
+                            <p:column headerText="Monto">
+                                <p:outputLabel value="#{oCheque.monto}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Entregar">
+                                    <p:ajax listener="#{oCheques.entregar()}" update="dtCheques :form:msg"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                    </center>
+                </h:form>                    
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

@@ -1,0 +1,144 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui" >
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Captacion Qx</title>
+            <h:body>
+                <center>
+                    <h2>Captación Qx</h2>
+                    <h:form id="form">
+                        <p:growl id="msg" showDetail="true"/> 
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column colspan="6">
+                                    <p:outputLabel value="Prospecto" style="font-weight: bolder"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Nombre:"/>
+                                    <p:outputLabel value="*" 
+                                                   style="font-weight: bold; color: red"/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText style="text-transform: uppercase"
+                                        value="#{oCaptQx.bit.nombre}"/>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Apellido Paterno:"/>
+                                    <p:outputLabel value="*" style="font-weight: bold; color: red"/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText style="text-transform: uppercase"
+                                        value="#{oCaptQx.bit.apellidoPaterno}"/>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Apellido Materno:"/>
+                                    <p:outputLabel value="*" style="font-weight: bold; color: red"/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText style="text-transform: uppercase"
+                                        value="#{oCaptQx.bit.apellidoMaterno}"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Sexo:"/>
+                                    <p:outputLabel value="*" style="font-weight: bold; color: red"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu value="#{oCaptQx.bit.genero}">
+                                        <f:selectItem itemLabel="Seleccione" itemValue="S"/>
+                                        <f:selectItem itemLabel="Masculino" itemValue="M"/>
+                                        <f:selectItem itemLabel="Femenino" itemValue="F"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Edad:"/>
+                                    <p:outputLabel value="*" style="font-weight: bold; color: red"/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText value="#{oCaptQx.bit.edad}" size="4" />&nbsp;&nbsp;
+                                    <p:outputLabel value=" años"/>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Teléfono celular:"/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText value="#{oCaptQx.bit.tels}"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Correo:"/>
+                                    <p:outputLabel value="*" style="font-weight: bold; color: red"/>
+                                </p:column>
+                                <p:column colspan="3">
+                                    <p:inputText size="40"
+                                        value="#{oCaptQx.bit.correo}"/>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Teléfono casa:"/>
+                                    
+                                </p:column>
+                                <p:column>
+                                    <p:inputText value="#{oCaptQx.bit.telCasa}"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="De donde viene:"/>
+                                </p:column>
+                                <p:column colspan="2">
+                                    <p:inputTextarea style="text-transform: uppercase"
+                                        value="#{oCaptQx.bit.dondeViene}" cols="35" rows="4" autoResize="false"/>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Como se enteró:"/>
+                                </p:column>
+                                <p:column colspan="2">
+                                    <p:inputTextarea style="text-transform: uppercase"
+                                        value="#{oCaptQx.bit.comoSeEntero}" cols="35" rows="4" autoResize="false"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Dirección:"/>
+                                </p:column>
+                                <p:column colspan="2">
+                                    <p:inputTextarea style="text-transform: uppercase"
+                                        value="#{oCaptQx.bit.direccion}" cols="35" rows="4" autoResize="false"/>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Observaciones:"/>
+                                </p:column>
+                                <p:column colspan="2">
+                                    <p:inputTextarea style="text-transform: uppercase"
+                                        value="#{oCaptQx.bit.obs}" cols="35" rows="4" autoResize="false"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Cirugía:"/>
+                                    <p:outputLabel value="*" style="font-weight: bold; color: red"/>
+                                </p:column>
+                                <p:column colspan="2">
+                                    <p:inputTextarea style="text-transform: uppercase"
+                                        value="#{oCaptQx.bit.cirugia}" cols="35" rows="4" autoResize="false"/>
+                                </p:column>
+                                <p:column colspan="3" style="text-align: center">
+                                    <p:commandButton value="&nbsp;&nbsp;&nbsp;&nbsp; Guardar Captación&nbsp;&nbsp;&nbsp;&nbsp;" action="#{oCaptQx.guardaCaptacion()}" update="msg form"/>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid>
+                    </h:form> 
+                </center>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

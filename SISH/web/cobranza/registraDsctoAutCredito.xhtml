@@ -1,0 +1,899 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Registrar Descuentos y Créditos a Particulares</title>
+            <h:body>
+                <center>
+                    <h3>Registrar Descuentos/Créditos a Particulares</h3>
+                </center>
+                    #{oRegCredPartJB.limpiaPagina()}
+
+                <p:dialog closable="false" dynamic="true" appendTo="@(body)" 
+                    modal="true" id="dlgCompBusq" header="Búsqueda de paciente" 
+                    widgetVar="dlgCompBusqVar" style="font-size: 12px" 
+                    styleClass="text-align: center;" position="center" 
+                    showEffect="clip" hideEffect="fold">
+                    <h:form id="form">
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include>
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar" 
+                            update=":formp:panelP " 
+                            oncomplete="dlgCompBusqVar.hide()" 
+                            icon="ui-icon-search">
+                            <p:ajax listener="#{oRegCredPartJB.buscaServCtas}" />
+                        </p:commandButton>
+                        <p:commandButton value="Cancelar" 
+                            oncomplete="dlgCompBusqVar.hide()" />
+                    </h:form>
+                </p:dialog>
+                <br/>
+                <h:form>
+                    <center>
+                        <p:commandButton value="Seleccionar paciente" 
+                              update=":dlgCompBusq :formp:panelP  " 
+                              oncomplete="dlgCompBusqVar.show()" 
+                              icon="ui-icon-search"/>
+                    </center>
+                </h:form>
+                
+                <h:form id="formp">
+                    <p:growl id="msgs" showDetail="true" sticky="true"/>
+                    <p:panel header="Registrar Descuentos/Créditos a Particulares" 
+                        id="panelP" visible="#{oRegCredPartJB.validaPaciente()}">
+                        Paciente: 
+                        <p:outputLabel rendered="#{oRegCredPartJB.validaPaciente()}" 
+                                style="font-weight: bold" 
+                                value="#{oRegCredPartJB.paciente.nombreCompleto}"/> 
+                        <p:dataTable selection="#{oRegCredPartJB.extSeleccionado}"  
+                            value="#{oRegCredPartJB.listaServExt}" 
+                            var="oSE" rowKey="#{oSE.idFolio}" 
+                            id="dataTableSE" style="margin-bottom: 0px" 
+                            paginator="true" paginatorPosition="bottom" 
+                            rows="6" emptyMessage="No se encontraron servicios">
+                            <p:ajax event="rowSelectRadio" 
+                                    listener="#{oRegCredPartJB.habilitaBotonServExt()}" 
+                                    update="btnServExtDscto btnServExtCred"/>
+                            <f:facet name="header">
+                                Servicios Externos pendientes de pago
+                            </f:facet>
+                            <p:column selectionMode="single"/>
+                            
+                            <p:column headerText="Folio Servicio" >
+                                <h:outputText value="#{oSE.idFolio}"/>
+                            </p:column>
+                            <p:column headerText="Concepto" >
+                                <h:outputText value="#{oSE.concepPrestado.descripConcep}"/>
+                            </p:column>
+                            <p:column headerText="Monto Total">
+                                <h:outputText value="#{oSE.costoOriginal}">
+                                    <f:convertNumber type="currency"/>
+                                </h:outputText>    
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Registrar Descuento" 
+                                    widgetVar="btnServExtDscto"
+                                    id="btnServExtDscto">
+                                    <p:ajax 
+                                        listener="#{oRegCredPartJB.seleccionaDsctoExterno()}"
+                                        disabled="#{oRegCredPartJB.botonServExt}"
+                                        update=":formp:msgs :frmdlgDscto:datos" />
+                                </p:commandButton>
+                                <p:commandButton value="Registrar Crédito" 
+                                    widgetVar="btnServExtCred"
+                                    id="btnServExtCred">
+                                    <p:ajax 
+                                        listener="#{oRegCredPartJB.seleccionaCred}"
+                                        disabled="#{oRegCredPartJB.botonServExt}"
+                                        update=":formp:msgs :frmdlgCred:datos" />
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                        <br/>
+                        <p:dataTable selection="#{oRegCredPartJB.hospSeleccionado}"  
+                            value="#{oRegCredPartJB.listaServHosp}" 
+                            var="oSHosp" rowKey="#{oSHosp.episodioMedico.cveepisodio}" 
+                            id="dataTableSHosp" style="margin-bottom: 0px" 
+                            paginator="true" paginatorPosition="bottom" 
+                            rows="6" emptyMessage="No se encontraron cuentas">
+                            <p:ajax event="rowSelectRadio" 
+                                    listener="#{oRegCredPartJB.habilitaBotonServHosp}" 
+                                    update="btnServHospDscto btnServHospCred"/>
+                            <f:facet name="header">
+                                Servicios Hospitalarios pendientes de pago
+                            </f:facet>
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Folio Cuenta" >
+                                <h:outputText value="#{oSHosp.episodioMedico.cveepisodio}"/>
+                            </p:column>
+                            <p:column headerText="Monto total a cargo del paciente" >
+                                <h:outputText value="#{oSHosp.costoOriginal}">
+                                    <f:convertNumber type="currency"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Monto pagado" >
+                                <h:outputText value="#{oSHosp.costoCobrado}">
+                                    <f:convertNumber type="currency"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Monto pendiente" >
+                                <h:outputText value="#{oSHosp.anticipo}">
+                                    <f:convertNumber type="currency"/>
+                                </h:outputText>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Registrar Descuento" 
+                                    widgetVar="btnServHospDscto"
+                                    id="btnServHospDscto">
+                                    <p:ajax 
+                                        listener="#{oRegCredPartJB.seleccionaDsctoHospital}"
+                                        disabled="#{oRegCredPartJB.botonServHosp}"
+                                        update=":formp:msgs :frmdlgDscto:datos" />
+                                </p:commandButton>
+                                <p:commandButton value="Registrar Crédito" 
+                                    widgetVar="btnServHospCred"
+                                    id="btnServHospCred">
+                                    <p:ajax 
+                                        listener="#{oRegCredPartJB.seleccionaCred}"
+                                        disabled="#{oRegCredPartJB.botonServHosp}"
+                                        update=":formp:msgs :frmdlgCred:datos" />
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+                
+                <p:dialog id="dlgDescuento" header="Registrar Descuento" 
+                          widgetVar="dlgDescuentoClte" showEffect="clip" 
+                          appendTo="@(body)" modal="true" closable="false">
+                    <h:form id="frmdlgDscto">
+                        <p:panel id="datos">
+                            <h:panelGrid columns="8" cellpadding="7">
+                                <p:column><h:outputText style="font-weight: bold;" value="Folio Paciente"/> </p:column>
+                                <p:column><h:outputText value="#{oRegCredPartJB.SPDsctoSelec.paciente.folioPac}"/></p:column>
+                                <p:column><h:outputText style="font-weight: bold;" value="Nombre"/></p:column>
+                                <p:column><h:outputText value="#{oRegCredPartJB.SPDsctoSelec.paciente.nombreCompleto}"/></p:column>
+                                <p:column><h:outputText style="font-weight: bold;" value="Folio Servicio"/></p:column>
+                                <p:column><h:outputText value="#{oRegCredPartJB.SPDsctoSelec.idFolio}"/></p:column>
+                                <p:column><h:outputText  style="font-weight: bold;" value="Concepto"/></p:column>
+                                <p:column><h:outputText value="#{oRegCredPartJB.SPDsctoSelec.concepPrestado.descripConcep}"/></p:column>
+                            </h:panelGrid>
+                            <h:panelGrid columns="2">
+                                <p:column>
+                                    <h:outputText style="font-weight: bold;" 
+                                        value="Monto a Pagar con descuento incluido"/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText value="#{oRegCredPartJB.SPDsctoSelec.costoCobrado}"
+                                        required="true">
+                                        <p:ajax/>
+                                    </p:inputText>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText style="font-weight: bold;" 
+                                        value="Razón del descuento"/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText value="#{oRegCredPartJB.SPDsctoSelec.obsPrecio}"
+                                        required="true">
+                                        <p:ajax/>
+                                    </p:inputText>
+                                </p:column>
+                            </h:panelGrid>
+                            <p:commandButton value="Guardar" type="button"
+                                    widgetVar="btnGuardarDscto">
+                                <p:ajax update=":formp:dataTableSE :formp:msgs" 
+                                    listener="#{oRegCredPartJB.registraDscto()}" />
+                            </p:commandButton>
+                            <p:commandButton value="Regresar">
+                                <p:ajax listener="#{oRegCredPartJB.regresar}"/>
+                            </p:commandButton>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+                
+                <p:dialog id="dlgCredito" header="Registrar Crédito" 
+                          widgetVar="dlgCreditoClte" showEffect="clip" 
+                          appendTo="@(body)" modal="true" closable="false">
+                    <h:form id="frmdlgCred">
+                        <p:panelGrid id="datos">
+                            <p:row>
+                                <p:column><h:outputText style="font-weight: bold;" value="Folio Paciente"/> </p:column>
+                                <p:column><h:outputText value="#{oRegCredPartJB.credPart.servPres.paciente.folioPac}"/></p:column>
+                                <p:column><h:outputText style="font-weight: bold;" value="Nombre"/></p:column>
+                                <p:column><h:outputText value="#{oRegCredPartJB.credPart.servPres.paciente.nombreCompleto}"/></p:column>
+                                <p:column><h:outputText style="font-weight: bold;" value="Folio Servicio/Cuenta"/></p:column>
+                                <p:column><h:outputText value="#{oRegCredPartJB.credPart.servPres.idFolio}"/></p:column>
+                                <p:column><h:outputText  style="font-weight: bold;" value="Concepto"/></p:column>
+                                <p:column><h:outputText value="#{oRegCredPartJB.conceptoDespliegue}"/></p:column>
+                                <p:column><h:outputText  style="font-weight: bold;" value="Por Pagar"/></p:column>
+                                <p:column>
+                                    <h:outputText value="#{oRegCredPartJB.credPart.servPres.costoCobrado}">
+                                        <f:convertNumber type="currency"/>
+                                    </h:outputText>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column><h:outputText style="font-weight: bold;" value="Pago Inicial"/></p:column>
+                                <p:column>
+                                    <p:inputText size="10" maxlength="9"
+                                        value="#{oRegCredPartJB.pagoIni}">
+                                        <p:ajax update="txtMontoCred"
+                                                listener="#{oRegCredPartJB.calculaMontoCred}"/>
+                                        <f:convertNumber type="currency"/>
+                                    </p:inputText>
+                                </p:column>
+                                <p:column><h:outputText style="font-weight: bold;" value="Monto del Crédito"/></p:column>
+                                <p:column>
+                                    <h:outputText id="txtMontoCred"
+                                                  value="#{oRegCredPartJB.credPart.montoCred}">
+                                        <f:convertNumber type="currency"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column><h:outputText style="font-weight: bold;" value="Interés Mensual"/></p:column>
+                                <p:column>
+                                    <p:inputText maxlength="5" size="6"
+                                        value="#{oRegCredPartJB.credPart.pctInteres}">
+                                        <f:validateDoubleRange minimum="0.0" 
+                                                               maximum="99.99" />
+                                        <p:ajax/>
+                                    </p:inputText>
+                                </p:column>
+                                <p:column><h:outputText style="font-weight: bold;" value="Cantidad de Pagarés"/></p:column>
+                                <p:column>
+                                    <p:inputText size="4" maxlength="2"
+                                        value="#{oRegCredPartJB.cantPagares}">
+                                        <f:validateLongRange minimum="1" maximum="10"/>
+                                        <p:ajax update="dtPagares" 
+                                            listener="#{oRegCredPartJB.reiniciaListaPagares}"/>
+                                    </p:inputText>
+                                </p:column>
+                                <p:column></p:column>
+                                <p:column></p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="5">
+                                    <p:panelGrid id="respGtos">
+                                        <p:row>
+                                            <p:column colspan="6">
+                                                <h:outputText value="Responsable de Gastos" style="font-weight:bold"/>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="Nombre"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputTextarea required="true"
+                                                    maxlength="100" rows="2"
+                                                    value="#{oRegCredPartJB.credPart.responsableGastos}">
+                                                    <p:ajax/>
+                                                </p:inputTextarea>
+                                            </p:column>
+                                            
+                                            <p:column>
+                                                <h:outputText value="Correo Electrónico"/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputText size="40" 
+                                                             value="#{oRegCredPartJB.credPart.correoElectronico}">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="Calle y Núm."/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText  value="#{oRegCredPartJB.credPart.calleYNum}"><p:ajax/></p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="Colonia"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText  value="#{oRegCredPartJB.credPart.colonia}"><p:ajax/></p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="C.P."/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText  value="#{oRegCredPartJB.credPart.cdCP.CP}"
+                                                              size="8" maxlength="5">
+                                                    <p:ajax event="change" 
+                                                            listener="#{oRegCredPartJB.credPart.cdCP.buscaDatosPorCP()}" 
+                                                            update="itCiudadRG itMpioRG itEdoRG"/>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="Ciudad"/>
+                                            </p:column>
+                                            <p:column >
+                                                <h:outputText id="itCiudadRG"
+                                                              value="#{oRegCredPartJB.credPart.cdCP.descCd}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="Municipio"/>
+                                            </p:column>
+                                            <p:column >
+                                                <h:outputText id="itMpioRG"  
+                                                              value="#{oRegCredPartJB.credPart.cdCP.descMun}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="Estado"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText id="itEdoRG"  
+                                                              value="#{oRegCredPartJB.credPart.cdCP.descEdo}"/>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="Otra Ciudad"/>
+                                            </p:column>
+                                             <p:column>
+                                                 <p:inputText value="#{oRegCredPartJB.credPart.otraCiudad}"><p:ajax/></p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="Teléfono Casa"/>
+                                            </p:column>
+                                            <p:column >
+                                                <p:inputText  value="#{oRegCredPartJB.credPart.telCasa}"
+                                                              size="16" maxlength="13"><p:ajax/></p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="Teléfono Celular"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText  value="#{oRegCredPartJB.credPart.telCelular}"
+                                                              size="16" maxlength="13"><p:ajax/></p:inputText>
+                                            </p:column>
+                                         </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="Observaciones"/>
+                                            </p:column>
+                                            <p:column colspan="5">
+                                                <p:inputTextarea cols="100" rows="1"
+                                                    value="#{oRegCredPartJB.credPart.observaciones}">
+                                                    <p:ajax/>
+                                                </p:inputTextarea>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                </p:column>
+                                <p:column colspan="5">
+                                    <p:dataTable value="#{oRegCredPartJB.credPart.pagaresCredPart}" 
+                                                 var="oPaga" scrollable="true" scrollRows="4" scrollHeight="150"
+                                        id="dtPagares" style="margin-bottom: 0px" 
+                                        emptyMessage="No se encontraron pagarés">
+                                        <p:column headerText="Fecha Esperada de Pago"
+                                                  width="52%">
+                                            <p:calendar label="Fecha Esperada de Pago"  
+                                                required="true" id="cal1" navigator="true"
+                                                yearRange="c-0:c+6" showOn="button" 
+                                                value="#{oPaga.esperadaPago}" locale="es">
+                                                <p:ajax event="dateSelect" />
+                                            </p:calendar>
+                                        </p:column>
+                                        <p:column headerText="Monto del Pagaré">
+                                            <p:inputText value="#{oPaga.montoPagare}" 
+                                                label="monto" required="true"
+                                                maxlength="11" size="14" >
+                                                <p:ajax update="dtPagares"/>
+                                                <f:convertNumber type="currency"/>
+                                            </p:inputText>
+                                        </p:column>
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column style="text-align:right" footerText="Total:"/>
+                                                <p:column footerText="$#{oRegCredPartJB.totalPagares}"/>
+                                            </p:row>
+                                        </p:columnGroup>
+                                    </p:dataTable>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="10">
+                                    <p:dataTable value="#{oRegCredPartJB.credPart.avalesCredPart}"
+                                                 var="oAval" id="dtAvales" editable="true" 
+                                                 editMode="cell"
+                                        emptyMessage="No se encontraron avales">
+                                        <p:column headerText="Nombre">
+                                            <p:cellEditor>
+                                                <f:facet name="output">
+                                                    <h:outputText value="#{oAval.nombre}"/>
+                                                </f:facet>
+                                                <f:facet name="input">
+                                                    <p:inputTextarea required="true" cols="15"
+                                                        maxlength="100" rows="2"
+                                                        value="#{oAval.nombre}">
+                                                        <p:ajax/>
+                                                    </p:inputTextarea>
+                                                </f:facet>
+                                            </p:cellEditor>                                            
+                                        </p:column>
+                                        <p:column headerText="Correo Electrónico">
+                                            <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{oAval.correoElectronico}"/>
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputTextarea maxlength="60" rows="2" cols="15"
+                                                        value="#{oAval.correoElectronico}">
+                                                    <p:ajax/>
+                                                </p:inputTextarea>
+                                            </f:facet>
+                                            </p:cellEditor>
+                                        </p:column>
+                                        <p:column headerText="Calle y Núm.">
+                                            <p:cellEditor>
+                                                <f:facet name="output">
+                                                    <h:outputText value="#{oAval.calleYNum}"/>
+                                                </f:facet>
+                                                <f:facet name="input">
+                                                    <p:inputTextarea  maxlength="35" rows="2" cols="15"
+                                                        value="#{oAval.calleYNum}">
+                                                        <p:ajax/>
+                                                    </p:inputTextarea>
+                                                </f:facet>
+                                            </p:cellEditor>
+                                        </p:column>
+                                        <p:column headerText="Colonia">
+                                            <p:cellEditor>
+                                                <f:facet name="output">
+                                                    <h:outputText value="#{oAval.colonia}"/>
+                                                </f:facet>
+                                                <f:facet name="input">
+                                                    <p:inputTextarea maxlength="100" rows="2" cols="15"
+                                                        value="#{oAval.colonia}">
+                                                        <p:ajax/>
+                                                    </p:inputTextarea>
+                                                </f:facet>
+                                            </p:cellEditor>
+                                        </p:column>
+                                        <p:column headerText="CP">
+                                            <p:cellEditor>
+                                                <f:facet name="output">
+                                                    <h:outputText value="#{oAval.cdCP.CP}"/>
+                                                </f:facet>
+                                                <f:facet name="input">
+                                                    <p:inputText  value="#{oAval.cdCP.CP}"
+                                                          size="8" maxlength="5">
+                                                        <p:ajax event="change" update="dtAvales"
+                                                                listener="#{oAval.cdCP.buscaDatosPorCP()}"/>
+                                                    </p:inputText>
+                                                </f:facet>
+                                            </p:cellEditor>                                            
+                                        </p:column>
+                                        <p:column headerText="Ciudad">
+                                            <h:outputText id="itCiudadAv"
+                                                          value="#{oAval.cdCP.descCd}"/>
+                                        </p:column>
+                                        <p:column headerText="Municipio">
+                                            <h:outputText id="itMpioAv#{oAval.secuencia}"  
+                                                          value="#{oAval.cdCP.descMun}"/>
+                                        </p:column>
+                                        <p:column headerText="Estado">
+                                            <h:outputText id="itEdoAv#{oAval.secuencia}"  
+                                                          value="#{oAval.cdCP.descEdo}"/>
+                                        </p:column>
+                                        <p:column headerText="Otra Ciudad">
+                                            <p:cellEditor>
+                                                <f:facet name="output">
+                                                    <h:outputText value="#{oAval.otraCiudad}"/>
+                                                </f:facet>
+                                                <f:facet name="input">
+                                                    <p:inputTextarea maxlength="50" rows="2" cols="15"
+                                                        value="#{oAval.otraCiudad}">
+                                                        <p:ajax/>
+                                                    </p:inputTextarea>
+                                                </f:facet>
+                                            </p:cellEditor>
+                                        </p:column>
+                                        <p:column headerText="Tel. Casa">
+                                            <p:cellEditor>
+                                                <f:facet name="output">
+                                                    <h:outputText value="#{oAval.telCasa}"/>
+                                                </f:facet>
+                                                <f:facet name="input">
+                                                    <p:inputTextarea cols="15" rows="2"
+                                                        value="#{oAval.telCasa}" maxlength="13">
+                                                        <p:ajax/>
+                                                    </p:inputTextarea>
+                                                </f:facet>
+                                            </p:cellEditor>                                            
+                                        </p:column>
+                                        <p:column headerText="Tel. Celular">
+                                            <p:cellEditor>
+                                                <f:facet name="output">
+                                                    <h:outputText value="#{oAval.telCelular}"/>
+                                                </f:facet>
+                                                <f:facet name="input">
+                                                    <p:inputTextarea cols="15" rows="2"
+                                                             value="#{oAval.telCelular}"
+                                                        maxlength="13">
+                                                        <p:ajax/>
+                                                    </p:inputTextarea>
+                                                </f:facet>
+                                            </p:cellEditor>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:column>                                
+                            </p:row>
+                        </p:panelGrid>
+                        <p:commandButton value="Guardar" type="button"
+                                widgetVar="btnGuardarCred" validateClient="true">
+                            <p:ajax update=":formp:dataTableSHosp :formp:msgs :dlgImprimirPagares"
+                                    listener="#{oRegCredPartJB.registraCredito}" />
+                        </p:commandButton>
+                        <p:commandButton value="Regresar">
+                            <p:ajax listener="#{oRegCredPartJB.regresar}"/>
+                        </p:commandButton>
+                    </h:form>
+                </p:dialog>
+                
+                <p:dialog id="dlgImprimirPagares" closable="false" dynamic="true" header="Impresi&oacute;n de Pagar&eacute;s"
+                          widgetVar="dlgImprimirPagaresVar" position="center" showEffect="clip" hideEffect="fold"
+                          appendTo="@(body)" width="850px" resizable="false">
+                    <p:scrollPanel mode="native" style="height:450px; width:100%;">
+                        <p:panel id="panelPagares" style="background: transparent; border-style: hidden" >
+                            <ui:repeat value="#{oRegCredPartJB.credPart.pagaresCredPart}" var="oPaga" varStatus="oPagaStat">
+                                <p:panelGrid style="background-color: #f9fafb; border: 3px black solid; border-collapse: collapse; width: 750px;">
+                                    <p:row>
+                                        <p:column style="border-style: none hidden hidden none; font-weight: bold; width: 25%;">
+                                            <h:outputText value="PAGAR&Eacute;" />
+                                        </p:column>
+                                        <p:column style="border-style: none hidden hidden none; font-weight: bold; width: 25%;">
+                                            <h:outputText value="No. #{oPagaStat.index + 1}/#{oRegCredPartJB.cantPagares}" />
+                                        </p:column>
+                                        <p:column style="border-style: none hidden hidden none; width: 25%;" />
+                                        <p:column style="border-style: none none hidden none; font-weight: bold; text-align: right; width: 25%;">
+                                            <h:outputText value="Bueno por " />
+                                            <h:outputText value="#{oPaga.montoPagare}">
+                                                <f:convertNumber type="currency" currencySymbol="$" />
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column style="border-style: none hidden hidden none;"/>
+                                        <p:column colspan="3" style="border-style: none none hidden none;">
+                                            <h:outputText value="Lugar y fecha de expedici&oacute;n: En " />
+                                            <h:outputText value="C&oacute;rdoba, Ver. " style="font-weight: bold" />
+                                            <h:outputText value="a " />
+                                            <h:outputText value="#{oRegCredPartJB.fechaActual}" style="font-weight: bold; text-transform: capitalize;">
+                                                <f:convertDateTime pattern="dd" timeZone="EST" locale="es-MX"/>
+                                            </h:outputText>
+                                            <h:outputText value=" de " />
+                                            <h:outputText value="#{oRegCredPartJB.fechaActual}" style="font-weight: bold; text-transform: capitalize;">
+                                                <f:convertDateTime pattern="MMMM" timeZone="EST" locale="es-MX"/>
+                                            </h:outputText>
+                                            <h:outputText value=" de " />
+                                            <h:outputText value="#{oRegCredPartJB.fechaActual}" style="font-weight: bold; text-transform: capitalize;">
+                                                <f:convertDateTime pattern="yyyy" timeZone="EST" locale="es-MX"/>
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="4" style="border-style: none none hidden none;">
+                                            <h:outputText value="Debo(emos) y pagar&eacute;(mos) incondicionalmente por este Pagar&eacute; a la Orden de "/>
+                                            <h:outputText value="Sanatorio Huerta, S.A. de C.V. " style="font-weight: bold;"/>
+                                            <h:outputText value="en "/>
+                                            <h:outputText value="C&oacute;rdoba, Ver. " style="font-weight: bold;"/>
+                                            <h:outputText value="el d&iacute;a "/>
+                                            <h:outputText value="#{oPaga.esperadaPago}" style="font-weight: bold; text-transform: capitalize">
+                                                <f:convertDateTime pattern="dd-MMMM-yyyy" timeZone="EST" locale="es-MX"/>
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="4" style="border-style: none none hidden none;">
+                                            <h:outputText value="La cantidad de: "/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="4" style="border-style: none; font-weight: bold">
+                                            <h:outputText value="#{oRegCredPartJB.generarMontoTexto( oPaga.montoPagare )}" />
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="4" style="background-color: #f9fafb; border: 3px black solid; border-collapse: collapse;" >
+                                            <h:outputText
+                                                value="Valor Recibido a mi (nuestra) entera satisfacci&oacute;n. Este Pagar&eacute; forma parte de una Serie Numerada del 1 al " />
+                                            <h:outputText value="#{oRegCredPartJB.cantPagares}" style="font-weight: bold;" />
+                                            <h:outputText
+                                                value=" y todos est&aacute;n sujetos a la condici&oacute;n de que, al no pagarse cualquiera de ellos a su vencimiento, ser&aacute;n exigibles todos los que le sigan en n&uacute;mero, adem&aacute;s de los ya vencidos, desde la fecha de vencimiento de este documento hasta el d&iacute;a de su liquidaci&oacute;n causar&aacute; intereses moratorios al tipo de " />
+                                            <h:outputText value="#{oRegCredPartJB.credPart.pctInteres}% " style="font-weight: bold;" />
+                                            <h:outputText value=", pagadero en esta ciudad juntamente con el principal." />
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="2" style="border: 3px black solid; padding: 0;">
+                                            <p:panelGrid style="background-color: #f9fafb; border-style: hidden; width: 100%;">
+                                                <p:row>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 2px 4px 10px; width: 5%;">
+                                                        <h:outputText value="Nombre:" />
+                                                    </p:column>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 0px;">
+                                                        <h:outputText value="#{oRegCredPartJB.credPart.responsableGastos}" />
+                                                    </p:column>
+                                                </p:row>
+                                                <p:row>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 2px 4px 10px; vertical-align: top;">
+                                                        <h:outputText value="Direcci&oacute;n:" />
+                                                    </p:column>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 0px;">
+                                                        <p:panelGrid style="border-style: hidden; padding: 0px; width: 100%;">
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Calle #{oRegCredPartJB.credPart.calleYNum}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Colonia #{oRegCredPartJB.credPart.colonia}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="C.P. #{oRegCredPartJB.credPart.cdCP.CP}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                        </p:panelGrid>
+                                                    </p:column>
+                                                </p:row>
+                                                <p:row>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 2px 4px 10px; vertical-align: top;">
+                                                        <h:outputText value="Poblaci&oacute;n: " />
+                                                    </p:column>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 0px;">
+                                                        <p:panelGrid style="border-style: hidden; padding: 0px; width: 100%;">
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Ciudad #{oRegCredPartJB.credPart.cdCP.descCd}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Municipio #{oRegCredPartJB.credPart.cdCP.descMun}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Estado #{oRegCredPartJB.credPart.cdCP.descEdo}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Otra Ciudad: #{oRegCredPartJB.credPart.otraCiudad}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                        </p:panelGrid>
+                                                    </p:column>
+                                                </p:row>
+                                                <p:row>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 2px 4px 10px; vertical-align: top;">
+                                                        <h:outputText value="Tel&eacute;fono(s): " />
+                                                    </p:column>
+                                                    <p:column style=" background-color: #f9fafb; border-style: hidden; padding: 4px 0px;">
+                                                        <p:panelGrid style="border-style: hidden; padding: 0px; width: 100%;">
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Casa #{oRegCredPartJB.credPart.telCasa}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Cel #{oRegCredPartJB.credPart.telCelular}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                        </p:panelGrid>
+                                                    </p:column>
+                                                </p:row>
+                                            </p:panelGrid>
+                                        </p:column>
+                                        <p:column colspan="2" style="background-color: #f9fafb; border: 3px black solid; vertical-align: top;">
+                                            <h:outputText value="Firmas de Aceptaci&oacute;n" />
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="2" style="border: 3px black solid; padding: 0;">
+                                            <p:panelGrid style="background-color: #f9fafb; border-style: hidden; width: 100%;">
+                                                <p:row>
+                                                    <p:column colspan="2" style="background-color: #f9fafb; border-style: hidden; padding: 10px 2px 4px 10px; width: 5%;">
+                                                        <h:outputText value="Aval 1" />
+                                                    </p:column>
+                                                </p:row>
+                                                <p:row>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 2px 4px 10px; width: 5%;">
+                                                        <h:outputText value="Nombre:" />
+                                                    </p:column>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 0px;">
+                                                        <h:outputText value="#{oRegCredPartJB.credPart.avalesCredPart.get(0).nombre}" />
+                                                    </p:column>
+                                                </p:row>
+                                                <p:row>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 2px 4px 10px; vertical-align: top;">
+                                                        <h:outputText value="Direcci&oacute;n:" />
+                                                    </p:column>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 0px;">
+                                                        <p:panelGrid style="border-style: hidden; padding: 0px; width: 100%;">
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Calle #{oRegCredPartJB.credPart.avalesCredPart.get(0).calleYNum}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Colonia #{oRegCredPartJB.credPart.avalesCredPart.get(0).colonia}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="C.P. #{oRegCredPartJB.credPart.avalesCredPart.get(0).cdCP.CP}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                        </p:panelGrid>
+                                                    </p:column>
+                                                </p:row>
+                                                <p:row>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 2px 4px 10px; vertical-align: top;">
+                                                        <h:outputText value="Poblaci&oacute;n: " />
+                                                    </p:column>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 0px;">
+                                                        <p:panelGrid style="border-style: hidden; padding: 0px; width: 100%;">
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Ciudad #{oRegCredPartJB.credPart.avalesCredPart.get(0).cdCP.descCd}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Municipio #{oRegCredPartJB.credPart.avalesCredPart.get(0).cdCP.descMun}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Estado #{oRegCredPartJB.credPart.avalesCredPart.get(0).cdCP.descEdo}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Otra Ciudad: #{oRegCredPartJB.credPart.avalesCredPart.get(0).otraCiudad}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                        </p:panelGrid>
+                                                    </p:column>
+                                                </p:row>
+                                                <p:row>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 2px 4px 10px; vertical-align: top;">
+                                                        <h:outputText value="Tel&eacute;fono(s): " />
+                                                    </p:column>
+                                                    <p:column style=" background-color: #f9fafb; border-style: hidden; padding: 4px 0px;">
+                                                        <p:panelGrid style="border-style: hidden; padding: 0px; width: 100%;">
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Casa: #{oRegCredPartJB.credPart.avalesCredPart.get(0).telCasa}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Celular: #{oRegCredPartJB.credPart.avalesCredPart.get(0).telCelular}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                        </p:panelGrid>
+                                                    </p:column>
+                                                </p:row>
+                                            </p:panelGrid>
+                                        </p:column>
+                                        <p:column colspan="2" style="border: 3px black solid; padding: 0;">
+                                            <p:panelGrid style="background-color: #f9fafb; border-style: hidden; width: 100%;">
+                                                <p:row>
+                                                    <p:column colspan="2" style="background-color: #f9fafb; border-style: hidden; padding: 10px 2px 4px 10px; width: 5%;">
+                                                        <h:outputText value="Aval 2" />
+                                                    </p:column>
+                                                </p:row>
+                                                <p:row>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 2px 4px 10px; width: 5%;">
+                                                        <h:outputText value="Nombre:" />
+                                                    </p:column>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 0px;">
+                                                        <h:outputText value="#{oRegCredPartJB.credPart.avalesCredPart.get(1).nombre}" />
+                                                    </p:column>
+                                                </p:row>
+                                                <p:row>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 2px 4px 10px; vertical-align: top;">
+                                                        <h:outputText value="Direcci&oacute;n:" />
+                                                    </p:column>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 0px;">
+                                                        <p:panelGrid style="border-style: hidden; padding: 0px; width: 100%;">
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Calle #{oRegCredPartJB.credPart.avalesCredPart.get(1).calleYNum}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Colonia #{oRegCredPartJB.credPart.avalesCredPart.get(1).colonia}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="C.P. #{oRegCredPartJB.credPart.avalesCredPart.get(1).cdCP.CP}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                        </p:panelGrid>
+                                                    </p:column>
+                                                </p:row>
+                                                <p:row>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 2px 4px 10px; vertical-align: top;">
+                                                        <h:outputText value="Poblaci&oacute;n: " />
+                                                    </p:column>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 0px;">
+                                                        <p:panelGrid style="border-style: hidden; padding: 0px; width: 100%;">
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Ciudad #{oRegCredPartJB.credPart.avalesCredPart.get(1).cdCP.descCd}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Municipio #{oRegCredPartJB.credPart.avalesCredPart.get(1).cdCP.descMun}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Estado #{oRegCredPartJB.credPart.avalesCredPart.get(1).cdCP.descEdo}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Otra Ciudad: #{oRegCredPartJB.credPart.avalesCredPart.get(1).otraCiudad}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                        </p:panelGrid>
+                                                    </p:column>
+                                                </p:row>
+                                                <p:row>
+                                                    <p:column style="background-color: #f9fafb; border-style: hidden; padding: 4px 2px 4px 10px; vertical-align: top;">
+                                                        <h:outputText value="Tel&eacute;fono(s): " />
+                                                    </p:column>
+                                                    <p:column style=" background-color: #f9fafb; border-style: hidden; padding: 4px 0px;">
+                                                        <p:panelGrid style="border-style: hidden; padding: 0px; width: 100%;">
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Casa: #{oRegCredPartJB.credPart.avalesCredPart.get(1).telCasa}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                            <p:row>
+                                                                <p:column style="border-style: hidden; padding: 0px;">
+                                                                    <h:outputText value="Celular: #{oRegCredPartJB.credPart.avalesCredPart.get(1).telCelular}" />
+                                                                </p:column>
+                                                            </p:row>
+                                                        </p:panelGrid>
+                                                    </p:column>
+                                                </p:row>
+                                            </p:panelGrid>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                                <p:panel style="background: transparent; border-style: hidden; height: 10px; #{oRegCredPartJB.ultimaIteracion(oPagaStat.last)}" />
+                            </ui:repeat>
+                        </p:panel>
+                        <p:commandButton value="Imprimir" icon="ui-icon-print">
+                            <p:printer target="panelPagares" />
+                        </p:commandButton>
+                        <p:commandButton value="Regresar" oncomplete="dlgImprimirPagaresVar.hide()" icon="ui-icon-arrowreturnthick-1-w" />
+                    </p:scrollPanel>
+                </p:dialog>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

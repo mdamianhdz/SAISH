@@ -1,0 +1,591 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Registrar Cargo a Cuentas</title>
+            <h:body>               
+                <center><h2>Registrar Cargo a Cuentas</h2></center>
+                    #{oServcPrest2.limpiaServicios()}
+                <p:dialog height="550" width="900" closable="false" dynamic="true"  appendTo="@(body)" modal="true" id="dlgCompBusq" header="Busqueda de paciente"  widgetVar="dlgCompBusqVar" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                    <h:form id="form">
+                        <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"></ui:include> 
+                        <p:separator/>
+                        <p:commandButton value="Seleccionar"  action="#{oServcPrest2.llena()}" oncomplete="dlgCompBusqVar.hide()" update=":formulario:panel :formulario:panelPaq" icon="ui-icon-search"/>
+                        <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" action="#{oServcPrest2.limpiaServicios()}" update=":formulario:panel" icon="ui-icon-circle-close" />
+                    </h:form>
+                </p:dialog>
+                <br/>
+                <h:form>
+                    <center>
+                        <p:commandButton value="Seleccionar paciente" update=":dlgCompBusq" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+                    </center>
+                </h:form>
+                <br/>
+                <center>
+                    <h:form id="formulario">
+
+                        <p:growl id="grow1" sticky="true" />
+
+                        <p:panel style=" width: 100%" visible="#{ (oServcPrest2.validaUsuario() and oServcPrest2.conEpisodio )}" id="panel" >
+                            <p:panelGrid columns="6">
+                                <h:outputText value="Folio Paciente:" style="color: #1F587F" />
+                                <h:outputText value="#{oServcPrest2.paciente.folioPac}"/>
+                                <h:outputText value="CURP:" style="color: #1F587F" />
+                                <h:outputText value="#{oServcPrest2.paciente.CURP}"/>
+                                <h:outputText value="RFC:" style="color: #1F587F" />
+                                <h:outputText value="#{oServcPrest2.paciente.RFC}"/>
+                                <h:outputText value="Nombre del Paciente:" style="color: #1F587F" />
+                                <h:outputText value="#{oServcPrest2.paciente.nombreCompleto}"/>
+                                <h:outputText value="Género:" style="color: #1F587F" />
+                                <h:outputText value="#{oServcPrest2.paciente.genero}"/>
+                                <h:outputText value="Habitación:" style="color: #1F587F" />
+                                <h:outputText value="#{oServcPrest2.episodioMedico.hab.hab}"/> 
+                                <h:outputText value="Diagnóstico Actual:" style="color: #1F587F" />
+                                <h:outputText value="#{oServcPrest2.episodioMedico.dxIngreso.descrip}"/>
+                                <h:outputText rendered="#{oServcPrest2.conEpisodio}" value="Médico tratante:" style="color: #1F587F"/>
+                                <h:outputText rendered="#{oServcPrest2.conEpisodio}" value="#{oServcPrest2.episodioMedico.medTratante.nombreCompleto}"/>
+                                <h:outputText rendered="#{oServcPrest2.tieneEmpresa}" value="Empresa:" style="color: #1F587F"/>
+                                <h:outputText rendered="#{oServcPrest2.tieneEmpresa}" value="#{oServcPrest2.nomEmpresa}"/>
+                            </p:panelGrid>
+                            <p:separator/>
+                            <p:panelGrid columns="2" >
+                                <h:outputText rendered="#{!oServcPrest2.facturaRegistrada}" value="¿Desea Factura?:" />
+                                <p:selectBooleanCheckbox rendered="#{!oServcPrest2.facturaRegistrada}" value="#{oServcPrest2.quererFactura}" />
+                                Tipo de paciente (*):
+                                <p:selectOneMenu rendered="#{!oServcPrest2.isPaquete}" 
+                                                 label="Tipo Paciente " 
+                                                 id="tipoPac"
+                                                 value="#{oServcPrest2.tipoPaciente}" >
+                                    <f:selectItem itemLabel="Selecciona" itemValue="-1" />
+                                    <f:selectItems value="#{oServcPrest2.tiposPacientes}"
+                                                   var="oTipPralPaga1"
+                                                   itemValue="#{oTipPralPaga1.tipo}"
+                                                   itemLabel="#{oTipPralPaga1.descripcion}"/> 
+                                    <p:ajax update="lineas" listener="#{oServcPrest2.actualizaServicios}"/>
+                                </p:selectOneMenu>
+                                <h:outputText rendered="#{oServcPrest2.isPaquete}" value="PAQUETE"/>
+                                <p:commandButton rendered="#{oServcPrest2.isPaquete}" value="Ver detalle del paquete" oncomplete="dlgPaquete.show()"  icon="ui-icon-search"/>
+                            </p:panelGrid>
+                            <br/>                            
+                            <p:panel id="panel2" >
+                                Servicios:<br/>
+
+                                <p:panelGrid columns="1" rendered="#{oServcPrest2.alertaPagoPaqueteMat}">
+                                    <h:outputText value="** El usuario no ha pagado el 70% de su paquete**" style="font-weight:bold;color: red" />
+                                    <h:outputText value="Monto total del Paquete: #{oServcPrest2.paqueteContratado.paquete.costo}" />                                    
+                                    <h:outputText value="Monto Pagado: #{oServcPrest2.montoPagadoPaq}" />                                    
+                                </p:panelGrid>
+                                <br/>
+                                <center>
+                                    <p:panelGrid columns="1" rendered="#{oServcPrest2.isPaquete}">
+
+                                        <p:commandButton rendered="#{oServcPrest2.carritoServiciosAConsumir.size()!=0}" value="Seleccionar Servicios a Consumir del Paquete" update=":formServACons" oncomplete="dlgServPaquete.show()"  icon="ui-icon-search"/>
+                                        <h:outputText value="*Servicios Fuera de Paquete:" style="font-weight:bold;color: red" />
+                                    </p:panelGrid>
+                                </center>
+                                <br/>
+
+                                <h:panelGrid id="cargadatos" columns="2" >                                
+                                    Área<p:selectOneMenu label="Área de Servicio" converter="#{oConverterAreaServicio}" id="city" value="#{oServcPrest2.areaDeServicio}">  
+                                        <f:selectItem itemLabel="Selecciona tipo" itemValue="" />  
+                                        <f:selectItems value="#{oServcPrest2.areasDeServicio}" var="oArea" 
+                                                       itemLabel="#{oArea.descrip}" 
+                                                       itemValue="#{oArea}"/> 
+                                        <p:ajax update="lineas" listener="#{oServcPrest2.actualizaListaLineasCargCnt()}" /> 
+                                    </p:selectOneMenu>
+                                    Línea ingreso:
+                                    <p:selectOneMenu id="lineas" 
+                                                     label="Línea ingreso " 
+                                                     value="#{oServcPrest2.cveLin}">
+                                        <f:selectItem itemLabel="Selecciona" itemValue="" />
+                                        <f:selectItems value="#{oServcPrest2.lineasIngreso}" var="oLinea" 
+                                                       itemLabel="#{oLinea.descrip}" 
+                                                       itemValue="#{oLinea.cveLin}"/>
+                                        <p:ajax update="servicios cargadatos" listener="#{oServcPrest2.actualizaListaServiciosCargCnt()}" />
+                                    </p:selectOneMenu>                                    
+                                    Servicio:
+                                    <p:autoComplete id="servicios" size="50" 
+                                                    scrollHeight="300" 
+                                                    minQueryLength="4" 
+                                                    itemtipMyPosition="left center" 
+                                                    itemtipAtPosition="right center" 
+                                                    label="Servicio" 
+                                                    converter="ConverterServicio" 
+                                                    forceSelection="true"
+                                                    style="text-transform: uppercase"
+                                                    value="#{oServcPrest2.servicioSeleccionado}" 
+                                                    completeMethod="#{oServcPrest2.obtenerServicios}" 
+                                                    var="oServ" itemLabel="#{oServ.descripcion}" 
+                                                    itemValue="#{oServ}" >
+                                    </p:autoComplete>
+                                    ¿Farmacia Siena?:
+                                    <p:selectBooleanCheckbox value="#{oServcPrest2.siena}" />                                
+                                    Unidad de Medida:
+                                    <p:selectOneMenu  label="Unidad de Medida" 
+                                                      converter="oConverterUnidMed" 
+                                                      value="#{oServcPrest2.unidadMedida}" >
+                                        <f:selectItem itemLabel="Selecciona" itemValue="" />
+                                        <f:selectItems value="#{oServcPrest2.listaUnidades}"  
+                                                       var="oUnidad1" 
+                                                       itemLabel="#{oUnidad1.descrip}" 
+                                                       itemValue="#{oUnidad1}" /> 
+                                    </p:selectOneMenu>
+                                    Cantidad:
+                                    <p:spinner id="ajaxspinner" maxlength="2" max="10"  size="2" min="1" value="#{oServcPrest2.cantidad}"/>
+
+                                    Médico de interconsulta (Solo para Líneas de Interconsulta): 
+                                    <p:selectOneMenu disabled="#{!oServcPrest2.campoInterconsulta}" 
+                                                     label="Médico por pago de honorarios" 
+                                                     converter="#{oServcPrest2}" 
+                                                     filter="true"
+                                                     filterMatchMode="contains"
+                                                     value="#{oServcPrest2.medicoHonorarios}" >
+                                        <f:selectItem itemLabel="Selecciona" itemValue=""/>
+                                        <f:selectItems value="#{oServcPrest2.medicosInterconsulta}"  var="oMedInter" 
+                                                       itemLabel="#{oMedInter.nombreCompleto}" 
+                                                       itemValue="#{oMedInter}" /> 
+                                    </p:selectOneMenu>
+                                    Fecha de interconsulta (Solo para Líneas de Interconsulta):
+                                    <p:calendar disabled="#{!oServcPrest2.campoInterconsulta}" locale="es" label="Fecha de interconsulta"  navigator="true"  pattern="yyyy-MM-dd HH:mm:ss"    yearRange="c-100:c+0" showOn="button" value="#{oServcPrest2.fechaInterconsulta}"/>                              
+                                </h:panelGrid> 
+                                <p:commandButton value="Agregar" 
+                                                 update=":formulario:grow1 :formulario:tb2 panel2" 
+                                                 actionListener="#{oServcPrest2.agregaServicio()}" 
+                                                 ajax="true" icon="ui-icon-cart"   />
+
+                                <br/><br/>
+
+                                <p:dataTable style=" width: 100%" liveScroll="true"  
+                                             emptyMessage="Sin servicios agregados" 
+                                             sortBy="descripcion" editMode="cell" 
+                                             editable="true"  id="tb2" 
+                                             value="#{oServcPrest2.carritoServicios}" 
+                                             rows="6" paginator="true" 
+                                             paginatorPosition="bottom" 
+                                             var="carritoServicios">
+                                    <f:facet name="header">
+                                        <h:outputText value="Servicios"/>
+                                    </f:facet> 
+                                    <p:ajax event="cellEdit" listener="#{oServcPrest2.onCellEdit}" update=":formulario:grow1" />
+
+                                    <p:column styleClass="wrapText">
+                                        <f:facet name="header"> 
+                                            Área
+                                        </f:facet>  
+                                        <h:outputText styleClass="wrapText" value="#{carritoServicios.areaServicio.descrip}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header"> 
+                                            Línea
+                                        </f:facet>  
+                                        <h:outputText value="#{carritoServicios.lineaIngreso.descrip}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Servicio
+                                        </f:facet>  
+                                        <h:outputText value="#{carritoServicios.descripcion}" />
+                                    </p:column>                                   
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Cantidad
+                                        </f:facet>  
+                                        <h:outputText value="#{carritoServicios.cantidad}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header"> 
+                                            Unidad de medida
+                                        </f:facet>
+                                        <h:outputText value="#{carritoServicios.unidadMedida.descrip}" />                                                                  
+                                    </p:column>  
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Monto Original
+                                        </f:facet> 
+                                        <p:inputText size="5" 
+                                                     readonly="#{carritoServicios.servicioMedico.monto>0}" 
+                                                     value="#{carritoServicios.montoNuevo}">
+                                            <p:ajax update="tb2"  listener="#{oServcPrest2.actualizaTotal()}" />
+                                            <f:converter converterId="javax.faces.Double"/>
+                                        </p:inputText>
+                                        <p:selectBooleanCheckbox itemLabel="Indicado por médico"
+                                            value="#{carritoServicios.indicadoPorMedico}"
+                                            style="visibility: #{carritoServicios.verIndicadoPorMed}"/>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Médico de interconsulta 
+                                        </f:facet>                                       
+                                        <h:outputText value="#{carritoServicios.conServ.medicoHonorarios.nombreCompleto}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Fecha de Interconsulta
+                                        </f:facet>                                       
+                                        <h:outputText value="#{carritoServicios.conServ.fechaInterconsulta}" >
+                                            <f:convertDateTime pattern="dd-MMMM-yyyy HH:mm"
+                                                               timeZone="EST"/>
+                                        </h:outputText>  
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Eliminar
+                                        </f:facet>
+                                        <p:commandButton rendered="#{carritoServicios.tipoConcIngr=='Servicio medico' || carritoServicios.tipoConcIngr=='otro ingreso'}" value=" " icon="ui-icon-trash" style=" height: 25px; width: 25px" actionListener="#{oServcPrest2.eliminaServicioInt(carritoServicios.cveConcep)}" 
+                                                         process="tb2" update=":formulario:tb2"/>
+                                        <p:commandButton rendered="#{carritoServicios.tipoConcIngr=='medicamento' }" 
+                                                         process="tb2" 
+                                                         value=" " icon="ui-icon-trash" style=" height: 25px; width: 25px" actionListener="#{oServcPrest2.eliminaServicioString(carritoServicios.medicamento.cveMedicamento)}" update=":formulario:tb2"/>
+                                        <p:commandButton rendered="#{carritoServicios.tipoConcIngr=='material'}" 
+                                                         process="tb2" 
+                                                         value=" " icon="ui-icon-trash" style=" height: 25px; width: 25px" actionListener="#{oServcPrest2.eliminaServicioString(carritoServicios.materialCuracion.cveMaterial)}" update=":formulario:tb2" />
+                                    </p:column>    
+                                    <p:summaryRow>  
+                                        <p:column colspan="8" style="text-align:right">  
+                                            Total:  
+                                        </p:column>  
+                                        <p:column>  
+                                            <h:outputText value="#{carritoServicios.montoNuevo*carritoServicios.cantidadACobrar}">
+                                                <f:convertNumber type="currency"/>
+                                            </h:outputText>
+                                        </p:column>  
+                                    </p:summaryRow>
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column colspan="8" style="text-align:right" footerText="Costo total:" />
+                                            <p:column>
+                                                <h:outputText value="#{oServcPrest2.totalCarrito}">
+                                                </h:outputText>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+
+                                <br/>        
+
+                                <h:panelGrid columns="2">
+
+                                    Observaciones: 
+                                    <p:inputTextarea id="obs" cols="60"
+                                                     style="text-transform:uppercase"
+                                        value="#{oServcPrest2.observaciones}" 
+                                        autoResize="false" >
+                                        <p:ajax/>
+                                    </p:inputTextarea>
+
+                                </h:panelGrid>
+                                <br/>
+
+                            </p:panel>
+                            <br/>
+                            <p:commandButton update="grow1 basicDialog2"  
+                                             process="@this"
+                                             value="Registar orden" 
+                                             actionListener="#{oServcPrest2.insertaServicio}" 
+                                             icon="ui-icon-disk" />
+                        </p:panel>
+
+                        <p:dialog closable="false" appendTo="@(body)" dynamic="true" 
+                                  modal="true" id="basicDialog2" header="¡Operación exitosa!"  
+                                  widgetVar="dlg1" style="font-size:12px; height: 200px;" 
+                                  styleClass="text-align: center;"  
+                                  position="center" showEffect="clip" hideEffect="fold" >  
+                            <p:panel id="panelDialog">  
+                                <center>
+                                    <p:panel>
+                                        <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                    </p:panel>
+                                </center>
+                                <h:panelGrid columns="2" cellpadding="5"> 
+                                    Número de Orden: 
+                                    <h:outputText value="#{oServcPrest2.numOrden}"/>
+                                    <br/>
+                                    Paciente: <h:outputText value="#{oServcPrest2.servicioPrestadoJB.paciente.folioPac} #{oServcPrest2.servicioPrestadoJB.paciente.nombreCompleto}" />
+                                    Tipo de paciente: 
+                                    <h:outputText value="#{oServcPrest2.servicioPrestadoJB.descTipoPaciente}" />
+                                    Servicios:
+                                    <p:dataTable emptyMessage="Sin servicios agregados" 
+                                                 sortBy="concepPrestado.descripcion"  
+                                                 id="tb4" 
+                                                 value="#{oServcPrest2.listaServAlm}" 
+                                                 rows="6" paginator="true" 
+                                                 paginatorPosition="bottom" 
+                                                 var="oServ">
+                                        <f:facet name="header">
+                                            <h:outputText value="Servicios"/>
+                                        </f:facet>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Folio
+                                            </f:facet>  
+                                            <h:outputText value="#{oServ.idFolio}" />
+                                        </p:column>
+                                        <p:column width="50%!important"  >
+                                            <f:facet name="header"> 
+                                                Área
+                                            </f:facet>  
+                                            <h:outputText value="#{oServ.concepPrestado.areaServicio.descrip}" />
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header"> 
+                                                Línea
+                                            </f:facet>  
+                                            <h:outputText value="#{oServ.concepPrestado.lineaIngreso.descrip}" />
+                                        </p:column>
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Servicio
+                                            </f:facet>  
+                                            <h:outputText value="#{oServ.concepPrestado.descripcion}" />
+                                        </p:column>                                   
+                                        <p:column width="50%!important"  >
+                                            <f:facet name="header"> 
+                                                Cantidad
+                                            </f:facet>  
+                                            <h:outputText value="#{oServ.concepPrestado.cantidadACobrar}" />     
+                                        </p:column>
+                                        <p:column width="50%!important"  >
+                                            <f:facet name="header"> 
+                                                Unidad de medida
+                                            </f:facet>
+                                            <h:outputText value="#{oServ.concepPrestado.unidadMedida.descrip}" />                                                                  
+                                        </p:column>  
+                                        <p:column >
+                                            <f:facet name="header"> 
+                                                Monto Original
+                                            </f:facet> 
+                                            <h:outputText  value="#{oServ.concepPrestado.montoNuevo}">
+                                                <f:convertNumber type="currency"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:summaryRow>  
+                                            <p:column colspan="6" style="text-align:right">  
+                                                Total:  
+                                            </p:column>  
+                                            <p:column>  
+                                                <h:outputText value="#{oServ.concepPrestado.montoNuevo*oServ.concepPrestado.cantidadACobrar}">
+                                                    <f:convertNumber type="currency"/>
+                                                </h:outputText>
+                                            </p:column>  
+                                        </p:summaryRow>
+                                        <p:columnGroup id="totalColumn" type="footer">
+                                            <p:row>
+                                                <p:column colspan="6" style="text-align:right" footerText="Costo total:" />
+                                                <p:column>
+                                                    <h:outputText value="#{oServcPrest2.totalCarrito}">
+                                                        <f:convertNumber type="currency"/>
+                                                    </h:outputText>
+                                                </p:column> 
+                                            </p:row>
+                                        </p:columnGroup>
+                                    </p:dataTable>
+                                    
+                                    Médico tratante: <h:outputText value="#{oServcPrest2.servicioPrestadoJB.medico.nombreCompleto}" />
+                                    Observaciones:<h:outputText value="#{oServcPrest2.servicioPrestadoJB.observaciones}" />
+                                </h:panelGrid>  
+                            </p:panel> 
+                            <p:separator />
+                            <center>
+                                <p:commandButton value="Imprimir" type="button" icon="ui-icon-print"  >
+                                    <p:printer target="panelDialog" />
+                                </p:commandButton>
+                                <p:commandButton rendered="#{oServcPrest2.servicioPrestadoJB.interconsulta}" 
+                                                 value="Solicitud de Interconsulta" 
+                                                 oncomplete="diagSolicInter.show()" 
+                                                 icon="ui-icon-document" />
+                                <p:commandButton value="Regresar" icon="ui-icon-arrowreturnthick-1-w" >
+                                    <p:ajax listener="#{oServcPrest2.servicioPrestadoJB.regresarCargo()}"/>
+                                </p:commandButton>
+                            </center>
+                        </p:dialog>
+
+                        <p:dialog closable="false" appendTo="@(body)" 
+                                  dynamic="true" modal="true" id="iddlgPaquete" 
+                                  header="Detalle del Paquete "  
+                                  widgetVar="dlgPaquete" style="font-size:12px" 
+                                  styleClass="text-align: center;"  
+                                  position="center" showEffect="clip" 
+                                  hideEffect="fold" >  
+                            <center>
+                                <p:panel>
+                                    <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                </p:panel>
+                                <p:panel id="panelPaq" >
+                                    <p:panel>
+                                        <h4>Servicios que incluye el Paquete: #{oServcPrest2.paqueteContratado.paquete.nombre}</h4>
+                                        <h:outputText rendered="#{oServcPrest2.paqueteContratado.situacionPago=='0'}" value="Situación de Pago del Paquete: Pendiente de Pago"/>
+                                        <h:outputText rendered="#{oServcPrest2.paqueteContratado.situacionPago=='1'}" value="Situación de Pago del Paquete: Pago parcial"/>
+                                        <h:outputText rendered="#{oServcPrest2.paqueteContratado.situacionPago=='2'}" value="Situación de Pago del Paquete: Pagado"/>
+                                        <br/><br/>
+                                        <p:dataTable emptyMessage="Sin servicios registrados" sortBy="conceptoIngreso.descripcion" id="tbPaq" value="#{oServcPrest2.carritoServiciosPaq}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoServicios">
+                                            <f:facet name="header">
+                                                <h:outputText value="Servicios que incluye el Paquete: #{oServcPrest2.paqueteContratado.paquete.nombre}"/>                                    
+
+                                            </f:facet> 
+                                            <p:column >
+                                                <f:facet name="header"> 
+                                                    Servicio
+                                                </f:facet>  
+                                                <h:outputText value="#{carritoServicios.conceptoIngreso.descripcion}" />
+                                            </p:column>                                   
+                                            <p:column width="50%!important"  >
+                                                <f:facet name="header"> 
+                                                    <h:outputText value="Cantidad" />
+                                                </f:facet> 
+                                                <h:outputText value="#{carritoServicios.conceptoIngreso.cantidad}" /> 
+                                            </p:column>                                        
+                                            <p:column width="50%!important"  >
+                                                <f:facet name="header"> 
+                                                    Unidad de medida
+                                                </f:facet>
+                                                <h:outputText value="#{carritoServicios.conceptoIngreso.unidadMedida.descrip}" />                               
+                                            </p:column>
+                                            <p:column >
+                                                <f:facet name="header"> 
+                                                    Monto Original
+                                                </f:facet> 
+                                                <p:inputText size="5" readonly="true" value="#{carritoServicios.conceptoIngreso.montoNuevo}"/>   
+                                            </p:column>
+                                            <p:column >
+                                                <f:facet name="header"> 
+                                                    Observaciones
+                                                </f:facet> 
+                                                <h:outputText value="#{carritoServicios.obs}" />
+                                            </p:column>                                       
+
+                                            <p:summaryRow >  
+                                                <p:column colspan="4"  style="text-align:right">  
+                                                    Total:  
+                                                </p:column>  
+                                                <p:column>  
+                                                    <h:outputText value="#{carritoServicios.conceptoIngreso.montoNuevo*carritoServicios.conceptoIngreso.cantidad}">
+                                                        <f:convertNumber pattern="#.##"/>
+                                                    </h:outputText>
+                                                </p:column>  
+                                            </p:summaryRow>
+                                            <p:columnGroup type="footer">
+                                                <p:row >
+                                                    <p:column colspan="4" style="text-align:right" footerText="Costo total:" />
+                                                    <p:column footerText="$#{oServcPrest2.totalCarrito2}" />
+                                                </p:row>
+                                            </p:columnGroup>
+                                        </p:dataTable>
+                                    </p:panel>
+                                    <p:panel>
+                                        <h4>Descuentos que incluye</h4>
+                                        <p:dataTable emptyMessage="Sin descuentos registrados" id="tbPaq2" value="#{oServcPrest2.carritoDescuentos}" rows="6" paginator="true" paginatorPosition="bottom" var="carritoDescuentos">
+                                            <f:facet name="header">
+                                                <h:outputText value="Descuentos que incluye"/>
+                                            </f:facet> 
+                                            <p:column>
+                                                <f:facet name="header"> 
+                                                    Línea
+                                                </f:facet>  
+                                                <h:outputText value="#{carritoDescuentos.lineaIngreso.descrip}" />
+                                            </p:column>
+                                            <p:column >
+                                                <f:facet name="header"> 
+                                                    Descuento
+                                                </f:facet>  
+                                                <h:outputText value="#{carritoDescuentos.pctDscto}" />
+                                            </p:column> 
+                                        </p:dataTable>
+                                    </p:panel>
+
+                                    <p:separator />
+                                    <center>                          
+                                        <p:commandButton oncomplete="dlgPaquete.hide()" value="Regresar" icon="ui-icon-arrowreturnthick-1-w"/>
+                                    </center>
+
+                                </p:panel> 
+                            </center>
+                        </p:dialog>
+
+                        <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="soliInter" header="Solicitud de Interconsulta"  widgetVar="diagSolicInter" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                            <h:form id="formaSoliInt">       
+                                <p:media id="contr" value="/resources/#{oServcPrest2.servicioPrestadoJB.rutaPDF}" width="800" height="500">  
+                                    Tu navegador no puede abrir el PDF, 
+                                    <h:outputLink value="/resources/#{oServcPrest2.servicioPrestadoJB.rutaPDF}">click</h:outputLink> para descargar el PDF.  
+                                </p:media>  
+                                <p:separator />
+                                <center>                                        
+                                    <p:commandButton value="Regresar"  oncomplete="diagSolicInter.hide()" icon="ui-icon-arrowreturnthick-1-w"/>
+                                </center>
+                            </h:form> 
+                        </p:dialog>  
+
+                    </h:form>
+
+                    <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="iddlgservPaq" header="Servicios a Consumir "  widgetVar="dlgServPaquete" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                        <h:form id="formServACons">
+                            <p:growl id="growl2" sticky="true" />
+                            <p:panel>
+                                <h4>Elegir servicios que incluye el Paquete: #{oServcPrest2.paqueteContratado.paquete.nombre}</h4>
+                                <h:outputText rendered="#{oServcPrest2.paqueteContratado.situacionPago=='0'}" value="Situación de Pago del Paquete: Pendiente de Pago"/>
+                                <h:outputText rendered="#{oServcPrest2.paqueteContratado.situacionPago=='1'}" value="Situación de Pago del Paquete: Pago parcial"/>
+                                <h:outputText rendered="#{oServcPrest2.paqueteContratado.situacionPago=='2'}" value="Situación de Pago del Paquete: Pagado"/>
+                                <br/><br/>
+                                <p:dataTable emptyMessage="Sin servicios registrados" selection="#{oServcPrest2.serviciosAConsumir}" rowKey="#{carServACons.idGenerico}"  sortBy="descripcion" id="tbServPaq" value="#{oServcPrest2.carritoServiciosAConsumir}" rows="6" paginator="true" paginatorPosition="bottom" var="carServACons">
+                                    <f:facet name="header">
+                                        <h:outputText value="Servicios que incluye el Paquete: #{oServcPrest2.paqueteContratado.paquete.nombre}"/>                                    
+                                    </f:facet> 
+                                    <p:column  selectionMode="multiple">                                        
+                                        <f:facet name="header"> 
+                                            Seleccionar Servicio
+                                        </f:facet>  
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Servicio
+                                        </f:facet>  
+                                        <h:outputText value="#{carServACons.descripcion}" />
+                                    </p:column>                                   
+                                    <p:column width="50%!important"  >
+                                        <f:facet name="header"> 
+                                            <h:outputText value="Cantidad" />
+                                        </f:facet> 
+                                        <h:outputText value="#{carServACons.cantidad}" /> 
+                                    </p:column>                                        
+                                    <p:column width="50%!important"  >
+                                        <f:facet name="header"> 
+                                            Unidad de medida
+                                        </f:facet>
+                                        <h:outputText value="#{carServACons.unidadMedida.descrip}" />                               
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header"> 
+                                            Monto Original
+                                        </f:facet> 
+                                        <h:outputText value="#{carServACons.montoNuevo}"/>   
+                                    </p:column>                                   
+                                    <p:summaryRow >  
+                                        <p:column colspan="4"  style="text-align:right">  
+                                            Total:  
+                                        </p:column>  
+                                        <p:column>  
+                                            <h:outputText value="#{carServACons.montoNuevo*carServACons.cantidadACobrar}">
+                                                <f:convertNumber pattern="#.##"/>
+                                            </h:outputText>
+                                        </p:column>  
+                                    </p:summaryRow>
+                                </p:dataTable>
+                                <center>
+                                    <p:commandButton oncomplete="dlgServPaquete.hide()" actionListener="#{oServcPrest2.validaServiciosACons()}" ajax="true" update=":formulario:tb2 growl2 " value="Seleccionar" icon="ui-icon-cart"/>
+                                    <p:commandButton value="Regresar"  oncomplete="dlgServPaquete.hide()" icon="ui-icon-arrowreturnthick-1-w"/>
+                                </center>
+                            </p:panel> 
+
+                        </h:form>
+                    </p:dialog>
+
+
+                </center>        
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

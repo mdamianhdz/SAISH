@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inventarios</title>
+            <h:body> 
+                <center><h2>Administrar Vitrina</h2></center>
+                <p:dialog id="dlgNuevo" widgetVar="dlgN" appendToBody="true" closable="false" resizable="false" dynamic="true">
+                    <center>
+                        <h3>Registrar Vitrina</h3>
+                        <h:form id="formNuevo">
+                            <p:panelGrid columns="2">
+                                <p:outputLabel value="Descripción: "/>
+                                <p:inputText id="txtNuevoDesc" value="#{oVitrina.regVitrina.descripcion}" size="50">
+                                    <p:ajax />
+                                </p:inputText>
+                                <p:outputLabel value="Área Física: "/>
+                                <p:selectOneMenu style="width: 150px" id="selNuevoAreaFis" value="#{oVitrina.regVitrina.areaFisica.cve}"> 
+                                    <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                    <f:selectItems value="#{oVitrina.listAreasF}" var="area" itemLabel="#{area.descrip}" itemValue="#{area.cve}"/>
+                                    <p:ajax/>
+                                </p:selectOneMenu> 
+                            </p:panelGrid><br/>
+                            <p:commandButton value="Guardar" oncomplete="PF('dlgN').hide()">
+                                <p:ajax listener="#{oVitrina.guardaNuevo()}" update=":form:msg :form:dtVitrinas"/>
+                            </p:commandButton> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <p:commandButton value="Regresar" oncomplete="PF('dlgN').hide()" action="#{oVitrina.limpia()}"/>
+                        </h:form>
+                    </center>
+                </p:dialog>
+                <p:dialog id="dlgDetalles" widgetVar="dlgDet" appendToBody="true" closable="false" dynamic="true">
+                    <center>
+                        <h3>Detalle de Vitrina</h3>
+                        <h:form id="formDet">
+                            <p:panelGrid style="width:100%">
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Clave: " style="font-weight:bold;"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="#{oVitrina.selectedVitrina.cveVitrina}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Área Física: " style="font-weight:bold;"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="#{oVitrina.selectedVitrina.areaFisica.descrip}"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Descripción: " style="font-weight:bold;"/>
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:outputLabel value="#{oVitrina.selectedVitrina.descripcion}"/>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid><br/><br/>
+                            <p:dataTable style="width:700px" id="dtMaterial" value="#{oVitrina.listInventario}" var="oReg" paginator="true" paginatorPosition="bottom" rows="7">
+                                <p:column headerText="Cve. Med/Mat">
+                                    <p:outputLabel value="#{oReg.cve}"/>
+                                </p:column>
+                                <p:column headerText="Descripción:">
+                                    <p:outputLabel value="#{oReg.desc}"/>
+                                </p:column>
+                                <p:column headerText="Lugar:">
+                                    <p:outputLabel value="#{oReg.lugar}"/>
+                                </p:column>
+                                <p:column headerText="Existencia">
+                                    <p:outputLabel value="#{oReg.existencia}"/>
+                                </p:column>
+                            </p:dataTable><br/><br/>
+                            <p:commandButton rendered="#{!oVitrina.selectedVitrina.activa}" value="Activar" icon="ui-icon-pencil" action="#{oVitrina.cambiaEstado()}" update=":form:msg :form:dtVitrinas" oncomplete="PF('dlgDet').hide()"/>
+                            <p:commandButton rendered="#{oVitrina.selectedVitrina.activa}" value="Inactivar" icon="ui-icon-pencil" action="#{oVitrina.cambiaEstado()}" update=":form:msg :form:dtVitrinas" oncomplete="PF('dlgDet').hide()"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <p:commandButton value="Regresar" oncomplete="PF('dlgDet').hide()" icon="ui-icon-close"/><br/>
+                        </h:form>
+                    </center>
+                </p:dialog>
+                <p:dialog id="dlgModifica" widgetVar="dlgMod" appendToBody="true" closable="false" dynamic="true">
+                    <center>
+                        <h3>Modifica Vitrina</h3>
+                        <h:form id="formMod">
+                            <p:panelGrid style="width:100%">
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Clave: " style="font-weight:bold;"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="#{oVitrina.selectedVitrina.cveVitrina}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Área Física: " style="font-weight:bold;"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu value="#{oVitrina.selectedVitrina.areaFisica.cve}">
+                                            <f:selectItems value="#{oVitrina.listAreasF}" var="oArea" itemLabel="#{oArea.descrip}" itemValue="#{oArea.cve}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Descripción: " style="font-weight:bold;"/>
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:outputLabel value="#{oVitrina.selectedVitrina.descripcion}"/>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid><br/><br/>
+                            <p:dataTable style="width:700px" id="dtMaterial" value="#{oVitrina.listInventario}" var="oReg" editable="true" 
+                                         paginator="true" paginatorPosition="bottom" rows="7">
+                                <p:ajax event="rowEdit" listener="#{oVitrina.onRowEdit}" update=":form:msg"/>
+                                <p:column headerText="Cve. Med/Mat">
+                                    <p:outputLabel value="#{oReg.cve}"/>
+                                </p:column>
+                                <p:column headerText="Descripción:">
+                                    <p:outputLabel value="#{oReg.desc}"/>
+                                </p:column>
+                                <p:column headerText="Lugar:">
+                                    <p:outputLabel value="#{oReg.lugar}"/>
+                                </p:column>
+                                <p:column headerText="Existencia">
+                                    <p:cellEditor>
+                                        <f:facet name="output">
+                                            <p:outputLabel value="#{oReg.existencia}"/>  
+                                        </f:facet>  
+                                        <f:facet name="input">  
+                                            <p:inputText size="5" value="#{oReg.existencia}"/>
+                                            
+                                        </f:facet>  
+                                    </p:cellEditor> 
+                                </p:column>
+                                <p:column style="width:6%">  
+                                    <p:rowEditor />
+                                </p:column> 
+                            </p:dataTable><br/><br/>
+                            <p:commandButton value="Guardar" icon="ui-icon-pencil"  update=":form:dtVitrinas :form:msg" oncomplete="PF('dlgMod').hide()" action="#{oVitrina.modifica()}"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <p:commandButton value="Regresar" oncomplete="PF('dlgMod').hide()" icon="ui-icon-close"/><br/>
+                        </h:form>
+                    </center>
+                </p:dialog>
+                <h:form id="form"><center>
+                    <p:growl id="msg" showDetail="true" sticky="true" /> 
+                    <p:panelGrid columns="5">
+                        <p:outputLabel value="Vitrina: "/>
+                        <p:inputText value="#{oVitrina.descVitrina}" size="50"/>
+                        <p:outputLabel value="Área Física: "/>
+                        <p:selectOneMenu style="width: 150px" id="selAreaFisica" value="#{oVitrina.selectedAreaF}"> 
+                            <f:selectItem itemLabel="Seleccione" itemValue="" />
+                            <f:selectItems value="#{oVitrina.listAreasF}" var="area" itemLabel="#{area.descrip}" itemValue="#{area.cve}"/>
+                        </p:selectOneMenu> 
+                        <p:commandButton value="Buscar" action="#{oVitrina.buscar()}" update="dtVitrinas"/>
+                    </p:panelGrid><br/><br/>
+                    <p:dataTable style="width: 718px" id="dtVitrinas" value="#{oVitrina.listVitrinas}" var="oVit" paginator="true" paginatorPosition="bottom" rows="4" 
+                                 selection="#{oVitrina.selectedVitrina}" rowKey="#{oVit.cveVitrina}" emptyMessage="No hay registros">
+                        <p:ajax event="rowSelectRadio"/>
+                        <p:column selectionMode="single"/>
+                        <p:column headerText="Núm. Clave">
+                            <p:outputLabel value="#{oVit.cveVitrina}"/>
+                        </p:column>
+                        <p:column headerText="Descripción">
+                            <p:outputLabel value="#{oVit.descripcion}"/>
+                        </p:column>
+                        <p:column headerText="Área Física">
+                            <p:outputLabel value="#{oVit.areaFisica.descrip}"/>
+                        </p:column>
+                        <p:column headerText="Estado">
+                            <p:outputLabel rendered="#{oVit.activa}" value="Activa"/>
+                            <p:outputLabel rendered="#{!oVit.activa}" value="Inactiva"/>
+                        </p:column>
+                        <f:facet name="footer">
+                            <p:commandButton value="Ver Detalles Vitrina" icon="ui-icon-search" oncomplete="PF('dlgDet').show()" 
+                                             action="#{oVitrina.buscaInventario()}" update=":dlgDetalles"/>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <p:commandButton value="Modificar Vitrina"  icon="ui-icon-pencil"  oncomplete="PF('dlgMod').show()" 
+                                             action="#{oVitrina.buscaInventario()}" update=":dlgModifica"/>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <p:commandButton value="Registrar Vitrina" action="#{oVitrina.confNuevo()}" oncomplete="PF('dlgN').show()" 
+                                             update=":dlgNuevo" icon="ui-icon-pencil"/>
+                        </f:facet>
+                    </p:dataTable></center>
+                </h:form>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

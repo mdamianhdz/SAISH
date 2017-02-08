@@ -1,0 +1,156 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Reporte de pagos extras a médicos de guardia</title>
+            <h:body>
+ 
+                #{rptRGuardia.limpiar()}
+                <h:form id="form">  
+
+                    <p:growl id="msgs" showDetail="true"/>
+                    <p:panel header="Reporte de pagos extras a Médicos de guardia" style="margin-bottom:10px;">  
+
+                        <h:panelGrid id="datos" columns="8" style="width: 45%;">
+                            <h:outputText value="Seleccionar: " style="font-weight: bold" />
+                            <h:outputText value="Mes: "/>
+                            <p:selectOneMenu id="txtMes" value="#{rptRGuardia.mes}" >  
+                                <f:selectItem itemLabel="Seleccionar mes" itemValue="" />  
+                                <f:selectItems value="#{rptRGuardia.meses}" />  
+                            </p:selectOneMenu> 
+                            <h:outputText value="&#160;" />
+                            <h:outputText value="Año: "/>
+                            <p:selectOneMenu id="txtAnio" value="#{rptRGuardia.anio}" >  
+                                <f:selectItem itemLabel="Seleccionar año" itemValue="" />  
+                                <f:selectItems value="#{rptRGuardia.anios}" />  
+                            </p:selectOneMenu>
+                            <h:outputText value="&#160;" />
+                            <p:commandButton actionListener="#{rptRGuardia.obtieneMedicos()}" value="Buscar" update="regaliasDT" />  
+                        </h:panelGrid>
+
+                        <p:dataTable id="regaliasDT" var="cReg" 
+                                     value="#{rptRGuardia.regaliasPorMedico}" 
+                                     rows="7" paginator="true" 
+                                     paginatorPosition="bottom" 
+                                     selection="#{rptRGuardia.selectedPagoRegalias}"
+                                     emptyMessage="No hay información">
+                            <f:facet name="header"> Pagos extras a médicos de guardia</f:facet>
+                            <p:column headerText="Médico">
+                                <h:outputText value="#{cReg.personalHospitalario.nombreCompleto}" />
+                            </p:column>
+                            <p:column headerText="Total de Regalías">
+                                <h:outputText value="#{cReg.montoTotal}" >
+                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column style="width:32px;text-align: center">
+                                <p:commandButton update=":form:regaliasDetail" oncomplete="PF('regaliasDialog').show()" icon="ui-icon-search" title="View">
+                                    <f:setPropertyActionListener value="#{cReg}" target="#{rptRGuardia.selectedPagoRegalias}" />
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+
+
+                    <p:dialog header="Pagos extras del medico de guardia"  appendTo="@(body)" widgetVar="regaliasDialog" modal="true" showEffect="fade" hideEffect="fade" resizable="false" closable="false" >
+                        <p:scrollPanel mode="native" style="width:100%;height:500px">
+                            <h:panelGrid id="regaliasDetail">
+                                <h:panelGrid id="rptVista">
+                                    #{rptRGuardia.llena()}
+                                    <p:panel>
+                                        <center>
+                                            <h:graphicImage style="  alignment-baseline:  central" url="#{oPlantilla.logo2}"  height="130px"/>
+                                        </center>
+                                    </p:panel>
+                                    <div align="center"><h:outputText value="REPORTE DE PAGOS EXTRAS A MÉDICOS DE GUARDIA" style="font-weight: bold;"/></div>
+                                    <p:separator />
+
+                                    <p:panel id="datosMed">
+                                        <h:outputText value="Médico: " />
+                                        <h:outputText value="#{rptRGuardia.selectedPagoRegalias.personalHospitalario.nombreCompleto}" style="font-weight: bold"/><br/>
+                                        <h:outputText value="Periodo: "/>
+                                        <h:outputText value="#{rptRGuardia.selectedPagoRegalias.fechaInicio}" style="font-weight: bold; text-transform: capitalize;">
+                                            <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                                        </h:outputText>
+                                        <h:outputText value=" al "/>
+                                        <h:outputText value="#{rptRGuardia.selectedPagoRegalias.fechaFin}" style="font-weight: bold; text-transform: capitalize;">
+                                            <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                                        </h:outputText>
+                                    </p:panel>
+                                    <br/>
+                                    <h:form id="form2">
+                                        <p:dataTable  id="dtRegalias2" var="oRM" value="#{rptRGuardia.serviciosDelMedico}" >
+                                            <p:column headerText="Concepto">
+                                                <h:outputText value="#{oRM.concepPrestado.descripConcep}"/>
+                                            </p:column>
+                                            <p:column headerText="Fecha">
+                                                <h:outputText value="#{oRM.realizado}">
+                                                    <f:convertDateTime type="date" pattern="dd-MMMM-yyyy"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Paciente">
+                                                <h:outputText value="#{oRM.paciente.nombreCompleto}"/>
+                                            </p:column>
+                                            <p:column headerText="Tipo de paciente">
+                                                <h:outputText value="#{oRM.paciente.tipo}"/>
+                                            </p:column>
+                                            <p:column headerText="Situación">
+                                                <h:outputText value="#{oRM.situacion}"/>
+                                            </p:column>
+                                            <p:column headerText="Importe">
+                                                <h:outputText value="#{oRM.costoCobrado}" style="float: right;"> 
+                                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Regalia (%)" >
+                                                <h:outputText value="#{oRM.costoCobrado*(oRM.concepPrestado.pctRegalGuard/100)}" style="float: right;">
+                                                    <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:columnGroup type="footer">
+                                                <p:row>
+                                                    <p:column colspan="5" footerText="Total:" style="text-align:right" />
+                                                    <p:column>
+                                                        <f:facet name="footer">
+                                                            <h:outputText value ="#{rptRGuardia.totalImporte}">
+                                                                <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="footer">
+                                                            <h:outputText value ="#{rptRGuardia.totalRegalias}">
+                                                                <f:convertNumber pattern="#0.00" locale="es_MX"/>
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+                                                </p:row>
+                                            </p:columnGroup>
+                                        </p:dataTable>
+                                    </h:form>
+                                    <br/>
+                                </h:panelGrid>
+                                <center>
+                                    <h:panelGrid columns="3" style=" float: right;">
+                                        <p:button outcome="rptPagoExtraMedicosGuardia.xhtml?faces-redirect=true" value="Regresar"  />  
+                                        <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" >  
+                                            <p:printer target="rptVista" />  
+                                        </p:commandButton>
+                                    </h:panelGrid>
+                                </center>
+                            </h:panelGrid>
+                        </p:scrollPanel>
+                    </p:dialog>
+
+                </h:form>     
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

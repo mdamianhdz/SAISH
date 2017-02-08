@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+<ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+<ui:define name="cuerpo">
+<title>Agenda medica</title>
+<h:body>
+        <h:form id="form">  
+          
+           <p:panel header="Administrar agenda médica" style="margin-bottom:10px;">  
+               
+               #{oAgMedico.limpiarAgenda()}
+               #{oAgMedico.activaBoton()}
+               <p:growl id="msgAM" showDetail="true"/>
+        
+               <p:panelGrid id="agenda" style=" width: 100%;">
+                   <p:row>
+                       <p:column><h:outputText value="Médico: "/></p:column>
+                       <p:column>
+                           <p:selectOneMenu id="txtFolioM1" 
+                                            filter="true"
+                                            filterMatchMode="startsWith"
+                                            value="#{oAgMedico.doctor}"> 
+                                <f:selectItem itemLabel="Selecciona" itemValue="" />  
+                                <f:selectItems value="#{oAgMedico.medicos}" /> 
+                                <p:ajax update=":form:agenda"  listener="#{oAgMedico.datosMedico()}" />  
+                            </p:selectOneMenu>
+                       </p:column>
+                       <p:column><h:outputText value="Fecha: "/></p:column>
+                       <p:column><p:calendar value="#{oAgMedico.fecha}" locale="es" showOn="button"/></p:column>
+                       <p:column><p:commandButton actionListener="#{oAgMedico.datosAgenda()}" id="btn" update=":form:tableXP :form:msgAM" value="Buscar" /></p:column>
+                   </p:row>
+                   <p:row>
+                        <p:column><h:outputText value="Especialidad: "/></p:column>
+                        <p:column><p:inputText value="#{oAgMedico.medico.esp.descrip}"/></p:column>
+                        <p:column><h:outputText value="Céd. prof.: "/></p:column>
+                        <p:column><p:inputText value="#{oAgMedico.medico.cedProf}"/></p:column>
+                        <p:column><h:outputText value="Activo: "/>
+                            <p:selectBooleanButton value="#{oAgMedico.medico.activo}" onLabel="Si" offLabel="No" onIcon="ui-icon-check" offIcon="ui-icon-close"/> </p:column>
+                   </p:row>
+               </p:panelGrid>    
+               
+               <p:dataTable value="#{oAgMedico.listaCitas}" var="oMed" id="tableXP"
+                            selection="#{oAgMedico.selectedCitaMedica}" rowKey="#{oMed.fecha}">
+                    <p:column selectionMode="single"/>
+                    <p:column headerText="Fecha">
+                        <h:outputText value="#{oMed.fecCita}" style=" text-transform: capitalize;">
+                            <f:convertDateTime pattern="dd-MMMM-yyyy" timeZone="EST"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Hora">
+                        <h:outputText value="#{oMed.fecCita}">
+                            <f:convertDateTime pattern="HH:mm"  timeZone="EST"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Paciente">
+                        <h:outputText value="#{oMed.paciente.nombre} #{oMed.paciente.apellidoPaterno} #{oMed.paciente.apellidoMaterno}"/>
+                    </p:column>
+                    <p:column headerText="Cirug&iacute;a">
+                        <p:selectBooleanButton value="#{oMed.cirugia}" onLabel="Si" offLabel="No" disabled="true" onIcon="ui-icon-check" offIcon="ui-icon-close"/> 
+                    </p:column>
+                    <p:column headerText="Observaciones">
+                        <h:outputText value="#{oMed.obs}"/>
+                    </p:column>
+                    <f:facet name="footer">  
+                        <p:commandButton update=":form:citaDetail" icon="ui-icon-search" value="Seleccionar" oncomplete="PF('citaDialog').show()" />
+                    </f:facet>
+               </p:dataTable>
+           </p:panel>  
+          
+            <p:dialog header="Cita m&eacute;dica" appendTo="@(body)" 
+                      widgetVar="citaDialog" modal="true" showEffect="fade" 
+                      hideEffect="fade" resizable="false" closable="false" >
+                <p:outputPanel id="citaDetail" style="text-align:center;">
+                    <center>
+                    <p:panelGrid rendered="#{not empty oAgMedico.selectedCitaMedica.medico}" >
+                        <p:row>
+                            <p:column><h:outputText value="Fecha:" /></p:column>
+                            <p:column>
+                                <h:outputText value="#{oAgMedico.selectedCitaMedica.fecCita}" 
+                                              style=" text-transform: capitalize;">
+                                    <f:convertDateTime pattern="dd-MMMM-yyyy" timeZone="EST"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column><h:outputText value="Hora:" /></p:column>
+                            <p:column>
+                                <h:outputText value="#{oAgMedico.selectedCitaMedica.fecCita}">
+                                    <f:convertDateTime pattern="HH:mm"  timeZone="EST"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column><h:outputText value="M&eacute;dico" /></p:column>
+                            <p:column>
+                                <h:outputText value="Dr. #{oAgMedico.selectedCitaMedica.medico.nombreCompleto}" />
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                    <h:panelGrid>    
+                        <p:row>
+                            <p:remoteCommand name="rc" update="msgs" actionListener="#{oAgMedico.eliminarCita()}" />
+                            <p:growl id="msgs" showDetail="true" />
+                            <p:column>
+                                <p:button outcome="nuevaCitaMedica" value="Nueva" rendered="#{not empty oAgMedico.selectedCitaMedica.medico}" />  
+                            </p:column>
+                            <p:column>
+                                <p:commandButton type="button" onclick="rc();" 
+                                                 value="Eliminar" update="form" 
+                                                 rendered="#{not empty oAgMedico.selectedCitaMedica.paciente}"    />
+                            </p:column>
+                            <p:column>
+                                <p:button outcome="agendaMedica.xhtml?faces-redirect=true" value="Regresar"  />  
+                            </p:column>
+                        </p:row>
+                    </h:panelGrid>
+                    </center>
+                </p:outputPanel>
+            </p:dialog>
+        </h:form>     
+    </h:body>
+</ui:define> 
+</ui:composition> 
+</html>

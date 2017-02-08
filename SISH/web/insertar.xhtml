@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inicio</title>
+            <h:body>
+                 
+                #{oMe.validaPermisoPagina(("insertar"))}
+                
+                <br/>
+                <h:form>
+                    <p:growl id="grow1" sticky="true" />
+                <center>                
+                <p:panel id="panel" style="width:500px" >
+                
+                            <h:panelGrid columns="2">
+
+                                    
+                                        <p:column>
+                                            Nombre
+                                        </p:column>    
+                                        <p:column>
+                                            <p:inputText value="#{oPaciente.paciente.nombre}" required="true" label="Nombre"/>
+                                        </p:column>
+                                    
+                                        <p:column>
+                                            Apellido paterno
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText value="#{oPaciente.paciente.apellidoPat}" required="true" label="Apellido paterno"/>
+                                        </p:column>
+                                    
+                                        <p:column>
+                                            Apellido materno
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText value="#{oPaciente.paciente.apellidoMat}" required="true" label="Apellido materno"/>
+                                        </p:column>
+                                    
+                                        <p:column>
+                                            Fecha de nacimiento
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText id="fecha" value="#{oPaciente.paciente.fechaValida}" required="true" label="Fechade nacimiento" /><p:watermark for="fecha" value="yyyy-mm-dd" />
+                                        </p:column>
+                                        
+                                        <p:column>
+                                            Curp
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText value="#{oPaciente.paciente.curp}" required="true" label="CURP"/><p:watermark for="fecha" value="yyyy-mm-dd" />
+                                        </p:column>
+                                    
+                                        <p:column>
+                                            RFC
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText value="#{oPaciente.paciente.rfc}" required="true" label="RFC"/>
+                                        </p:column>
+                                
+                                        <p:column>
+                                            Cédula profesional
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText value="#{oPaciente.paciente.cedulaPro}" required="true" label="Cedula Profesional"/>
+                                        </p:column>
+                                
+                                        <p:column>
+                                            UUID
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText value="#{oPaciente.paciente.UUID}" required="true" label="UUID"/>
+                                        </p:column>
+                                
+                                        <p:column>
+                                            SSA
+                                        </p:column>
+                                        <p:column>
+                                            <p:inputText value="#{oPaciente.paciente.SSA}" required="true" label="SSA"/>
+                                        </p:column>
+                                
+                                        
+                            </h:panelGrid>
+                 </p:panel>
+                 <br/>   
+                 <p:commandButton update="grow1"  value="Insertar" action="#{oPaciente.insertaPaciente()}"/> 
+                   
+                </center>    
+                </h:form>
+          <br/><br/>
+    </h:body>
+    </ui:define> 
+    </ui:composition>    
+</html>

@@ -1,0 +1,168 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Consultar Servicios de Hospitalizaci&oacute;n Otorgados</title>
+            <h:body>
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    <center>
+                        
+                        
+        <p:panel id="pgRptINICIO" >
+            <h2>Desglose de Servicios de Hospitalizaci&oacute;n Otorgados</h2>
+            <br/>
+                        <p:dataTable id="dtRpt" var="oRpt"
+                                     value="#{oRptSerHospOtorJB.lista}" 
+                                     paginator="true"
+                                     paginatorPosition="bottom" 
+                                     rows="9" 
+                                     emptyMessage="No hay datos" 
+                                     style="width:1100px"
+                                     
+                                     >
+                            <p:column  style="width: 110px">
+                                <f:facet name="header"> <h:outputText value="Hora" /> </f:facet>
+                                <p:outputLabel value="#{oRpt.opeFecha}"/>
+                            </p:column>
+                            <p:column style="width: 40px">
+                                <f:facet name="header"> <h:outputText value="Folio Op" /> </f:facet>
+                                <p:outputLabel value="#{oRpt.folio}"/>
+                            </p:column>
+                            <p:column style="width: 20px">
+                                <f:facet name="header"> <h:outputText value="Folio del Paciente" /> </f:facet>
+                                <p:outputLabel value="#{oRpt.folioPaciente}"/>
+                            </p:column>
+                            <p:column  style="width: 190px">
+                                <f:facet name="header"> <h:outputText value="Nombre del Paciente" /> </f:facet>
+                                <p:outputLabel value="#{oRpt.nombreCompleto}"/>
+                            </p:column>
+                            <p:column style="width: 60px">
+                                <f:facet name="header" > <h:outputText value="Empresa &oacute; Particular" /> </f:facet>
+                                <p:outputLabel value="#{oRpt.empresaPart}"/>
+                            </p:column>
+                            <p:column style="width: 210px">
+                                <f:facet name="header" > <h:outputText value="Descripci&oacute;n" /> </f:facet>
+                                <p:outputLabel value="#{oRpt.descripcion}"/>
+                            </p:column>
+                            <p:column style="width: 60px" >
+                                <f:facet name="header"> <h:outputText value="Precio Normal"/> </f:facet>
+                                <p:outputLabel value="#{oRpt.precio}" 
+                                               style="text-align: right">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                                <f:facet name="footer"><p:outputLabel value="Total $#{oRptSerHospOtorJB.totPrecioNormal}" /></f:facet>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header"> <h:outputText value="IVA" /> </f:facet>
+                                <p:outputLabel value="#{oRpt.iva} %"/>
+                            </p:column>
+                            <p:column  style="width: 60px">
+                                <f:facet name="header"> <h:outputText value="Precio Cobrado" /> </f:facet>
+                                <p:outputLabel value="#{oRpt.total}" 
+                                               style="text-align: right">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Total $#{oRptSerHospOtorJB.total}" /></f:facet>
+                            </p:column>
+                            <p:column style="width: 60px">
+                                <f:facet name="header"> <h:outputText value="Cr&eacute;dito &oacute; Contado" /> </f:facet>
+                                <p:outputLabel value="#{oRpt.credOcont}"/>
+                            </p:column>
+                        </p:dataTable>
+                        <br/>
+                        <h3>TOTAL SERVICIOS OTORGADOS DE CONTADO POR LINEA</h3>
+                                    <p:dataTable id="dtRpt2" var="oRpt"
+                                                 value="#{oRptSerHospOtorJB.lineaCon}" 
+                                            paginator="false" 
+                                            paginatorPosition="bottom" 
+                                            rows="9" 
+                                            emptyMessage="No hay servicios otorgados de contado" 
+                                            style="width:500px" 
+                                            >
+                                        <p:column  style="width: 300px" >
+                                            <f:facet name="header"> <h:outputText value="DESCRICION" /> </f:facet>
+                                            <p:outputLabel value="#{oRpt.descripLinea}"/>
+                                        </p:column>
+                                        <p:column  style="width: 200px" >
+                                            <f:facet name="header"> <h:outputText value="TOTAL" /> </f:facet>
+                                            <p:outputLabel value="#{oRpt.totalLinea}">
+                                            <f:convertNumber type="currency"/>
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                        <br/>
+                        <h3>TOTAL SERVICIOS OTORGADOS DE CR&Eacute;DITO POR LINEA</h3>
+                                    <p:dataTable id="dtRpt3" var="oRpt"
+                                                 value="#{oRptSerHospOtorJB.lineaCre}" 
+                                            paginator="false" 
+                                            paginatorPosition="bottom" 
+                                            rows="9" 
+                                            emptyMessage="No hay servicios otorgados a cr&eacute;dito" 
+                                            style="width:500px" 
+
+                                            >
+                                        <p:column  style="width: 300px" >
+                                            <f:facet name="header"> <h:outputText value="DESCRICION" /> </f:facet>
+                                            <p:outputLabel value="#{oRpt.descripLinea}"/>
+                                        </p:column>
+                                        <p:column  style="width: 200px" >
+                                            <f:facet name="header"> <h:outputText value="TOTAL" /> </f:facet>
+                                            <p:outputLabel value="#{oRpt.totalLinea}">
+                                                <f:convertNumber type="currency"/>
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                        <br/>
+                        
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="TOTAL DE CONTADO"/>
+                                </p:column>
+                                <p:column >
+                                    <p:outputLabel value="#{oRptSerHospOtorJB.totContado}" >
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="TOTAL DE CR&Eacute;DITO"/>
+                                </p:column>
+                                <p:column >
+                                    <p:outputLabel value="#{oRptSerHospOtorJB.totCredito}" >
+                                        <f:convertNumber type="currency"/>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid>
+            
+                        
+        </p:panel>
+                        <p:commandButton value="IMPRIMIR" ajax="false">
+                            <p:printer target="pgRptINICIO"/>
+                        </p:commandButton>
+                        
+                        <p:commandButton value="PDF" ajax="false">
+                            <p:dataExporter type="pdf" target="dtRpt"  
+                                fileName="ReporteDesgloseServiciosOtorgados" preProcessor="#{oRptSerHospOtorJB.preProcessPDF}"/>                          
+                        </p:commandButton>
+                    </center>
+                    </h:form>
+                    <p:dialog modal="true" widgetVar="statusDialog" header="Status" 
+                          draggable="false" closable="false" resizable="false">
+                    <p:graphicImage name="/imgs/ajax-loader.gif" />
+                </p:dialog>
+            </h:body>
+        </ui:define>
+    </ui:composition>
+</html>
+<!--/>
+-->

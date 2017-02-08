@@ -1,0 +1,154 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Identificar Pagos de Facturas a Crédito</title>
+            <h:body> 
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    <center>
+                        <h2>Identificar Pagos de Facturas a Crédito</h2>
+                        <p:dialog id="dlgPagoFactura" widgetVar="dlgPago" appendTo="@(body)" closable="false" resizable="false"  
+                                  dynamic="true" modal="false" >
+                            <center>
+                                <h3>Identificar Pagos de Facturas a Crédito</h3>
+                                <h:form id="formDlg">
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Folio Factura: " style=" font-weight:bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="#{oFacturasCred.selectedFactura.factura.nombreSerie}-#{oFacturasCred.selectedFactura.factura.folio}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Fecha: " style=" font-weight:bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="#{oFacturasCred.selectedFactura.factura.expedicion}"/>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Compañia: " style=" font-weight:bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="#{oFacturasCred.selectedFactura.factura.compCred.nombreCorto}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Paciente: " style=" font-weight:bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="#{oFacturasCred.selectedFactura.factura.opCC.servPrest.paciente.nombreCompleto}"/>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Forma de Pago: " style=" font-weight:bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oFacturasCred.formaPago}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                                    <f:selectItems value="#{oFacturasCred.listFormasPago}" var="oFormaP" itemLabel="#{oFormaP.descripcion}" itemValue="#{oFormaP.cveFrmPago}"/>
+                                                    <p:ajax/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Fecha de Pago: " style=" font-weight:bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:calendar value="#{oFacturasCred.fechaPago}" showOn="button">
+                                                    <p:ajax event="dateSelect"/>
+                                                </p:calendar>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Referencia de Pago: " style=" font-weight:bold"/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:inputTextarea value="#{oFacturasCred.referencia}"><p:ajax /></p:inputTextarea>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="4">
+                                                <p:commandButton value="Guardar" oncomplete="PF('dlgPago').hide()">
+                                                    <p:ajax listener="#{oFacturasCred.guardar()}" update=":form:msg :form:dtFacturas"/>
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Compañía: " style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu value="#{oFacturasCred.selectedCompania}">
+                                        <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                        <f:selectItems value="#{oFacturasCred.listCompanias}" var="oCC" itemLabel="#{oCC.nombreCorto}" itemValue="#{oCC.idEmp}"/>
+                                        <p:ajax/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Buscar">
+                                        <p:ajax update="dtFacturas" listener="#{oFacturasCred.buscaFacturas()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/>
+                        <p:dataTable id="dtFacturas" var="oFact" value="#{oFacturasCred.listFacturas}" paginator="true" paginatorPosition="bottom" rows="6" 
+                                     emptyMessage="No hay registros" selection="#{oFacturasCred.selectedFactura}" rowKey="#{oFact.numContraRecibo}" style="width:1000px">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Fecha">
+                                <p:outputLabel value="#{oFact.factura.expedicion}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Folio">
+                                <p:outputLabel value="#{oFact.factura.nombreSerie}-#{oFact.factura.folio}"/>
+                            </p:column>
+                            <p:column headerText="Empresa">
+                                <p:outputLabel value="#{oFact.factura.compCred.nombreCorto}"/>
+                            </p:column>
+                            <p:column headerText="Paciente">
+                                <p:outputLabel value="#{oFact.factura.opCC.servPrest.paciente.nombreCompleto}"/>
+                            </p:column>
+                            <p:column headerText="Importe">
+                                <p:outputLabel value="#{oFact.factura.importeTotal}"/>
+                            </p:column>
+                            <p:column headerText="Contrarecibo">
+                                <p:outputLabel value="#{oFact.numContraRecibo}"/>
+                            </p:column>
+                            <p:column headerText="Fecha Contrarecibo">
+                                <p:outputLabel value="#{oFact.fecRecepcion}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Fecha Esperada de Pago">
+                                <p:outputLabel value="#{oFact.fecProbPago}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="IdentificarPago">
+                                    <p:ajax update=":form:msg :form:dlgPagoFactura" listener="#{oFacturasCred.identificar()}"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable>
+                    </center>
+                </h:form>                     
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>
+

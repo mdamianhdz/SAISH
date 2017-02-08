@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Usuarios</title>
+            <h:body> 
+                <h:form id="form">
+                    <p:dataTable id="perfilesU" var="usu" value="#{oPU.relaciones}">
+                            <p:subTable var="p" value="#{usu.listaPerfiles}">
+                                <f:facet name="header">
+                                    &nbsp;
+                                </f:facet>
+                                <p:column style="width:20%">
+                                    <p:commandButton  rendered="#{oPU.renderCommand(usu.listaPerfiles.indexOf(p))}" value="Editar perfiles:  #{usu.usuario.usuario}" oncomplete="dlgRel.show()" action="#{oPU.llenaPick(usu.usuario.usuario)}" update=":form2:dlgRelaciones" />
+                                </p:column>
+                                <p:column style="width:15%">
+                                    <h:outputText rendered="#{oPU.renderCol(p.perfil)}" value="#{p.perfil}"/>
+                                </p:column>  
+                                <p:column style="height:20px">
+                                    #{p.descripcion}
+                                </p:column> 
+                            </p:subTable>
+                    </p:dataTable>
+                </h:form>
+                <h:form id="form2">
+                    <p:growl id="msg" showDetail="true" escape="false" />
+                    <p:dialog id="dlgRelaciones" widgetVar="dlgRel"> 
+                        <p:pickList id="pickList" value="#{oPU.perfiles}" var="perf"   
+                                    itemLabel="#{perf.perfil}" itemValue="#{perf.perfil}" />  
+
+                        <p:commandButton id="citySubmit" value="Actualizar"  action="#{oPU.actualizaRel()}"  style="margin-top:5px"/>
+                    </p:dialog>
+                </h:form>
+            </h:body>
+        </ui:define> 
+    </ui:composition>
+</html>

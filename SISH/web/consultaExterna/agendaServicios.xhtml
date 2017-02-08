@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+<ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+<ui:define name="cuerpo">
+<title>Agenda de servicios</title>
+<h:body> 
+       <h:form id="form">  
+           #{oAgServ.limpiarAgenda()}
+           #{oAgServ.activaBoton()}
+       
+       <p:growl id="msgAS" showDetail="true"/>
+           
+           <p:panel header="Administrar agenda de servicios" style="margin-bottom:10px;">  
+               
+               <p:panelGrid id="agenda" style=" width: 95%;">
+                   <p:row>
+                       <p:column><h:outputText value="Servicio:"/></p:column>
+                       <p:column>
+                           <p:selectOneMenu id="txtFolioM1" value="#{oAgServ.nombreServicio}">  
+                                <f:selectItem itemLabel="Servicio" itemValue="" />  
+                                <f:selectItems value="#{oAgServ.servicios}" />  
+                                <p:ajax update=":form:agenda" listener="#{oAgServ.datosServicio()}" />  
+                           </p:selectOneMenu>
+                       </p:column>
+                       <p:column><h:outputText value="Fecha: "/></p:column>
+                       <p:column><p:calendar value="#{oAgServ.fecha}" pattern="dd-MMMM-yyyy" locale="es" showOn="button"/></p:column>
+                       <p:column><p:commandButton actionListener="#{oAgServ.datosAgenda()}" id="btn" update=":form:tableXP :form:msgAS" value="Buscar"/></p:column>
+                   </p:row>
+                   <p:row>
+                       <p:column><h:outputText value="Horario: "/></p:column>
+                       <p:column><p:inputText value="#{oAgServ.areaDeServicio.horario}" size="45"/></p:column>
+                       <p:column><h:outputText value="Activo: "/></p:column>
+                       <p:column><p:selectBooleanButton value="#{oAgServ.areaDeServicio.agenda}" onLabel="Si" offLabel="No" onIcon="ui-icon-check" offIcon="ui-icon-close"/></p:column>
+                   </p:row>                       
+                </p:panelGrid>
+
+                <p:dataTable value="#{oAgServ.listaCitas}" var="oCitaS" id="tableXP"
+                            selection="#{oAgServ.selectedCitaServicio}" rowKey="#{oCitaS.fecha}">
+                        <f:facet name="header">
+                            <h:outputText value=""/>
+                        </f:facet>
+                        <p:column selectionMode="single"/>
+
+                        <f:facet name="header">
+                            <h:outputText value="Agenda de servicios"/>
+                        </f:facet>
+        
+                        <p:column headerText="Fecha">
+                            <h:outputText value="#{oCitaS.fecCita}" style=" text-transform: capitalize;">
+                                <f:convertDateTime pattern="dd-MMMM-yyyy" timeZone="EST"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Hora">
+                            <h:outputText value="#{oCitaS.fecCita}">
+                                <f:convertDateTime pattern="HH:mm" timeZone="EST"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Paciente">
+                            <h:outputText value="#{oCitaS.paciente.nombre} #{oCitaS.paciente.apellidoPaterno} #{oCitaS.paciente.apellidoMaterno} "/>
+                        </p:column>
+                        <p:column headerText="Tipo"> 
+                            <p:outputPanel rendered="#{not empty oCitaS.paciente}">
+                                <h:outputText value="Contado" rendered="#{oCitaS.tipoPrincipal==0}" />
+                                <h:outputText value="Crédito" rendered="#{oCitaS.tipoPrincipal==1}"/>
+                                <h:outputText value="Paquete" rendered="#{oCitaS.tipoPrincipal==2}"/>
+                            </p:outputPanel>
+                        </p:column>
+                        <f:facet name="footer">  
+                             <p:commandButton update=":form:citaDetail" icon="ui-icon-search" value="Seleccionar" oncomplete="PF('citaDialog').show()" />
+                         </f:facet>
+                </p:dataTable>
+              </p:panel>  
+           
+        <p:dialog header="Cita servicios" appendTo="@(body)" widgetVar="citaDialog" modal="true" showEffect="fade" hideEffect="fade" resizable="false" closable="false">
+                <p:outputPanel id="citaDetail" style="text-align:center;">
+                    <center>
+                    <p:panelGrid  rendered="#{not empty oAgServ.selectedCitaServicio.areaServicio}" >
+                        <p:row>
+                            <p:column><h:outputText value="Fecha:" /></p:column>
+                            <p:column>
+                                <h:outputText value="#{oAgServ.selectedCitaServicio.fecCita}" style=" text-transform: capitalize;">
+                                    <f:convertDateTime pattern="dd-MMMM-yyyy" timeZone="EST"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column><h:outputText value="Hora:" /></p:column>
+                            <p:column>
+                                <h:outputText value="#{oAgServ.selectedCitaServicio.fecCita}">
+                                    <f:convertDateTime pattern="HH:mm"  timeZone="EST"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column><h:outputText value="Area de servicio" /></p:column>
+                            <p:column>
+                                <h:outputText value="#{oAgServ.selectedCitaServicio.areaServicio.descrip}" />
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                    <h:panelGrid>
+                        <p:row>
+                            <p:remoteCommand name="rc" update="msgs" actionListener="#{oAgServ.eliminarCita()}" />
+                            <p:growl id="msgs" showDetail="true" />
+                            <p:column>
+                                <p:button outcome="nuevaCitaServicio.xhtml?faces-redirect=true" value="Nueva" rendered="#{not empty oAgServ.selectedCitaServicio.areaServicio}" />  
+                            </p:column>
+                            <p:column>
+                                <p:commandButton type="button" onclick="rc()" value="Eliminar" rendered="#{not empty oAgServ.selectedCitaServicio.paciente}" />
+                            </p:column>
+                            <p:column>
+                                <p:button outcome="agendaServicios.xhtml?faces-redirect=true" value="Regresar" />  
+                            </p:column>
+                        </p:row>
+                    </h:panelGrid>
+                    </center>
+                </p:outputPanel>
+            </p:dialog>
+           
+         </h:form>     
+    </h:body>
+</ui:define> 
+</ui:composition> 
+</html>

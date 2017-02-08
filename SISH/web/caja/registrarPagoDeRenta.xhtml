@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Registrar Pago de Renta</title>
+            <h:body>
+                #{oRegPagRent.limpiaPagina()}
+                <center><h2>Registrar Pago de Renta</h2></center>
+
+
+                <h:form id="form">
+                    <p:growl id="msgs" showDetail="true" sticky="true" />
+                    <p:dialog id="dialogE" resizable="false" header="Operación Exitosa" widgetVar="diaE" modal="true" appendTo="@(body)" closable="false">
+                        <p:panel id="display">
+                            <h:panelGrid>
+                                <p:row>
+                                    Se ha generado el Folio de caja:  <p:outputLabel style="font-weight: bold" value="#{oRegPagRent.folioRet}"/>
+                                </p:row>
+                                <p:row>
+                                    <br></br>
+                                    <p:column>     
+                                        <p:commandButton value="Imprimir" type="button" icon="ui-icon-print" onclick="printTicket();"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:commandButton label="Regresar" value="Regresar">
+                                            <p:ajax listener="#{oRegPagRent.regresar()}" />
+                                        </p:commandButton>
+                                    </p:column>
+
+                                </p:row>
+                            </h:panelGrid>
+                        </p:panel>  
+                    </p:dialog>
+
+                    <h:panelGrid columns="3">
+                        <p:outputLabel value="Seleccionar Arrendador"/>
+                        <p:selectOneMenu value="#{oRegPagRent.rfc}" id="sMPR" filter="true">
+                            <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                            <f:selectItems value="#{oRegPagRent.listReceptores}" var="oRec" itemLabel="#{oRec.rfc}-#{oRec.nombre}" itemValue="#{oRec.rfc}"/>
+                            <p:ajax update="tblR" listener="#{oRegPagRent.cargaPagosRenta()}" />
+                        </p:selectOneMenu>
+                    </h:panelGrid>
+
+                    <p:dataTable rows="6" id="tblR" value="#{oRegPagRent.listCR}" emptyMessage="No se encontró información." selection="#{oRegPagRent.selectedCR}" rowKey="#{oPR.idContratoRenta}" var="oPR" >
+                        <p:ajax event="rowSelectRadio" listener="#{oRegPagRent.onRowSelect}" update=":form:msgs"/>
+                        <p:column selectionMode="single">
+                        </p:column>
+                        <p:column headerText="RFC">
+                            <p:outputLabel value="#{oPR.receptor.rfc}"/>
+                        </p:column>  
+                        <p:column headerText="Nombre">
+                            <p:outputLabel value="#{oPR.receptor.nombre}"/>
+                        </p:column>  
+                        <p:column headerText="Mensualidad">
+                            <p:outputLabel value="#{oPR.pagoRenta.mensualidadFmt}"/>
+                        </p:column>  
+                        <p:column headerText="Descripción">
+                            <p:outputLabel value="#{oPR.espacioRent.descripcion}"/>
+                        </p:column>
+                        <p:column headerText="Monto a pagar">
+                            <p:outputLabel value="#{oPR.rentaMensual}">
+                                <f:convertNumber pattern="#0.00"/>
+                            </p:outputLabel>                          
+                        </p:column>
+                    </p:dataTable>  
+
+                    <h:panelGrid columns="4" cellpadding="5">
+                        <p:column>
+                            <h:outputText style="font-weight: bold;" value="Forma de Pago: " />
+                            <p:selectOneMenu required="true" requiredMessage="Se requiere una Forma de Pago" id="SL" value="#{oRegPagRent.forma}">
+                                <f:selectItem itemLabel="Seleccione" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{oFormaDePago.formasDePago}" var="oLP1"  itemLabel="#{oLP1.descripcion}" itemValue="#{oLP1.cveFrmPago}"/>
+                                <p:ajax update="pg1" listener="#{oRegPagRent.validaForma()}"/>
+                            </p:selectOneMenu>
+                        </p:column>
+                        <p:column>
+                            <h:outputText style="font-weight: bold;" value="Banco : " />
+                            <p:selectOneMenu requiredMessage="Seleccione un banco" id="SB" value="" required="true">
+                                <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                <f:selectItems value="#{oFormaDePago.bancos}" />
+                            </p:selectOneMenu>
+                        </p:column>
+                    </h:panelGrid> 
+                    <h:panelGrid id="pg1" columns="4">
+                        <p:column><h:outputText    rendered="#{oRegPagRent.cheque}" style="font-weight: bold;" value="N&uacute;mero de cheque" /></p:column> 
+                        <p:column><p:inputText  rendered="#{oRegPagRent.cheque}" value="#{oRegPagRent.datosPago}" label="N&uacute;mero de cheque"/></p:column>
+                        <p:column><h:outputText  rendered="#{oRegPagRent.transferencia}" style="font-weight: bold;" value="N&uacute;mero de transferencia" /> </p:column> 
+                        <p:column><p:inputText  rendered="#{oRegPagRent.transferencia}" value="#{oRegPagRent.datosPago}" label="N&uacute;mero de transferencia"/> </p:column>
+                        <p:outputLabel value="Desea Factura" style="font-weight: bold"/>
+                        <p:selectBooleanCheckbox label="Desea Factura" value="#{oRegPagRent.factura}"/>
+                    </h:panelGrid>
+
+                    <center>
+                        <p:commandButton value="Guardar" label="Guardar">
+                            <p:ajax listener="#{oRegPagRent.validaPagoRenta()}" update=":form:msgs :form:display :ticketInfo"/>
+                        </p:commandButton>
+                    </center>
+                </h:form>
+
+                <h:panelGroup id="ticketInfo">
+                    <h:outputScript>
+                        var ticket;
+                        function printTicket() {
+                        ticket = {
+                        "reimpresion": false,
+                        "title": 5,
+                        "fecha": ""+getFecha(true)+"", 
+                        "hora": ""+getHora(true)+"",
+                        "folioope": "#{oRegPagRent.folioRet}",
+                        "doctor": "#{oRegPagRent.selectedCR.receptor.nombre}",
+                        "recfiscal": "",
+                        "mes": "#{oRegPagRent.selectedCR.pagoRenta.mensualidad}",
+                        "anio": ""+fechaConFormato('#{oRegPagRent.selectedCR.pagoRenta.programada}')+"",
+                        "usuario": "#{oUsuario.sesionUsuario.usuario}",
+                        "servicios": [
+                        {
+                        "cantidad": "1",
+                        "descripcion": "PAGO DE RENTA",
+                        "precio": "#{oRegPagRent.selectedCR.rentaMensual}"
+                        }
+                        ]                        
+                        };
+                        print(ticket);
+                        }
+                    </h:outputScript>
+                </h:panelGroup>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

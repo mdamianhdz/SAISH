@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Inicio</title>
+            <h:body>
+                <center>
+                    <h2>Capturar Pagos a Realizar</h2>
+                    <h:form id="form">
+                        <p:growl id="msg" showDetail="true" sticky="true"/> 
+                        <p:dialog id="dlgCapturaPago" widgetVar="dlgPago" appendTo="@(body)" closable="false" resizable="false"  
+                                  dynamic="true" modal="false" >
+                            <center>
+                                <h3>Captura de Pago</h3>
+                                <h:form id="formDlg">
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Fecha de Registro:" style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="#{oPagos.selectedGasto.registro}">
+                                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Proveedor:" 
+                                                               style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="#{oPagos.selectedGasto.prov.nombreRazSoc}" />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Descripción:" style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:outputLabel value="#{oPagos.selectedGasto.descripcion}" />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="4"/>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Forma de Pago:" style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column colspan="3">
+                                                <p:selectOneMenu value="#{oPagos.selectedGasto.movCtaBan.formaPago.cveFrmPago}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                                    <f:selectItem itemLabel="Cheque" itemValue="CHQ"/>
+                                                    <f:selectItem itemLabel="Transferencia Electrónica" itemValue="TRE"/>
+                                                    <p:ajax listener="#{oPagos.validaFormaPago}" update="panelDatos"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Banco:" style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu value="#{oPagos.selectedGasto.movCtaBan.cuentaBanco.banco.idEmp}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="S"/>
+                                                    <f:selectItems value="#{oPagos.listBancos}" var="oBanco" itemLabel="#{oBanco.nombreCorto}" itemValue="#{oBanco.idEmp}"/>
+                                                    <p:ajax update="selCuenta" listener="#{oPagos.buscaCuentas()}"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Cuenta:" style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu id="selCuenta" value="#{oPagos.selectedGasto.movCtaBan.cuentaBanco.numCtaBan}">
+                                                    <f:selectItem itemLabel="Seleccione" itemValue="S"/>
+                                                    <f:selectItems value="#{oPagos.listCuentas}" var="oCta" itemLabel="#{oCta.descripcion}" itemValue="#{oCta.numCtaBan}"/>
+                                                    <p:ajax/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel rendered="#{oPagos.renderCheque}" value="Número de Cheque:" style="font-weight: bold"/>
+                                                <p:outputLabel rendered="#{!oPagos.renderCheque}" value="Número de Operación:" style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText value="#{oPagos.selectedGasto.movCtaBan.numDocto}"><p:ajax/></p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel  rendered="#{oPagos.renderCheque}" value="Fecha Probable de Pago:" style="font-weight: bold"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:calendar rendered="#{oPagos.renderCheque}" 
+                                                            value="#{oPagos.selectedGasto.propPago}" 
+                                                            showOn="button">
+                                                    <p:ajax event="dateSelect"/>
+                                                </p:calendar>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                    <p:commandButton value="Guardar" oncomplete="PF('dlgPago').hide()">
+                                        <p:ajax listener="#{oPagos.guardar()}" update=":form:msg :form:dtGastos"/>
+                                    </p:commandButton>
+                                    <p:commandButton value="Cancelar" oncomplete="PF('dlgPago').hide()"/>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Proveedor:"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu value="#{oPagos.selectedProv}">
+                                        <f:selectItem itemValue="S" itemLabel="Seleccione"/>
+                                        <f:selectItems value="#{oPagos.listProveedores}" var="oProv" itemValue="#{oProv.idProv}" itemLabel="#{oProv.nombreRazSoc}"/>
+                                        <p:ajax/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Fecha de Registro:"/>
+                                </p:column>
+                                <p:column>del&nbsp;
+                                    <p:calendar value="#{oPagos.inicio}" showOn="button">
+                                        <p:ajax event="dateSelect" listener="#{oPagos.validaFecha}" update="msg" />
+                                    </p:calendar>&nbsp;al
+                                    <p:calendar value="#{oPagos.inicio}" showOn="button">
+                                        <p:ajax event="dateSelect" listener="#{oPagos.validaFecha}" update="msg" />
+                                    </p:calendar>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Buscar">
+                                        <p:ajax listener="#{oPagos.buscar()}" update="dtGastos"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid> <br/>                   
+                        <p:dataTable id="dtGastos" value="#{oPagos.listGastos}" 
+                                     var="oGasto" 
+                                     emptyMessage="No hay gastos registrados"
+                                     paginator="true" paginatorPosition="bottom" 
+                                     rows="5" 
+                                     selection="#{oPagos.selectedGasto}" 
+                                     rowKey="#{oGasto.idGasto}">
+                            <p:ajax event="rowSelectRadio" 
+                                    listener="#{oPagos.habilitaBoton()}" 
+                                    update="btnCapturaPago"/>
+                            <p:column selectionMode="single"/>
+                            <p:column headerText="Descripción">
+                                <p:outputLabel value="#{oGasto.descripcion}"/>
+                            </p:column>
+                            <p:column headerText="Fecha Registro">
+                                <p:outputLabel value="#{oGasto.registro}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/> 
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Proveedor">
+                                <p:outputLabel value="#{oGasto.prov.nombreRazSoc}"/>
+                            </p:column>
+                            <p:column headerText="Concepto Egreso">
+                                <p:outputLabel value="#{oGasto.concEgreso.descripcion}"/>
+                            </p:column>
+                            <p:column headerText="Monto">
+                                <p:outputLabel value="#{oGasto.monto}"/>
+                            </p:column>
+                             <f:facet name="footer">
+                                 <p:commandButton id="btnCapturaPago" 
+                                                  disabled="#{oPagos.disBoton}" 
+                                                  value="&nbsp;&nbsp;Capturar Pago&nbsp;&nbsp;" 
+                                                  oncomplete="PF('dlgPago').show()" 
+                                                  update=":form:dlgCapturaPago"/>
+                            </f:facet>
+                        </p:dataTable>
+                    </h:form>
+                </center>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

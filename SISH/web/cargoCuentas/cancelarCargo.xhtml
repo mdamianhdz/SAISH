@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"> 
+
+<ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+<ui:define name="cuerpo">
+    <title>Cancelar cargo</title>
+<h:body>
+    <h:form id="form">  
+        #{oCnlCargo.limpiar()}
+        
+        <p:growl id="msgsCnl" showDetail="true"/>
+        <p:panel header="Cancelar cargo" style="margin-bottom:10px; width:90%;">  
+               
+        <h:panelGrid id="agenda" columns="4" width="60%" >
+            <h:outputText value="Fecha:  " />
+            <h:outputText value="#{oCnlCargo.fecha}" >
+                <f:convertDateTime pattern="dd/MM/yyyy" />
+            </h:outputText>
+                   
+            <h:outputText value="Paciente: " />
+            <p:selectOneMenu id="txtFolioM1" value="#{oCnlCargo.nombrePaciente}">  
+                <f:selectItem itemLabel="Pacientes con cuenta" itemValue="" />  
+                <f:selectItems value="#{oCnlCargo.nomPacientes}" />  
+                <p:ajax update="datos" listener="#{oCnlCargo.datosEpisodio()}" />  
+            </p:selectOneMenu>
+        </h:panelGrid>    
+               
+        <h:panelGrid id="datos" columns="1">
+            <h:panelGrid id="datosEM" columns="6"  width="100%" >
+                <h:outputText value="Folio del paciente: "/>
+                <p:inputText value="#{oCnlCargo.paciente.folioPac}" />
+                <h:outputText value="Fecha de ingreso: "/>
+                <p:inputText value="#{oCnlCargo.episodioMedico.inicio}" />
+                <h:outputText value="Fecha alta: "/>
+                <p:inputText value="#{oCnlCargo.episodioMedico.alta}" />
+                <h:outputText value="Doctor tratante: "/>
+                <p:inputText value="#{oCnlCargo.episodioMedico.medTratante.nombreCompleto}" size="50" />
+                <h:outputText value="Diagnóstico: "/>
+                <p:inputText value="#{oCnlCargo.episodioMedico.dxIngreso.descrip}" />
+                <h:outputText value="Habitación: "/>
+                <p:inputText value="#{oCnlCargo.episodioMedico.hab.hab}" />
+            </h:panelGrid>
+            
+            <br/><br/>
+            <p:dataTable id="tb1" var="cargo" value="#{oCnlCargo.servicios}" 
+                         rows="7" paginator="true" 
+                         paginatorPosition="bottom" selectionMode="single"
+                         selection="#{oCnlCargo.selectedServicioPrestado}" 
+                         rowKey="#{cargo.idFolio}" >   
+                <p:ajax event="rowSelect" listener="#{oCnlCargo.onRowSelect}" />
+                <p:column headerText="Folio">
+                    <h:outputText value="#{cargo.idFolio}" />
+                </p:column>
+                <p:column headerText="Fecha de registro">
+                    <h:outputText value="#{cargo.realizado}" />
+                </p:column>
+                <p:column headerText="Fecha de realización">
+                    <h:outputText value="#{cargo.registro}" />
+                </p:column>
+                <p:column headerText="Concepto">
+                    <h:outputText value="#{cargo.concepPrestado.descripConcep}" />
+                </p:column>
+                <p:column headerText="Costo original">
+                    <h:outputText value="#{cargo.costoOriginal}" />
+                </p:column>
+                <p:column headerText="Costo cobrado">
+                    <h:outputText value="#{cargo.costoCobrado}" />
+                </p:column>
+                <f:facet name="footer">  
+                    <p:commandButton value="Cancelar cargo" actionListener="#{oCnlCargo.cancelarCargo()}" icon="ui-icon-trash" title="View">
+                        <f:setPropertyActionListener value="#{cargo}" target="#{oCnlCargo.selectedServicioPrestado}" />
+                        <p:ajax update=":form:msgsCnl :form:tb1 :form:total" 
+                                listener="#{oCnlCargo.cancelarCargo}" />
+                    </p:commandButton>
+                </f:facet>
+            </p:dataTable>
+                    
+               
+            <h:panelGrid id="total" columns="2" style="float:right;" 
+                         title="TOTAL DE LA CUENTA">
+                <h:outputText value=" TOTAL DE LA CUENTA"/><br/>
+                <h:outputText value="Subtotal:  " />
+                <h:outputText value="#{oCnlCargo.subtotal}"  style="float:right;">
+                    <f:convertNumber type="currency" locale="es_MX"/>
+                </h:outputText>
+                <h:outputText value="I.V.A.:  " />
+                <h:outputText value="#{oCnlCargo.iva}"  style="float:right;">
+                    <f:convertNumber type="currency" locale="es_MX"/>
+                </h:outputText>
+                <h:outputText value="Total:  "/>
+                <h:outputText value="#{oCnlCargo.total}"  style="float:right;">
+                    <f:convertNumber type="currency" locale="es_MX"/>
+                </h:outputText> 
+            </h:panelGrid>
+          </h:panelGrid>
+        </p:panel>  
+  </h:form>     
+  </h:body>
+</ui:define> 
+</ui:composition> 
+</html>

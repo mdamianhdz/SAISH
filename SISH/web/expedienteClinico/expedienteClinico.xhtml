@@ -1,0 +1,244 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo"> 
+            <title>Datos Paciente</title>
+            <h:body>
+                <p:dialog closable="false" dynamic="true"  appendTo="@(body)" modal="true" id="dlgCompBusq" 
+                            header="Busqueda de paciente"  widgetVar="dlgCompBusqVar" style="font-size:12px" 
+                            styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                      <h:form id="formDlg">
+                          <ui:include src="../componenteBusqueda/componenteBusqueda.xhtml"/> 
+                          <p:separator/>
+                          <p:commandButton value="Seleccionar" 
+                                           oncomplete="dlgCompBusqVar.hide()" 
+                                           update=":form:panelEC" 
+                                           action="#{oEC.llena()}" icon="ui-icon-search"/>
+                          <p:commandButton value="Cancelar" oncomplete="dlgCompBusqVar.hide()" update=":form:panelEC"
+                                           action="#{oEC.deshabilita()}"/>
+                      </h:form> 
+                </p:dialog> 
+                
+                <h:form>
+                    <center>
+                        <p:commandButton value="Seleccionar paciente" update=":dlgCompBusq" oncomplete="dlgCompBusqVar.show()" icon="ui-icon-search" />
+                    </center>
+                </h:form>
+                <center>
+                    <h2>Actualizar Expediente Clínico</h2>
+                </center>
+                <h:form id="form">
+                    <p:growl id="msgs" showDetail="true"/>
+                    <p:panel id="panelEC" visible="#{oEC.paciente !=null}">
+                        <br/>
+                        <p:outputLabel value="Folio Paciente:  "/>
+                        <p:inputText value="#{oEC.paciente.folioPac}" size="7" readonly="true"/>&nbsp;&nbsp;
+                        <p:outputLabel value="Nombre:  "/>
+                        <p:inputText value="#{oEC.paciente.nombreCompleto}" size="20" readonly="true"/>&nbsp;&nbsp;
+                        <p:outputLabel value="Edad:  "/>
+                        <p:inputText value="#{oEC.edad}" size="5" readonly="true"/>&nbsp;&nbsp;
+                        <p:outputLabel value=" años"/>
+                        <br/><br/>
+                        <p:tabView id="tabView" dynamic="true" cache="true">
+                            <p:tab title="Consulta Externa">
+                                <p:dataTable  id="dtServicios" value="#{oEC.listaServicios}" paginator="true" paginatorPosition="bottom" var="oServ"
+                                              selection="#{oEC.selectedSP}" rowKey="#{oServ.idFolio}" rows="6">
+                                    <p:ajax event="rowSelectRadio" update="btnAct btnCons"/>
+                                    <p:column selectionMode="single"/>
+                                    <p:column headerText="Folio">
+                                        <h:outputText value="#{oServ.idFolio}"/>
+                                    </p:column>
+                                    <p:column headerText="Fecha Registro">
+                                        <h:outputText value="#{oServ.registro}">
+                                            <f:convertDateTime type="date" pattern="dd-MMMM-yyyy HH:mm"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Fecha Realizado">
+                                        <h:outputText value="#{oServ.realizado}">
+                                            <f:convertDateTime type="date" pattern="dd-MMMM-yyyy HH:mm" timeZone="est"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Concepto">
+                                        <h:outputText value="#{oServ.concepPrestado.descripConcep}"/>
+                                    </p:column>
+                                    <p:column headerText="Médico">
+                                        <h:outputText value="#{oServ.episodioMedico.medTratante.nombre}"/>&nbsp;
+                                          <h:outputText value="#{oServ.episodioMedico.medTratante.apellidoPaterno}"/>
+                                    </p:column>
+                                    <f:facet name="footer">  
+                                        <p:commandButton id="btnCons" value="Consultar" icon="ui-icon-search" action="#{oEC.consultar()}" disabled="#{oEC.renderCons}"
+                                                         update=":formDialog:displaySingle,:formDialog" oncomplete="PF('singleSPDialog').show()"/>&nbsp;&nbsp;&nbsp;  
+                                        <p:commandButton id="btnAct" action="#{oEC.editar()}" disabled="#{oEC.renderAct}" value="Actualizar Datos" icon="ui-icon-search"  
+                                                          update=":formDialog:displaySingle,:formDialog" oncomplete="PF('singleSPDialog').show()"/>
+                                    </f:facet>
+                                </p:dataTable>
+                            </p:tab>
+                        </p:tabView>
+                    </p:panel>
+                </h:form>
+                <p:dialog closable="false"  appendToBody="true" modal="true"  id="dialog" header="Consulta Externa - Datos Clínicos" widgetVar="singleSPDialog" resizable="false" ><br/>
+                    <h:form id="formDialog">   
+                        <p:panelGrid id="displaySingle"> 
+                            <p:row>
+                                <p:column>
+                                    <h:outputText value="Folio Paciente: " style="font-weight:bold"/>  
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{oEC.paciente.folioPac}" />
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="Nombre: " style="font-weight:bold"/> 
+                                </p:column> 
+                                <p:column>
+                                    <h:outputText value="#{oEC.paciente.nombreCompleto}"/>  
+                                </p:column> 
+                                <p:column> 
+                                    <h:outputText value="Edad: " style="font-weight:bold"/> 
+                                </p:column> 
+                                <p:column> 
+                                    <h:outputText value="#{oEC.edad}"/>&nbsp;&nbsp;
+                                    <h:outputText value=" años"/> 
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <h:outputText value="Folio Servicio: " style="font-weight:bold"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{oEC.selectedSP.idFolio}" />
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="Concepto: " style="font-weight:bold"/> 
+                                </p:column> 
+                                <p:column>
+                                    <h:outputText value="#{oEC.selectedSP.concepPrestado.descripConcep}"/>
+                                </p:column> 
+                                <p:column>
+                                    <h:outputText value="Médico Tratante: " style="font-weight:bold"/> 
+                                </p:column> 
+                                <p:column> 
+                                    <h:outputText value="#{oEC.selectedSP.episodioMedico.medTratante.nombre} #{oEC.selectedSP.episodioMedico.medTratante.apellidoPaterno}" />
+                                </p:column> 
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="6"/>
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="6">
+                                    <h:outputText value="Examen Físico " style="font-weight:bold"/> 
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="3">
+                                    <h:outputText value="Frecuencia Cardiaca:&nbsp;&nbsp;&nbsp;" style="font-weight:bold"/> 
+                                    <p:inputText disabled="#{oEC.consulta}" size="3" value="#{oEC.selectedSP.examenFisico.frecCard}"/> 
+                                    <h:outputText value="&nbsp;&nbsp;&nbsp;latidos por minuto"/>
+                                </p:column>
+                                <p:column colspan="3">
+                                    <h:outputText value="Frecuencia Respiratoria:&nbsp;&nbsp;&nbsp;" style="font-weight:bold"/> 
+                                    <p:inputText disabled="#{oEC.consulta}" size="3" value="#{oEC.selectedSP.examenFisico.frecResp}"/> 
+                                    <h:outputText value="&nbsp;&nbsp;&nbsp;respiraciones por minuto"/> 
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2">
+                                    <h:outputText value="TA:&nbsp;&nbsp;&nbsp;" style="font-weight:bold"/> 
+                                    <p:inputText disabled="#{oEC.consulta}" size="3" value="#{oEC.selectedSP.examenFisico.TAA}"/>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                    <p:inputText disabled="#{oEC.consulta}" size="3" value="#{oEC.selectedSP.examenFisico.TAB}"/>
+                                    <h:outputText value="&nbsp;&nbsp;&nbsp;mmHg"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="Peso: " style="font-weight:bold"/> 
+                                    <p:inputText disabled="#{oEC.consulta}" size="4" value="#{oEC.selectedSP.examenFisico.peso}"/> 
+                                    <h:outputText value=" Kg."/> 
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="Temperatura:&nbsp;&nbsp;&nbsp;" style="font-weight:bold"/> 
+                                    <p:inputText disabled="#{oEC.consulta}" size="4" value="#{oEC.selectedSP.examenFisico.temp}"/> 
+                                    <h:outputText value="&nbsp;&nbsp;&nbsp;°C"/> 
+                                </p:column>
+                                <p:column colspan="2">
+                                    <h:outputText value="Talla:&nbsp;&nbsp;&nbsp;" style="font-weight:bold"/> 
+                                    <p:inputText disabled="#{oEC.consulta}" size="4" value="#{oEC.selectedSP.examenFisico.talla}"/> 
+                                    <h:outputText value="&nbsp;&nbsp;&nbsp;Mts."/> 
+                                </p:column>                   
+                            </p:row>
+                            <p:row>
+                                <p:column >
+                                    <h:outputText value="Observaciones: " style="font-weight:bold"/> 
+                                </p:column>
+                                <p:column colspan="5">
+                                    <p:inputTextarea disabled="#{oEC.consulta}" autoResize="false"  rows="3" cols="75" value="#{oEC.selectedSP.obs}"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                               <p:column>
+                                   <p:selectBooleanCheckbox disabled="#{oEC.consulta}" value="#{oEC.selectedSP.reqConsulta}"  itemLabel="&nbsp;Requiere Consulta"/>
+                               </p:column>
+                                <p:column>
+                                    <h:outputText value="Receta: " style="font-weight:bold"/> 
+                                    <p:inputText disabled="#{oEC.consulta}" size="8" value="#{oEC.selectedSP.receta}"/>
+                                </p:column>
+                                <p:column colspan="2">
+                                    <h:outputText value="Médico que dá la Consulta: " style="font-weight:bold"/> &nbsp;&nbsp;
+                                    <p:selectOneMenu  style="width: 250px" 
+                                                      id="selMedCons" 
+                                                      filter="true"
+                                                filterMatchMode="startsWith"
+                                                      value="#{oEC.selectedSP.medRealiza.folioPers}" 
+                                                      disabled="#{oEC.consulta}"> 
+                                        <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                        <f:selectItems value="#{oEC.medicos}" var="med" itemLabel="#{med.nombreCompleto}" itemValue="#{med.folioPers}"/>
+                                        <p:ajax listener="#{oEC.validaMedConsulta()}" update="btnInter"/>
+                                    </p:selectOneMenu> 
+                                </p:column>
+                                <p:column colspan="2">
+                                    <p:commandButton id="btnInter" value="Folio de Interconsulta" disabled="#{oEC.consulta or oEC.disInter}" oncomplete="diagSolicInter.show()">
+                                        <p:ajax listener="#{oEC.imprimeFolio()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:selectBooleanCheckbox disabled="#{oEC.consulta}" value="#{oEC.selectedSP.reqHosp}"  itemLabel="&nbsp;Requiere Hospitalización" />
+                               </p:column>
+                                <p:column colspan="5">
+                                    <h:outputText value="Médico que recibe/hospitaliza: " style="font-weight:bold"/> &nbsp;&nbsp;
+                                    <p:selectOneMenu  style="width: 250px" 
+                                                      id="selMedHosp" 
+                                                      filter="true"
+                                                filterMatchMode="startsWith"
+                                                      value="#{oEC.selectedSP.episodioMedico.medRecibe.folioPers}" 
+                                                      disabled="#{oEC.consulta}"> 
+                                        <f:selectItem itemLabel="Seleccione" itemValue="" />
+                                        <f:selectItems value="#{oEC.medicos}" var="med" itemLabel="#{med.nombreCompleto}" itemValue="#{med.folioPers}"/>
+                                    </p:selectOneMenu> 
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid>
+                        <br/><br/>
+                        <p:commandButton disabled="#{oEC.consulta}" value="  Guardar  "  update=":form:msgs :form:panelEC" action="#{oEC.guarda()}"/>&nbsp;&nbsp;&nbsp;
+                        <p:commandButton value="  Regresar  " update=":form:msgs" oncomplete="PF('singleSPDialog').hide()" action="#{oEC.regresarCargo()}"/><br/><br/>
+                    </h:form>
+                </p:dialog>
+                <p:dialog closable="false" appendTo="@(body)" dynamic="true" modal="true" id="soliInter" header="Solicitud de Interconsulta"  widgetVar="diagSolicInter" style="font-size:12px" styleClass="text-align: center;"  position="center" showEffect="clip" hideEffect="fold" >  
+                            <h:form id="formaSoliInt">       
+                                <p:media id="contr" value="/resources/#{oEC.rutaPDF}" width="800" height="500">  
+                                    Tu navegador no puede abrir el PDF, <h:outputLink value="/resources/#{oEC.rutaPDF}">click</h:outputLink> para descargar el PDF.  
+                                </p:media>  
+                                <p:separator />
+                                <center>                                        
+                                    <p:commandButton value="Regresar"  oncomplete="diagSolicInter.hide()" icon="ui-icon-arrowreturnthick-1-w"/>
+                                </center>
+                            </h:form> 
+                        </p:dialog> 
+                
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

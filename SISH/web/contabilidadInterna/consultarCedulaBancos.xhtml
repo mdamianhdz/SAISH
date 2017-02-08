@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Consultar Cédula Auxiliar de Bancos</title>
+            <h:body>
+                <h:form id="form">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                    <center>
+                        <h2>Consultar Cédula Auxiliar de Bancos</h2>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Banco: " style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu value="#{oCedulaB.selectedBanco}">
+                                        <f:selectItem itemValue="0" itemLabel="Seleccione"/>
+                                        <f:selectItems value="#{oCedulaB.listBancos}" var="oBanco" itemValue="#{oBanco.idEmp}" itemLabel="#{oBanco.nombreCorto}"/>
+                                        <p:ajax listener="#{oCedulaB.buscaCuentas()}" update="selCuentas"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Cuenta: " style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column>
+                                    <p:selectOneMenu id="selCuentas" value="#{oCedulaB.selectedCuenta}">
+                                        <f:selectItem itemValue="" itemLabel="Seleccione"/>
+                                        <f:selectItems value="#{oCedulaB.listCuentas}" var="oCta" itemValue="#{oCta.numCtaBan}" itemLabel="#{oCta.descripcion}"/>
+                                        <p:ajax/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                <p:column  rowspan="2">
+                                    <p:commandButton value="Buscar">
+                                        <p:ajax update="dtMovimientos form:msg" listener="#{oCedulaB.buscar()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Fecha:" style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column colspan="3">del&nbsp;&nbsp;
+                                    <p:calendar value="#{oCedulaB.inicio}" showOn="button">
+                                        <p:ajax event="dateSelect" listener="#{oCedulaB.validaFecha}" update="msg" />
+                                    </p:calendar>&nbsp;&nbsp;al&nbsp;&nbsp;
+                                    <p:calendar value="#{oCedulaB.fin}" showOn="button">
+                                        <p:ajax event="dateSelect" listener="#{oCedulaB.validaFecha}" update="msg" />
+                                    </p:calendar>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/>
+                        <p:dataTable id="dtMovimientos" var="oMov" value="#{oCedulaB.listMovimientos}" paginator="true" paginatorPosition="bottom" rows="10" 
+                                     emptyMessage="No hay registros" style="width:800px">
+                            <p:column headerText="Fecha">
+                                <p:outputLabel value="#{oMov.fechaMov}">
+                                    <f:convertDateTime pattern="dd/MMMM/yyyy"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Concepto">
+                                <p:outputLabel value="#{oMov.conceptoMov.descripcion}"/>
+                            </p:column>
+                            <p:column headerText="# Documento">
+                                <p:outputLabel value="#{oMov.numDocto}"/>
+                            </p:column>
+                            <p:column headerText="Proveedor">
+                                <p:outputLabel value="#{oMov.gasto.prov.nombreRazSoc}"/>
+                            </p:column>
+                            <p:column headerText="Monto Entrada">
+                                <p:outputLabel style="text-align: right"
+                                    rendered="#{oMov.monto>0 and oMov.conceptoMov.tipoMovCta=='E'}" 
+                                    value="#{oMov.monto}"/>
+                            </p:column>
+                            <p:column headerText="Monto Salida">
+                                <p:outputLabel style="text-align: right"
+                                    rendered="#{oMov.monto>0 and oMov.conceptoMov.tipoMovCta=='S'}" value="#{oMov.monto}"/>
+                            </p:column>
+                            <p:column headerText="Saldo">
+                                <p:outputLabel style="text-align: right"
+                                    value="#{oCedulaB.calculaSaldo(oMov.idMovCtaBan)}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </center>
+                </h:form>
+            </h:body>
+        </ui:define>
+    </ui:composition>
+</html>

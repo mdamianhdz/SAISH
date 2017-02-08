@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Pacientes hospitalizados</title>
+            
+            <h:body>
+        <h:form id="form">  
+                    #{oPacHospHoy.limpiarPacientesHosp()}
+                    <p:growl id="msg" showDetail="true"/>
+                    <p:panel header="Consultar pacientes hospitalizados">
+                        <p:panelGrid id="datos" columns="6">
+                            <h:outputText value="Buscar Pacientes Hospitalizados Hoy:  "/>
+                            <p:commandButton update=":form:rpt :form:msg :form:tableXP" actionListener="#{oPacHospHoy.buscaPacientesHospitalizadosHoy()}" value="Buscar" icon="ui-icon-print" process="@parent" >
+                            </p:commandButton>
+                        </p:panelGrid>
+                    </p:panel>
+                    <p:scrollPanel mode="native" style="width:100%;height:500px">
+                        <p:panel id="rpt">
+                            <h:panelGrid id="rptVista" width="100%">
+                                <p:separator />
+                                <h:panelGrid columns="2" width="80%">
+                                    <h:outputText value="Reporte de la Fecha:  "/>
+                                    <h:outputText value="#{oPacHospHoy.fechaActual}" style="font-weight: bold; text-transform: capitalize;">
+                                        <f:convertDateTime pattern="dd-MMMM-yyyy" />
+                                    </h:outputText>
+                                </h:panelGrid>
+                                <br/>
+                                <p:dataTable value="#{oPacHospHoy.datosPacsHosp}" 
+                                             var="rptPacHosp" id="tableXP"
+                                             emptyMessage="No hay datos">
+                                    <p:columnGroup type="header">
+                                        <p:row>
+                                            <p:column rowspan="2" headerText="Fecha de ingreso" />
+                                            <p:column rowspan="2" headerText="Paciente" />
+                                            <p:column rowspan="2" headerText="Habitaci&oacute;n" />
+                                            <p:column rowspan="2" headerText="M&eacute;dico" />
+                                            <p:column rowspan="2" headerText="Diagn&oacute;stico de ingreso"/>
+                                            <p:column rowspan="2" headerText="Posible Alta" />
+                                        </p:row>
+                                    </p:columnGroup>
+
+                                    <p:column>
+                                        <h:outputText value="#{rptPacHosp.epMed.inicio}" style=" text-transform: capitalize;">
+                                            <f:convertDateTime pattern="dd-MMMM-yyyy" timeZone="EST"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column>
+                                        <h:outputText value="#{rptPacHosp.paciente.nombreCompleto}"/>
+                                    </p:column>
+
+                                    <p:column>
+                                        <h:outputText value="#{rptPacHosp.epMed.hab.hab}"/>
+                                    </p:column>
+
+                                    <p:column>
+                                        <h:outputText value="#{rptPacHosp.epMed.medTratante.nombreCompleto}"/>
+                                    </p:column>
+
+                                    <p:column>
+                                        <h:outputText value="#{rptPacHosp.epMed.dxIngreso.descrip}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectBooleanCheckbox value="#{rptPacHosp.epMed.posibleAltaBol}" />
+                                    </p:column>
+                                </p:dataTable>
+                                <h:panelGroup>
+                                    <center>
+                                        <p:commandButton update=":form:rpt :form:msg :form:tableXP" value="Registrar Cambios" icon="ui-icon-print" actionListener="#{oPacHospHoy.actualizarPosiblesAltas()}" >
+                                    </p:commandButton>
+                                    <p:commandButton  value="Imprimir" type="button" icon="ui-icon-print" >
+                                        <p:printer target=":form:tableXP" />
+                                    </p:commandButton>
+                                    </center>
+                                    
+                                </h:panelGroup>
+                            </h:panelGrid>
+                        </p:panel>
+                    </p:scrollPanel>
+                </h:form>
+    </h:body>
+        </ui:define> 
+    </ui:composition> 
+    
+</html>

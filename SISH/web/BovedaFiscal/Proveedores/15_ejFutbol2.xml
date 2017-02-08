@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone = "yes"?>
+<MiBase xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:noNamespaceSchemaLocation="futbol.xsd">
+    <jugadores>
+        <jugador>
+            <numero>2</numero>
+            <nombre>Rafael Márquez</nombre>
+            <salario tipo="float">3200.00</salario>
+        </jugador>
+        <jugador>
+            <numero>3</numero>
+            <nombre>Javier Hernández</nombre>
+            <salario tipo="int">3300</salario>
+        </jugador>
+    </jugadores>
+</MiBase>

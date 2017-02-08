@@ -1,0 +1,144 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+        <title>Consultar Reporte de Desglose de Servicios Otorgados</title>
+            <h:body>
+                <center>
+                    <h2>Reporte de Desglose de Servicios Otorgados</h2>
+                </center>
+                <h:form id="frmRpt">
+                    <p:growl id="msg" showDetail="true" sticky="true"/>
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <p:outputLabel value="Fecha:" style=" font-weight:bold"/>
+                                </p:column>
+                                <p:column colspan="3">del&nbsp;&nbsp;
+                                    <p:calendar value="#{oRptDesServPrestJB.ini}" 
+                                                showOn="button" locale="es">
+                                        <p:ajax event="dateSelect" 
+                                                listener="#{oRptDesServPrestJB.validaFecha}" 
+                                                update="msg" />
+                                    </p:calendar>&nbsp;&nbsp;al&nbsp;&nbsp;
+                                    <p:calendar value="#{oRptDesServPrestJB.fin}" 
+                                                showOn="button" locale="es">
+                                        <p:ajax event="dateSelect" 
+                                                listener="#{oRptDesServPrestJB.validaFecha}" 
+                                                update="msg" />
+                                    </p:calendar>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton value="Buscar">
+                                        <p:ajax update="dtRpt" 
+                                                listener="#{oRptDesServPrestJB.buscar()}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid><br/>
+                         <p:dataTable id="dtRpt" var="oDesglose" 
+                                      value="#{oRptDesServPrestJB.lista}" 
+                                      paginator="false" 
+                                      emptyMessage="No hay datos" 
+                                      style="width:800px">
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column rowspan="4" headerText="Línea" />
+                                    <p:column colspan="11" headerText="#{oRptDesServPrestJB.rangoFechas}">
+                                        
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column colspan="5" headerText="Contado" />
+                                    <p:column colspan="5" headerText="Crédito" />
+                                    <p:column rowspan="3" headerText="Total" />
+                                </p:row>
+                                <p:row>
+                                    <p:column colspan="2" headerText="Hospital" />
+                                    <p:column colspan="2" headerText="Externos" />
+                                    <p:column rowspan="2" headerText="Total Contado" />
+                                    <p:column colspan="2" headerText="Hospital" />
+                                    <p:column colspan="2" headerText="Externos" />
+                                    <p:column rowspan="2" headerText="Total Crédito" />                                   
+                                </p:row>
+                                <p:row>
+                                    <p:column headerText="Cant." />  
+                                    <p:column headerText="Monto" />  
+                                    <p:column headerText="Cant." />  
+                                    <p:column headerText="Monto" /> 
+                                    <p:column headerText="Cant." />  
+                                    <p:column headerText="Monto" />  
+                                    <p:column headerText="Cant." />  
+                                    <p:column headerText="Monto" />                                       
+                                </p:row>
+                            </p:columnGroup>
+                             <p:column>
+                                <p:outputLabel value="#{oDesglose.lin.descrip}"/>
+                            </p:column>
+                            <p:column style="text-align: right">
+                                <p:outputLabel 
+                                   value="#{oDesglose.cantContHosp}"/>
+                            </p:column>
+                            <p:column style="text-align: right">
+                                <p:outputLabel value="#{oDesglose.montoContHosp}">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right">
+                                <p:outputLabel value="#{oDesglose.cantContExt}"/>
+                            </p:column>
+                            <p:column style="text-align: right">
+                                <p:outputLabel value="#{oDesglose.montoContExt}">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right">
+                                <p:outputLabel value="#{oDesglose.totalContado}">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right">
+                                <p:outputLabel value="#{oDesglose.cantCredHosp}"/>
+                            </p:column>
+                            <p:column style="text-align: right">
+                                <p:outputLabel value="#{oDesglose.montoCredHosp}">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right">
+                                <p:outputLabel value="#{oDesglose.cantCredExt}"/>
+                            </p:column>
+                            <p:column style="text-align: right">
+                                <p:outputLabel value="#{oDesglose.montoCredExt}">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right">
+                                <p:outputLabel value="#{oDesglose.totalCredito}">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right">
+                                <p:outputLabel value="#{oDesglose.total}">
+                                    <f:convertNumber type="currency"/>
+                                </p:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+                        <center>
+                            <h:panelGrid columns="2">
+                                <p:commandButton value="Imprimir" type="button" 
+                                                 icon="ui-icon-print" >  
+                                     <p:printer target="dtRpt" />  
+                                 </p:commandButton>
+                            </h:panelGrid>
+                        </center>
+                </h:form>
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

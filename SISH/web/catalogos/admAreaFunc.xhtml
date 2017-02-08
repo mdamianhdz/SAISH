@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>&Aacute;rea de Funcionamiento</title>
+            <h:body>
+                <center><h2>Administraci&oacute;n de &aacute;rea de funcionamiento</h2>
+                    <h:form id="formulario"> 
+                        <p:growl id="msg" sticky="true" showDetail="true"/> 
+                        <p:dialog id="dlgAreaFunc" widgetVar="dlgAF"  position="center" closable="false" dynamic="true" resizable="false"
+                                  appendTo="@(body)" modal="true">
+                            <center>
+                                <h3>Administraci&oacute;n de &aacute;rea de funcionamiento</h3>
+                                <h:form>
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column rendered="#{oAreaFunc.disDatos}">
+                                                <p:outputLabel value="Clave:"/>
+                                            </p:column>
+                                            <p:column rendered="#{oAreaFunc.disDatos}">
+                                                <p:inputText id="txtClave" 
+                                                             value="#{oAreaFunc.currentAreaFuncionamiento.cveAreaFun}" 
+                                                             disabled="true" size="6" >
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Descripci&oacute;n:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtDescrip" 
+                                                             value="#{oAreaFunc.currentAreaFuncionamiento.descripcion}"
+                                                             disabled="#{oAreaFunc.disDatosDescrip}"
+                                                             required="true">
+                                                    <p:ajax></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                    <br/><br/>
+                                    <p:commandButton value="#{oAreaFunc.nomButton}">
+                                        <p:ajax listener="#{oAreaFunc.guarda}" update=":formulario:msg :formulario:dtAreasFuncionamiento"/>
+                                    </p:commandButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <p:commandButton value="Regresar" oncomplete="PF('dlgAF').hide()"/>
+                                </h:form>
+                            </center>
+                        </p:dialog>
+                        <p:dataTable id="dtAreasFuncionamiento" value="#{oAreaFunc.listaAreasFunc}" rows="5" editable="true" paginator="true" 
+                                     paginatorPosition="bottom" var="oAF"
+                                     style="width: 900px" selection="#{oAreaFunc.selectedAreaFuncionamiento}" rowKey="#{oAF.descripcion}">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single" width="25"/>
+                            <p:column headerText="Clave" width="25">
+                                <h:outputText value="#{oAF.cveAreaFun}" />
+                            </p:column>
+                            <p:column headerText="Descripci&oacute;n:" >
+                                <h:outputText value="#{oAF.descripcion}"/>
+                            </p:column>
+                           
+                            
+                            <f:facet name="footer">
+                                <p:commandButton value="Modificar &aacute;rea de funcionamiento" icon="ui-icon-pencil">
+                                    <p:ajax update=":formulario:msg :formulario:dlgAreaFunc" listener="#{oAreaFunc.confModAreaFuncionamiento()}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Eliminar &aacute;rea de funcionamiento" icon="ui-icon-pencil">
+                                    <p:ajax update=":formulario:msg :formulario:dlgAreaFunc" listener="#{oAreaFunc.confDelAreaFuncionamiento()}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Agregar &aacute;rea de funcionamiento" icon="ui-icon-pencil" oncomplete="dlgAF.show()">
+                                    <p:ajax update=":formulario:msg :formulario:dlgAreaFunc" listener="#{oAreaFunc.confNuevaAreaFuncionamiento()}"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable> 
+                    </h:form>
+                </center> 
+            </h:body>
+        </ui:define> 
+    </ui:composition> 
+</html>

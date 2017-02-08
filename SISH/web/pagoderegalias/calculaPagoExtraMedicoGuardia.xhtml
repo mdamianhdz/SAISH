@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+<ui:define name="cuerpo">
+    <title>C&acute;lculo de pagos extras a m&eacute;dicos de guardia</title>
+<h:body>
+    <h:form id="form">
+        
+        <p:growl id="msgs" showDetail="true"/>
+        <p:panel header="C&acute;lculo de pagos extras a m&eacute;dicos de guardia" 
+                 style="margin-bottom:10px;">  
+           
+           <h:panelGrid columns="5"  style="width: 50%;">
+                <h:outputText value="Fecha inicial: " style="font-weight: bold"/>
+                <p:calendar value="#{oRegMed.fechaInicio}" 
+                            showOn="button" locale="es">
+                    <p:ajax event="dateSelect" 
+                            listener="#{oRegMed.validaFecha}" 
+                            update="msgs" />
+                </p:calendar>
+                <h:outputText value="  Fecha final: " style="font-weight: bold"/>
+                <p:calendar value="#{oRegMed.fechaFin}" 
+                            showOn="button" locale="es">
+                    <p:ajax event="dateSelect" 
+                            listener="#{oRegMed.validaFecha}" 
+                            update="msgs" />
+                </p:calendar>
+                <p:commandButton actionListener="#{oRegMed.obtieneMedicos()}" value="Buscar" update=":form:regaliasDT :form:msgs" />  
+           </h:panelGrid>
+            <br/>
+            <br/>
+           <h:panelGrid id="pBoton" style="float:right;" columns="2">
+               <p:commandButton id="btn" actionListener="#{oRegEnf.autorizacionPago()}" 
+                                value="Autorizar" process="@parent" 
+                                update=":form:msgs" /> 
+               <p:commandButton update=":form:rpt" value="Imprimir" 
+                                icon="ui-icon-print" 
+                                oncomplete="PF('rptDialog').show()" 
+                                process="@parent" >
+               </p:commandButton>
+           </h:panelGrid>
+       </p:panel>
+    </h:form>
+</h:body>
+</ui:define> 
+</ui:composition> 
+</html>

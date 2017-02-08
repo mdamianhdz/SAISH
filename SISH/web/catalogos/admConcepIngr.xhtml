@@ -1,0 +1,286 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/facelets/templates/plantilla.xhtml">
+        <ui:define name="cuerpo">
+            <title>Administraci&oacute;n de conceptos de ingreso</title>
+                <center>
+                    <h2>Administraci&oacute;n de conceptos de ingreso</h2>
+                        <p:dialog id="dlgEdita" widgetVar="dlgEdicion" 
+                                  position="center" closable="false" 
+                                  dynamic="true" resizable="false"
+                                  appendTo="@(body)" modal="true">
+                            <center>
+                                <h3>Administraci&oacute;n de conceptos de ingreso</h3>
+                                <h:form id="frm">
+                                    <p:panelGrid id="panelDatos">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Clave:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtClave" 
+                                                             value="#{oConcepIngrJB.current.cveConcep}" 
+                                                    disabled="#{oConcepIngrJB.disDatos}" 
+                                                    size="6" required="true" maxlength="5">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column> &nbsp; </p:column>
+                                            <p:column> &nbsp; </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Descripci&oacute;n*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtDescrip" 
+                                                   value="#{oConcepIngrJB.current.descripcion}" 
+                                                   disabled="#{oConcepIngrJB.disDatosDescrip}" 
+                                                   required="true" size="52" maxlength="50">
+                                                    <p:ajax/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Línea de Ingreso*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu id="cmbLineaIng"
+                                                   value="#{oConcepIngrJB.current.lineaIngreso.cveLin}"
+                                                   required="true"
+                                                   disabled="#{oConcepIngrJB.disDatosDescrip}"
+                                                   requiredMessage="Falta indicar línea de ingreso">
+                                                    <f:selectItem itemValue="-1" itemLabel="Seleccione" noSelectionOption="true"/>
+                                                    <f:selectItems value="#{oConcepIngrJB.listaLinIngr}"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Precio*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtMonto" 
+                                                             value="#{oConcepIngrJB.current.monto}" 
+                                                   disabled="#{oConcepIngrJB.disDatosDescrip}" 
+                                                   required="true">
+                                                    <f:convertNumber pattern="#0.00"/>
+                                                    <p:ajax/>
+                                                </p:inputText>%
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Porcentaje IVA*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="txtPctIVA" 
+                                                             value="#{oConcepIngrJB.current.pctIVA}" 
+                                                   disabled="#{oConcepIngrJB.disDatosDescrip}" 
+                                                   required="true">
+                                                    <f:convertNumber pattern="#0.0"/>
+                                                    <p:ajax/>
+                                                </p:inputText>%
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Área de Servicio*:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu id="cmbAreaServ"
+                                                                 value="#{oConcepIngrJB.current.areaServicio.cve}"
+                                                                 required="true"
+                                                                 disabled="#{oConcepIngrJB.disDatosDescrip}"
+                                                                 requiredMessage="Falta indicar área de servicio">
+                                                    <f:selectItem itemValue="-1" itemLabel="Seleccione" noSelectionOption="true"/>
+                                                    <f:selectItems value="#{oConcepIngrJB.listaAreasServ}"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel value="Área Física:"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:selectOneMenu id="cmbAreaFis"
+                                                                 value="#{oConcepIngrJB.current.areaFisica.cve}"
+                                                                 disabled="#{oConcepIngrJB.disDatosDescrip}">
+                                                    <f:selectItem itemValue="-1" itemLabel="Seleccione" noSelectionOption="true"/>
+                                                    <f:selectItems value="#{oConcepIngrJB.listaAreasFis}"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="4">
+                                                <p:outputPanel style="margin-bottom:10px">
+                                                    <p:selectOneRadio id="rbTipo"
+                                                       value="#{oConcepIngrJB.current.tipoConcIngr}"
+                                                       disabled="#{oConcepIngrJB.disDatosDescrip}"
+                                                       layout="custom">
+                                                        <f:selectItem itemLabel="Ingresos por Medicamentos" itemValue="medicamento"/>
+                                                        <f:selectItem itemLabel="Ingresos por Material de curación" itemValue="material"/>
+                                                        <f:selectItem itemLabel="Otros ingresos" itemValue="otro"/>
+                                                        <f:selectItem itemLabel="Ingresos médicos" itemValue="medico"/>
+                                                    </p:selectOneRadio>
+                                                    <p:panelGrid>
+                                                        <p:row>
+                                                            <p:column>
+                                                                <p:radioButton id="opt1" for="rbTipo" itemIndex="0" /> &nbsp; 
+                                                                <h:outputLabel for="opt1" value="Ingresos por Medicamentos" />
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:radioButton id="opt2" for="rbTipo" itemIndex="1" /> &nbsp; 
+                                                                <h:outputLabel for="opt2" value="Ingresos por Material de curación" />
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:radioButton id="opt3" for="rbTipo" itemIndex="2" /> &nbsp; 
+                                                                <h:outputLabel for="opt3" value="Otros ingresos" />
+                                                            </p:column>
+                                                        </p:row>
+                                                        <p:row>
+                                                            <p:column colspan="3">
+                                                                <p:radioButton id="opt4" for="rbTipo" itemIndex="3" /> &nbsp; 
+                                                                <h:outputLabel for="opt4" value="Ingresos médicos" />
+                                                                <br/>
+                                                                <center>
+                                                                <p:panelGrid>
+                                                                    <p:row>
+                                                                        <p:column>
+                                                                            <p:selectBooleanCheckbox id="cbRegalGuard" 
+                                                                                                     disabled="#{oConcepIngrJB.disDatosDescrip}"
+                                                                                                     value="#{oConcepIngrJB.current.regalGuard}"/>
+                                                                        </p:column>
+                                                                        <p:column>
+                                                                            Aplica porcentaje para pagos extras a m&eacute;dicos de guardia
+                                                                        </p:column>
+                                                                        <p:column>
+                                                                            <p:inputText id="txtPctMedGuar" 
+                                                                                         disabled="#{oConcepIngrJB.disDatosDescrip}"
+                                                                                         value="#{oConcepIngrJB.current.pctRegalGuard}">
+                                                                                <f:convertNumber pattern="#0.0"/>
+                                                                                <p:ajax/>
+                                                                            </p:inputText> %
+                                                                        </p:column>
+                                                                    </p:row>
+                                                                    <p:row>
+                                                                        <p:column>
+                                                                            <p:selectBooleanCheckbox id="cbRegalMed"
+                                                                                                     disabled="#{oConcepIngrJB.disDatosDescrip}"
+                                                                                                     value="#{oConcepIngrJB.current.regalMed}"/>
+                                                                        </p:column>
+                                                                        <p:column>
+                                                                            Aplica porcentaje para pagos extras a m&eacute;dicos externos
+                                                                        </p:column>
+                                                                        <p:column>
+                                                                            <p:inputText id="txtPctMedExt"                                                                                          
+                                                                                         disabled="#{oConcepIngrJB.disDatosDescrip}"
+                                                                                         value="#{oConcepIngrJB.current.pctRegalMed}">
+                                                                                <f:convertNumber pattern="#0.0"/>
+                                                                                <p:ajax/>
+                                                                            </p:inputText> %
+                                                                        </p:column>
+                                                                    </p:row>
+                                                                    <p:row>
+                                                                        <p:column>
+                                                                            <p:selectBooleanCheckbox id="cbRegalEnf"
+                                                                                                     disabled="#{oConcepIngrJB.disDatosDescrip}"
+                                                                                                     value="#{oConcepIngrJB.current.regalEnf}"/>
+                                                                        </p:column>
+                                                                        <p:column>
+                                                                            Aplica porcentaje para pagos extras a enfermeras
+                                                                        </p:column>
+                                                                        <p:column>
+                                                                            <p:inputText id="txtPctEnf" 
+                                                                                         disabled="#{oConcepIngrJB.disDatosDescrip}"
+                                                                                         value="#{oConcepIngrJB.current.pctRegalEnf}">
+                                                                                <f:convertNumber pattern="#0.0"/>
+                                                                                <p:ajax/>
+                                                                            </p:inputText> %
+                                                                        </p:column>
+                                                                    </p:row>
+                                                                    <p:row>
+                                                                        <p:column>
+                                                                            <p:selectBooleanCheckbox id="cbHonEnf" 
+                                                                                                     disabled="#{oConcepIngrJB.disDatosDescrip}"
+                                                                                                     value="#{oConcepIngrJB.current.honMedEnf}"/>
+                                                                        </p:column>
+                                                                        <p:column colspan="2">
+                                                                            El concepto se considera para el cálculo de honorarios
+                                                                        </p:column>
+                                                                    </p:row>
+                                                                    <p:row>
+                                                                        <p:column>
+                                                                            <p:selectBooleanCheckbox id="cbPaqEmp" 
+                                                                                                     disabled="#{oConcepIngrJB.disDatosDescrip}"
+                                                                                                     value="#{oConcepIngrJB.current.paqEmp}"/>
+                                                                        </p:column>
+                                                                        <p:column colspan="2">
+                                                                            El concepto se considera como paquete de empresa
+                                                                        </p:column>
+                                                                    </p:row>
+                                                                </p:panelGrid>
+                                                                </center>
+                                                            </p:column>
+                                                        </p:row>
+                                                    </p:panelGrid>
+                                                    
+                                                </p:outputPanel>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                    <br/><br/>
+                                    <p:commandButton value="#{oConcepIngrJB.nomButton}"
+                                                     actionListener="#{oConcepIngrJB.guarda2}"
+                       update=":formulario:msg :formulario:dtFormaPago">
+                                    </p:commandButton>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <p:commandButton value="Regresar" 
+                                       oncomplete="PF('dlgEdicion').hide()"/>
+                               </h:form>
+                            </center>
+                        </p:dialog>
+                    <h:form id="formulario"> 
+                        <p:growl id="msg" sticky="true" showDetail="true"/> 
+                        <p:dataTable id="dtFormaPago" value="#{oConcepIngrJB.lista}" 
+                                     rows="5" editable="true" paginator="true" 
+                                     paginatorPosition="bottom" var="oConcepIng"
+                                     style="width: 900px" 
+                                     selection="#{oConcepIngrJB.selected}" 
+                                     rowKey="#{oConcepIng.descripcion}"
+                                     filteredValue="#{oConcepIngrJB.listaFiltrada}">
+                            <p:ajax event="rowSelectRadio"/>
+                            <p:column selectionMode="single" width="25"/>
+                            <p:column headerText="Línea">
+                                <h:outputText value="#{oConcepIng.lineaIngreso.descrip}" />
+                            </p:column>
+                            <p:column headerText="Clave" width="25">
+                                <h:outputText value="#{oConcepIng.cveConcep}" />
+                            </p:column>
+                            <p:column headerText="Descripci&oacute;n">
+                                <h:outputText value="#{oConcepIng.descripcion}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Modificar"  
+                                                 icon="ui-icon-pencil" >
+                                    <p:ajax update=":formulario:msg :dlgEdita" 
+                                            listener="#{oConcepIngrJB.confModificar}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Eliminar"  
+                                                 icon="ui-icon-pencil" >
+                                    <p:ajax update=":formulario:msg :dlgEdita" 
+                                            listener="#{oConcepIngrJB.confEliminar}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Agregar" 
+                                                 icon="ui-icon-pencil" 
+                                                 oncomplete="dlgEdicion.show()">
+                                    <p:ajax update=":formulario:msg :dlgEdita"
+                                            listener="#{oConcepIngrJB.confInsertar}"/>
+                                </p:commandButton>
+                            </f:facet>
+                        </p:dataTable> 
+                    </h:form>
+                </center> 
+        </ui:define> 
+    </ui:composition> 
+</html>
